@@ -1,0 +1,96 @@
+version: '3.8'
+
+services:
+  # PostgreSQL database
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: otakuhub
+      POSTGRES_USER: otakuhub
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    expose:
+      - "5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U otakuhub -d otakuhub"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Redis for caching and Celery
+  redis:
+    image: redis:7-alpine
+    expose:
+      - "6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Backend service (FastAPI)
+  backend:
+    build: ./backend
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+asyncpg://otakuhub:${DB_PASSWORD}@db:5432/otakuhub
+      REDIS_URL: redis://redis:6379/0
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_ALGORITHM: HS256
+      ACCESS_TOKEN_EXPIRE_MINUTES: 15
+      REFRESH_TOKEN_EXPIRE_DAYS: 30
+      ANILIST_CLIENT_ID: ${ANILIST_CLIENT_ID}
+      ANILIST_CLIENT_SECRET: ${ANILIST_CLIENT_SECRET}
+      MAL_CLIENT_ID: ${MAL_CLIENT_ID}
+      APPRISE_URLS: ${APPRISE_URLS}
+      FRONTEND_URL: ${FRONTEND_URL}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS}
+    expose:
+      - "8000"
+    command: >
+      sh -c "cd /app/backend &&
+             alembic upgrade head &&
+             gunicorn -w 4 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:8000 main:app --timeout 120"
+    restart: unless-stopped
+
+  # Celery worker for background tasks  
+  worker:
+    build: ./backend
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+asyncpg://otakuhub:${DB_PASSWORD}@db:5432/otakuhub
+      REDIS_URL: redis://redis:6379/0
+      ANILIST_CLIENT_ID: ${ANILIST_CLIENT_ID}
+      ANILIST_CLIENT_SECRET: ${ANILIST_CLIENT_SECRET}
+      MAL_CLIENT_ID: ${MAL_CLIENT_ID}
+    volumes:
+      - ./backend:/app/backend
+    command: >
+      sh -c "cd /app/backend &&
+             celery -A workers.celery_app.celery_app worker --loglevel=info"
+    restart: unless-stopped
+
+  # Nginx reverse proxy
+  nginx:
+    image: nginx:alpine
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./infra/nginx.conf:/etc/nginx/nginx.conf
+      - ./infra/certs:/etc/nginx/certs
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

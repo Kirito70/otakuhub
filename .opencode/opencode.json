@@ -1,11 +1,26 @@
 {
   "$schema": "https://opencode.ai/config.json",
+  "model": "ollama/qwen3-coder:30b",
   "provider": {
     "ollama": {
       "npm": "@ai-sdk/openai-compatible",
       "name": "Ollama (local)",
       "options": {
         "baseURL": "http://100.124.86.47:11434/v1"
+      },
+      "models": {
+        "qwen3-coder:30b": {
+          "name": "Qwen 3 Coder 30B"
+        },
+        "llama3.1:8b": {
+          "name": "LLaMA 3.1 8B"
+        },
+        "gpt-oss:latest": {
+          "name": "GPT-OSS Latest"
+        },
+        "tarruda/neuraldaredevil-8b-abliterated:fp16": {
+          "name": "Neural Daredevil 8B Abliterated (FP16)"
+        }
       }
     }
   },
@@ -19,47 +34,47 @@
   "agent": {
     "architect": {
       "description": "System architecture, ADRs, schema decisions, API contract design",
-      "model": "anthropic/claude-sonnet-4-20250514",
+      "model": "ollama/qwen3-coder:30b",
       "temperature": 0.2
     },
     "backend-dev": {
       "description": "FastAPI routes, services, repositories, Celery workers",
-      "model": "anthropic/claude-sonnet-4-20250514",
+      "model": "ollama/qwen3-coder:30b",
       "temperature": 0.1
     },
     "flutter-dev": {
       "description": "Flutter screens, Riverpod providers, responsive widgets",
-      "model": "google/gemini-2.5-pro",
+      "model": "ollama/qwen3-coder:30b",
       "temperature": 0.2
     },
     "db-designer": {
       "description": "Database schema, Alembic migrations, index strategy",
-      "model": "anthropic/claude-sonnet-4-20250514",
+      "model": "ollama/qwen3-coder:30b",
       "temperature": 0.0
     },
     "code-reviewer": {
       "description": "Code review: correctness, types, tests, security, performance",
-      "model": "anthropic/claude-sonnet-4-20250514",
+      "model": "ollama/qwen3-coder:30b",
       "temperature": 0.1
     },
     "security-auditor": {
       "description": "Security review: auth, SQL injection, data exposure, prompt injection risks",
-      "model": "anthropic/claude-sonnet-4-20250514",
+      "model": "ollama/qwen3-coder:30b",
       "temperature": 0.0
     },
     "sync-engineer": {
       "description": "AniList/MangaDex sync pipeline, rate limiting, Celery workers",
-      "model": "anthropic/claude-sonnet-4-20250514",
+      "model": "ollama/qwen3-coder:30b",
       "temperature": 0.1
     },
     "api-designer": {
       "description": "OpenAPI spec, endpoint contracts, request/response schema design",
-      "model": "anthropic/claude-sonnet-4-20250514",
+      "model": "ollama/qwen3-coder:30b",
       "temperature": 0.1
     },
     "test-writer": {
       "description": "Write pytest tests for backend, widget tests for Flutter",
-      "model": "anthropic/claude-sonnet-4-20250514",
+      "model": "ollama/qwen3-coder:30b",
       "temperature": 0.0
     }
   },

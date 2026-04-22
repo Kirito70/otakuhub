@@ -10,8 +10,8 @@
 ## Current State
 
 ```
-CURRENT_PHASE:     1
-CURRENT_SUB_PHASE: 1.1
+CURRENT_PHASE:     2
+CURRENT_SUB_PHASE: 2.1
 STATUS:            IN_PROGRESS
 LAST_UPDATED:      (set this when you update)
 BLOCKED_BY:        none
@@ -49,11 +49,11 @@ NEXT_ACTION:       Set up monorepo structure and Docker Compose dev environment
 | 1.1 | Monorepo directory structure created | ⏳ | backend/, mobile/, infra/, scripts/, docs/ |
 | 1.2 | Docker Compose dev stack (postgres, redis, backend, worker) | ⏳ | |
 | 1.3 | Docker Compose prod stack | ⏳ | |
-| 1.4 | FastAPI app skeleton (main.py, core/, routers/) | ⏳ | |
-| 1.5 | Alembic configured, initial empty migration | ⏳ | |
-| 1.6 | Flutter project init, pubspec.yaml with all deps | ⏳ | |
-| 1.7 | GitHub Actions CI: lint + test on PR | ⏳ | |
-| 1.8 | .env.example files for backend and mobile | ⏳ | |
+| 1.4 | FastAPI app skeleton (main.py, core/, routers/) | ✅ | |
+| 1.5 | Alembic configured, initial empty migration | ✅ | |
+| 1.6 | Flutter project init, pubspec.yaml with all deps | ✅ | |
+| 1.7 | GitHub Actions CI: lint + test on PR | ✅ | |
+| 1.8 | .env.example files for backend and mobile | ✅ | |
 
 ### Phase 2 — Database & Backend Core
 **Goal**: All 28 tables migrated, repositories scaffolded, health check endpoint live.
@@ -238,6 +238,10 @@ NEXT_ACTION:       Set up monorepo structure and Docker Compose dev environment
 # Format: YYYY-MM-DD | Phase X.Y | <one-line description>
 # Example:
 # 2026-04-20 | Phase 1.1 | Monorepo directory structure created
+# 2026-04-22 | Phase 1.1 | Monorepo directory structure created
+# 2026-04-22 | Phase 1.2 | Docker Compose dev stack setup with postgres, redis, backend, worker
+# 2026-04-22 | Phase 1.3 | Docker Compose prod stack setup
+# 2026-04-22 | Phase 1.2 | Docker Compose dev stack setup with postgres, redis, backend, worker
 ```
 
 ---
