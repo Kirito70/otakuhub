@@ -1,6 +1,5 @@
-"""
-Authentication Pydantic schemas.
-"""
+"""Authentication Pydantic schemas."""
+
 from pydantic import BaseModel
 from typing import Optional
 

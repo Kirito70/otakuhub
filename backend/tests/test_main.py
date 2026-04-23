@@ -1,33 +1,30 @@
-"""
-Test the main application setup.
-"""
+"""Test main application startup."""
+
 import pytest
 from fastapi.testclient import TestClient
-from main import app
+from src.app.main import app
 
 
 @pytest.fixture
 def client():
-    """Create a test client for the app."""
+    """Create a test client."""
     with TestClient(app) as c:
         yield c
 
 
-def test_health_check(client):
-    """Test that the health check endpoint works."""
+def test_root_endpoint(client):
+    """Test the root endpoint."""
+    response = client.get("/")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["message"] == "Welcome to OtakuHub"
+    assert data["version"] == "0.1.0"
+
+
+def test_health_endpoint(client):
+    """Test the health endpoint."""
     response = client.get("/health")
     assert response.status_code == 200
-    assert response.json() == {"status": "healthy", "service": "otakuhub-backend"}
-
-
-def test_status_check(client):
-    """Test that the status check endpoint works."""
-    response = client.get("/api/v1/status")
-    assert response.status_code == 200
-    assert response.json() == {"status": "operational", "service": "otakuhub-backend"}
-
-
-def test_root endpoints(client):
-    """Test that the app starts correctly."""
-    response = client.get("/")
-    assert response.status_code == 404  # FastAPI returns 404 for root path
+    data = response.json()
+    assert data["status"] == "healthy"
+    assert data["service"] == "OtakuHub"

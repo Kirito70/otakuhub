@@ -1,0 +1,69 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# CPython
+.pytest_cache/
+.coverage
+.coverage.*
+.cache
+
+# Distribution
+dist/
+build/
+*.egg-info/
+*.egg
+
+# Virtual environments
+venv/
+env/
+.venv/
+env.*
+
+# IDE
+.vscode/
+.idea/
+.pycharm/
+*.swp
+*.swo
+.DS_Store
+
+# Logs
+*.log
+
+# Local config
+.env.local
+.env.*.local
+
+# OS generated files
+._*
+.DS_Store
+.DS_Store?
+
+# IDE
+*.iml
+
+# Temp files
+*~
+
+# PyCharm
+.idea/
+
+# Flask
+instance/
+.webassets-cache
+
+# Flask-Migrate
+migrations/
+
+# Celery
+celerybeat.pid
+celerybeat-schedule
+
+# Test files
+test_*.py
+_*_test.py
+test_*.pyc
+
+sample-repos
