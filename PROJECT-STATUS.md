@@ -11,11 +11,11 @@
 
 ```
 CURRENT_PHASE:     2
-CURRENT_SUB_PHASE: 2.1
-STATUS:            IN_PROGRESS
-LAST_UPDATED:      2026-04-23
+CURRENT_SUB_PHASE: 2.14
+STATUS:            PHASE_COMPLETE
+LAST_UPDATED:      2026-04-24
 BLOCKED_BY:        none
-NEXT_ACTION:       Begin Phase 2: Database and Backend Core Development
+NEXT_ACTION:       Begin Phase 3: Anime Metadata Pipeline
 LAST_UPDATED:      (set this when you update)
 BLOCKED_BY:        none
 NEXT_ACTION:       Set up monorepo structure and Docker Compose dev environment
@@ -63,20 +63,20 @@ NEXT_ACTION:       Set up monorepo structure and Docker Compose dev environment
 
 | Sub-phase | Task | Status | Notes |
 |-----------|------|--------|-------|
-| 2.1 | PostgreSQL extensions (pg_uuidv7, pg_trgm, unaccent) | ⏳ | |
-| 2.2 | All enums created (media_type, watch_status, etc.) | ⏳ | |
-| 2.3 | Media catalogue tables migrated (media_entries, external_ids, genres, studios, tags, episodes, chapters, related_media) | ⏳ | |
-| 2.4 | User & auth tables migrated (users, refresh_tokens, external_auth) | ⏳ | |
-| 2.5 | Group tables migrated (groups, group_members) | ⏳ | |
-| 2.6 | Tracking tables migrated (user_list_entries, list_entry_history, custom_lists, custom_list_entries) | ⏳ | |
-| 2.7 | Social tables migrated (recommendations, discussions, discussion_replies) | ⏳ | |
-| 2.8 | Watch party tables migrated | ⏳ | |
-| 2.9 | Notification tables migrated | ⏳ | |
-| 2.10 | Sync jobs table migrated | ⏳ | |
-| 2.11 | All SQLAlchemy models written | ⏳ | |
-| 2.12 | Repository base classes scaffolded | ⏳ | |
-| 2.13 | GET /health endpoint | ⏳ | |
-| 2.14 | GET /api/v1/status endpoint (DB + Redis check) | ⏳ | |
+| 2.1 | PostgreSQL extensions (pg_uuidv7, pg_trgm, unaccent) | ✅ | |
+| 2.2 | All enums created (media_type, watch_status, etc.) | ✅ | |
+| 2.3 | Media catalogue tables migrated (media_entries, external_ids, genres, studios, tags, episodes, chapters, related_media) | ✅ | |
+| 2.4 | User & auth tables migrated (users, refresh_tokens, external_auth) | ✅ | |
+| 2.5 | Group tables migrated (groups, group_members) | ✅ | |
+| 2.6 | Tracking tables migrated (user_list_entries, list_entry_history, custom_lists, custom_list_entries) | ✅ | |
+| 2.7 | Social tables migrated (recommendations, discussions, discussion_replies) | ✅ | |
+| 2.8 | Watch party tables migrated | ✅ | |
+| 2.9 | Notification tables migrated | ✅ | |
+| 2.10 | Sync jobs table migrated | ✅ | |
+| 2.11 | All SQLAlchemy models written | ✅ | |
+| 2.12 | Repository base classes scaffolded | ✅ | |
+| 2.13 | GET /health endpoint | ✅ | |
+| 2.14 | GET /api/v1/status endpoint (DB + Redis check) | ✅ | |
 
 ### Phase 3 — Anime Metadata Pipeline
 **Goal**: 29k+ anime/manga entries in local DB, full AniList metadata backfilled.
@@ -237,6 +237,27 @@ NEXT_ACTION:       Set up monorepo structure and Docker Compose dev environment
 
 > Add a line here every time a sub-phase is completed.
 
+```
+# Format: YYYY-MM-DD | Phase X.Y | <one-line description>
+# Example:
+# 2026-04-20 | Phase 1.1 | Monorepo directory structure created
+# 2026-04-22 | Phase 1.2 | Docker Compose dev stack setup with postgres, redis, backend, worker
+# 2026-04-22 | Phase 1.3 | Docker Compose prod stack setup
+# 2026-04-22 | Phase 1.2 | Docker Compose dev stack setup with postgres, redis, backend, worker
+# 2026-04-24 | Phase 2.1 | PostgreSQL extensions implemented
+# 2026-04-24 | Phase 2.2 | All enums created
+# 2026-04-24 | Phase 2.3 | Media catalogue tables migrated
+# 2026-04-24 | Phase 2.4 | User & auth tables migrated
+# 2026-04-24 | Phase 2.5 | Group tables migrated
+# 2026-04-24 | Phase 2.6 | Tracking tables migrated
+# 2026-04-24 | Phase 2.7 | Social tables migrated
+# 2026-04-24 | Phase 2.8 | Watch party tables migrated
+# 2026-04-24 | Phase 2.9 | Notification tables migrated
+# 2026-04-24 | Phase 2.10 | Sync jobs table migrated
+# 2026-04-24 | Phase 2.11 | All SQLAlchemy models written
+# 2026-04-24 | Phase 2.12 | Repository base classes scaffolded
+# 2026-04-24 | Phase 2.13 | GET /health endpoint implemented
+# 2026-04-24 | Phase 2.14 | GET /api/v1/status endpoint implemented
 ```
 # Format: YYYY-MM-DD | Phase X.Y | <one-line description>
 # Example:
