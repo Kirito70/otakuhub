@@ -10,12 +10,12 @@
 ## Current State
 
 ```
-CURRENT_PHASE:     2
-CURRENT_SUB_PHASE: 2.14
+CURRENT_PHASE:     3
+CURRENT_SUB_PHASE: 3.14
 STATUS:            PHASE_COMPLETE
-LAST_UPDATED:      2026-04-24
+LAST_UPDATED:      2026-04-26
 BLOCKED_BY:        none
-NEXT_ACTION:       Begin Phase 3: Anime Metadata Pipeline
+NEXT_ACTION:       Begin Phase 4: Query Builder Pattern Implementation
 LAST_UPDATED:      (set this when you update)
 BLOCKED_BY:        none
 NEXT_ACTION:       Set up monorepo structure and Docker Compose dev environment
@@ -28,17 +28,18 @@ NEXT_ACTION:       Set up monorepo structure and Docker Compose dev environment
 | Phase | Name | Status |
 |-------|------|--------|
 | 1 | Foundation & Infrastructure | 🔄 In progress |
-| 2 | Database & Backend Core | ⏳ Not started |
-| 3 | Anime Metadata Pipeline | ⏳ Not started |
-| 4 | User Auth & Groups | ⏳ Not started |
-| 5 | Tracking & Lists | ⏳ Not started |
-| 6 | Flutter App Shell | ⏳ Not started |
-| 7 | Flutter Tracking Screens | ⏳ Not started |
-| 8 | Social Features — Backend | ⏳ Not started |
-| 9 | Social Features — Flutter | ⏳ Not started |
-| 10 | Watch Party | ⏳ Not started |
-| 11 | Notifications | ⏳ Not started |
-| 12 | Polish, Testing & Deploy | ⏳ Not started |
+| 2 | Database & Backend Core | ✅ Complete |
+| 3 | Anime Metadata Pipeline | ✅ Complete |
+| 4 | Query Builder Pattern Implementation | ⏳ Not started |
+| 5 | User Auth & Groups | ⏳ Not started |
+| 6 | Tracking & Lists | ⏳ Not started |
+| 7 | Flutter App Shell | ⏳ Not started |
+| 8 | Flutter Tracking Screens | ⏳ Not started |
+| 9 | Social Features — Backend | ⏳ Not started |
+| 10 | Social Features — Flutter | ⏳ Not started |
+| 11 | Watch Party | ⏳ Not started |
+| 12 | Notifications | ⏳ Not started |
+| 13 | Polish, Testing & Deploy | ⏳ Not started |
 
 ---
 
@@ -49,9 +50,9 @@ NEXT_ACTION:       Set up monorepo structure and Docker Compose dev environment
 
 | Sub-phase | Task | Status | Notes |
 |-----------|------|--------|-------|
-| 1.1 | Monorepo directory structure created | ⏳ | backend/, mobile/, infra/, scripts/, docs/ |
-| 1.2 | Docker Compose dev stack (postgres, redis, backend, worker) | ⏳ | |
-| 1.3 | Docker Compose prod stack | ⏳ | |
+| 1.1 | Monorepo directory structure created | ✅ | backend/, mobile/, infra/, scripts/, docs/ |
+| 1.2 | Docker Compose dev stack (postgres, redis, backend, worker) | ✅ | |
+| 1.3 | Docker Compose prod stack | ✅ | |
 | 1.4 | FastAPI app skeleton (main.py, core/, routers/) | ✅ | |
 | 1.5 | Alembic configured, initial empty migration | ✅ | |
 | 1.6 | Flutter project init, pubspec.yaml with all deps | ✅ | |
@@ -83,111 +84,111 @@ NEXT_ACTION:       Set up monorepo structure and Docker Compose dev environment
 
 | Sub-phase | Task | Status | Notes |
 |-----------|------|--------|-------|
-| 3.1 | AniList GraphQL client (with rate limiter) | ⏳ | |
-| 3.2 | MangaDex REST client (with rate limiter) | ⏳ | |
-| 3.3 | Jikan client (supplement) | ⏳ | |
-| 3.4 | Seed script: download + import anime-offline-database | ⏳ | |
-| 3.5 | Celery app + Redis broker configured | ⏳ | |
-| 3.6 | Backfill worker: AniList batch fetch (50 IDs/query) | ⏳ | |
-| 3.7 | MangaDex detail worker (chapters, cover art) | ⏳ | |
-| 3.8 | Weekly refresh cron task | ⏳ | |
-| 3.9 | On-demand fetch (search miss handler) | ⏳ | |
-| 3.10 | Media search endpoint: GET /api/v1/media/search | ⏳ | |
-| 3.11 | Media detail endpoint: GET /api/v1/media/{id} | ⏳ | |
-| 3.12 | Airing calendar endpoint: GET /api/v1/media/airing | ⏳ | |
-| 3.13 | Seed script tested, 29k entries confirmed in DB | ⏳ | |
+| 3.1 | AniList GraphQL client (with rate limiter) | ✅ | |
+| 3.2 | MangaDex REST client (with rate limiter) | ✅ | |
+| 3.3 | Jikan client (supplement) | ✅ | |
+| 3.4 | Seed script: download + import anime-offline-database | ✅ | |
+| 3.5 | Celery app + Redis broker configured | ✅ | |
+| 3.6 | Backfill worker: AniList batch fetch (50 IDs/query) | ✅ | |
+| 3.7 | MangaDex detail worker (chapters, cover art) | ✅ | |
+| 3.8 | Weekly refresh cron task | ✅ | |
+| 3.9 | On-demand fetch (search miss handler) | ✅ | |
+| 3.10 | Media search endpoint: GET /api/v1/media/search | ✅ | |
+| 3.11 | Media detail endpoint: GET /api/v1/media/{id} | ✅ | |
+| 3.12 | Airing calendar endpoint: GET /api/v1/media/airing | ✅ | |
+| 3.13 | Seed script tested, 29k entries confirmed in DB | ✅ | |
 
-### Phase 4 — User Auth & Groups
+### Phase 4 — Query Builder Pattern Implementation
+**Goal**: Implement consistent query builder pattern across all repositories, reducing points of failure and improving maintainability.
+
+| Sub-phase | Task | Status | Notes |
+|-----------|------|--------|-------|
+| 4.1 | Create unified base query builder class | ⏳ | |
+| 4.2 | Implement fluent filtering methods (where, and_, or_) | ⏳ | |
+| 4.3 | Add support for ordering, pagination, and joins | ⏳ | |
+| 4.4 | Replace all existing repository queries with new pattern | ⏳ | |
+| 4.5 | Add method chaining for all repository operations | ⏳ | |
+| 4.6 | Test all repository methods with new API | ⏳ | |
+| 4.7 | Document the query builder pattern for future developers | ⏳ | |
+
+### Phase 5 — User Auth & Groups
 **Goal**: Register, login, JWT refresh, group creation and invite system working end-to-end.
 
 | Sub-phase | Task | Status | Notes |
 |-----------|------|--------|-------|
-| 4.1 | POST /api/v1/auth/register | ⏳ | |
-| 4.2 | POST /api/v1/auth/login | ⏳ | |
-| 4.3 | POST /api/v1/auth/refresh | ⏳ | |
-| 4.4 | POST /api/v1/auth/logout | ⏳ | |
-| 4.5 | GET /api/v1/users/me | ⏳ | |
-| 4.6 | PATCH /api/v1/users/me | ⏳ | |
-| 4.7 | POST /api/v1/groups | ⏳ | |
-| 4.8 | GET /api/v1/groups/{id} | ⏳ | |
-| 4.9 | POST /api/v1/groups/join/{invite_code} | ⏳ | |
-| 4.10 | GET /api/v1/groups/{id}/members | ⏳ | |
-| 4.11 | Auth tests (happy path, wrong password, expired token) | ⏳ | |
+| 5.1 | POST /api/v1/auth/register | ⏳ | |
+| 5.2 | POST /api/v1/auth/login | ⏳ | |
+| 5.3 | POST /api/v1/auth/refresh | ⏳ | |
+| 5.4 | POST /api/v1/auth/logout | ⏳ | |
+| 5.5 | GET /api/v1/users/me | ⏳ | |
+| 5.6 | PATCH /api/v1/users/me | ⏳ | |
+| 5.7 | POST /api/v1/groups | ⏳ | |
+| 5.8 | GET /api/v1/groups/{id} | ⏳ | |
+| 5.9 | POST /api/v1/groups/join/{invite_code} | ⏳ | |
+| 5.10 | GET /api/v1/groups/{id}/members | ⏳ | |
+| 5.11 | Auth tests (happy path, wrong password, expired token) | ⏳ | |
 
-### Phase 5 — Tracking & Lists
+### Phase 6 — Tracking & Lists
 **Goal**: Full list CRUD — add, update progress, score, remove, custom lists.
 
 | Sub-phase | Task | Status | Notes |
 |-----------|------|--------|-------|
-| 5.1 | GET /api/v1/lists/me (user's full list) | ⏳ | |
-| 5.2 | POST /api/v1/lists (add to list) | ⏳ | |
-| 5.3 | PATCH /api/v1/lists/{media_id} (update status/progress/score) | ⏳ | |
-| 5.4 | DELETE /api/v1/lists/{media_id} (soft delete) | ⏳ | |
-| 5.5 | GET /api/v1/lists/me/history (activity history) | ⏳ | |
-| 5.6 | POST /api/v1/sync/import/anilist (user list import) | ⏳ | |
-| 5.7 | POST /api/v1/sync/import/mal | ⏳ | |
-| 5.8 | POST /api/v1/lists/custom (create custom list) | ⏳ | |
-| 5.9 | PUT /api/v1/lists/custom/{id}/entries | ⏳ | |
-| 5.10 | List entry history auto-logged on every update | ⏳ | |
+| 6.1 | GET /api/v1/lists/me (user's full list) | ⏳ | |
+| 6.2 | POST /api/v1/lists (add to list) | ⏳ | |
+| 6.3 | PATCH /api/v1/lists/{media_id} (update status/progress/score) | ⏳ | |
+| 6.4 | DELETE /api/v1/lists/{media_id} (soft delete) | ⏳ | |
+| 6.5 | GET /api/v1/lists/me/history (activity history) | ⏳ | |
+| 6.6 | POST /api/v1/sync/import/anilist (user list import) | ⏳ | |
+| 6.7 | POST /api/v1/sync/import/mal | ⏳ | |
+| 6.8 | POST /api/v1/lists/custom (create custom list) | ⏳ | |
+| 6.9 | PUT /api/v1/lists/custom/{id}/entries | ⏳ | |
+| 6.10 | List entry history auto-logged on every update | ⏳ | |
 
-### Phase 6 — Flutter App Shell
+### Phase 7 — Flutter App Shell
 **Goal**: Flutter app navigates correctly on all 5 platforms, auth flow works, Dio talks to backend.
 
 | Sub-phase | Task | Status | Notes |
 |-----------|------|--------|-------|
-| 6.1 | GoRouter setup: all named routes defined | ⏳ | |
-| 6.2 | AdaptiveScaffold shell: bottom nav (mobile), side nav (desktop) | ⏳ | |
-| 6.3 | Dio client + auth interceptor (token attach + refresh on 401) | ⏳ | |
-| 6.4 | flutter_secure_storage wrapper | ⏳ | |
-| 6.5 | Auth feature: login screen | ⏳ | |
-| 6.6 | Auth feature: register screen | ⏳ | |
-| 6.7 | Auth Riverpod provider (AuthNotifier) | ⏳ | |
-| 6.8 | App theme: Material 3 light + dark | ⏳ | |
-| 6.9 | Auth guard in GoRouter redirect | ⏳ | |
-| 6.10 | App runs on: web, Windows, Android (confirm all three) | ⏳ | |
+| 7.1 | GoRouter setup: all named routes defined | ⏳ | |
+| 7.2 | AdaptiveScaffold shell: bottom nav (mobile), side nav (desktop) | ⏳ | |
+| 7.3 | Dio client + auth interceptor (token attach + refresh on 401) | ⏳ | |
+| 7.4 | flutter_secure_storage wrapper | ⏳ | |
+| 7.5 | Auth feature: login screen | ⏳ | |
+| 7.6 | Auth feature: register screen | ⏳ | |
+| 7.7 | Auth Riverpod provider (AuthNotifier) | ⏳ | |
+| 7.8 | App theme: Material 3 light + dark | ⏳ | |
+| 7.9 | Auth guard in GoRouter redirect | ⏳ | |
+| 7.10 | App runs on: web, Windows, Android (confirm all three) | ⏳ | |
 
-### Phase 7 — Flutter Tracking Screens
+### Phase 8 — Flutter Tracking Screens
 **Goal**: Users can search anime/manga, add to list, update progress from the app.
 
 | Sub-phase | Task | Status | Notes |
 |-----------|------|--------|-------|
-| 7.1 | Discover/search screen (calls GET /media/search) | ⏳ | |
-| 7.2 | Media detail screen (full info page) | ⏳ | |
-| 7.3 | Add to list bottom sheet | ⏳ | |
-| 7.4 | My list screen (tabbed by status) | ⏳ | |
-| 7.5 | Progress update widget (episode counter, chapter counter) | ⏳ | |
-| 7.6 | Score widget | ⏳ | |
-| 7.7 | Airing calendar screen | ⏳ | |
-| 7.8 | Import list screen (AniList/MAL OAuth) | ⏳ | |
-| 7.9 | Custom list creation + management | ⏳ | |
-| 7.10 | Widget tests for all new screens | ⏳ | |
+| 8.1 | Discover/search screen (calls GET /media/search) | ⏳ | |
+| 8.2 | Media detail screen (full info page) | ⏳ | |
+| 8.3 | Add to list bottom sheet | ⏳ | |
+| 8.4 | My list screen (tabbed by status) | ⏳ | |
+| 8.5 | Progress update widget (episode counter, chapter counter) | ⏳ | |
+| 8.6 | Score widget | ⏳ | |
+| 8.7 | Airing calendar screen | ⏳ | |
+| 8.8 | Import list screen (AniList/MAL OAuth) | ⏳ | |
+| 8.9 | Custom list creation + management | ⏳ | |
+| 8.10 | Widget tests for all new screens | ⏳ | |
 
-### Phase 8 — Social Features — Backend
+### Phase 9 — Social Features — Backend
 **Goal**: Friend activity feed, recommendations, and discussion endpoints live.
 
 | Sub-phase | Task | Status | Notes |
 |-----------|------|--------|-------|
-| 8.1 | GET /api/v1/social/feed (group activity feed) | ⏳ | |
-| 8.2 | POST /api/v1/social/recommend | ⏳ | |
-| 8.3 | GET /api/v1/social/recommendations/inbox | ⏳ | |
-| 8.4 | PATCH /api/v1/social/recommendations/{id}/acknowledge | ⏳ | |
-| 8.5 | POST /api/v1/social/discussions | ⏳ | |
-| 8.6 | GET /api/v1/social/discussions/{media_id} | ⏳ | |
-| 8.7 | POST /api/v1/social/discussions/{id}/replies | ⏳ | |
-| 8.8 | GET /api/v1/users/{username}/profile (public profile) | ⏳ | |
-
-### Phase 9 — Social Features — Flutter
-**Goal**: Friends can see each other's activity, recommend titles, discuss in-app.
-
-| Sub-phase | Task | Status | Notes |
-|-----------|------|--------|-------|
-| 9.1 | Group activity feed screen | ⏳ | |
-| 9.2 | Friend profile screen | ⏳ | |
-| 9.3 | Recommend to friend bottom sheet | ⏳ | |
-| 9.4 | Recommendations inbox screen | ⏳ | |
-| 9.5 | Discussion thread screen (per anime) | ⏳ | |
-| 9.6 | Discussion reply UI | ⏳ | |
-| 9.7 | Group management screen (invite link, member list) | ⏳ | |
+| 9.1 | GET /api/v1/social/feed (group activity feed) | ⏳ | |
+| 9.2 | POST /api/v1/social/recommend | ⏳ | |
+| 9.3 | GET /api/v1/social/recommendations/inbox | ⏳ | |
+| 9.4 | PATCH /api/v1/social/recommendations/{id}/acknowledge | ⏳ | |
+| 9.5 | POST /api/v1/social/discussions | ⏳ | |
+| 9.6 | GET /api/v1/social/discussions/{media_id} | ⏳ | |
+| 9.7 | POST /api/v1/social/discussions/{id}/replies | ⏳ | |
+| 9.8 | GET /api/v1/users/{username}/profile (public profile) | ⏳ | |
 
 ### Phase 10 — Watch Party
 **Goal**: Create watch party, RSVP, share stream link.
@@ -258,6 +259,19 @@ NEXT_ACTION:       Set up monorepo structure and Docker Compose dev environment
 # 2026-04-24 | Phase 2.12 | Repository base classes scaffolded
 # 2026-04-24 | Phase 2.13 | GET /health endpoint implemented
 # 2026-04-24 | Phase 2.14 | GET /api/v1/status endpoint implemented
+# 2026-04-26 | Phase 3.1 | AniList GraphQL client implemented
+# 2026-04-26 | Phase 3.2 | MangaDex REST client implemented
+# 2026-04-26 | Phase 3.3 | Jikan client implemented
+# 2026-04-26 | Phase 3.4 | Seed script: download + import anime-offline-database created
+# 2026-04-26 | Phase 3.5 | Celery app + Redis broker configured
+# 2026-04-26 | Phase 3.6 | Backfill worker: AniList batch fetch implemented
+# 2026-04-26 | Phase 3.7 | MangaDex detail worker implemented
+# 2026-04-26 | Phase 3.8 | Weekly refresh cron task implemented
+# 2026-04-26 | Phase 3.9 | On-demand fetch mechanism implemented
+# 2026-04-26 | Phase 3.10 | Media search endpoint implemented
+# 2026-04-26 | Phase 3.11 | Media detail endpoint implemented
+# 2026-04-26 | Phase 3.12 | Airing calendar endpoint implemented
+# 2026-04-26 | Phase 3.13 | Seed script tested and functional
 ```
 # Format: YYYY-MM-DD | Phase X.Y | <one-line description>
 # Example:
