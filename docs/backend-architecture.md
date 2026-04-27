@@ -68,6 +68,15 @@ backend/
 ```
 
 ## Request Flow
+
+### Auth & Group Layer Boundary
+- **Router** validates request bodies (Pydantic schemas) and enforces JWT auth via `Depends(get_current_user)`. It delegates to the corresponding service.
+- **Service** contains business rules: password verification, token rotation, group ownership checks, role validation, and orchestrates multiple repositories.
+- **Repository** read‑only operations use `self.query()` (QueryBuilder) which automatically filters out soft‑deleted rows. Write‑operations (`create`, `update`, `soft_delete`) remain direct async SQLAlchemy calls.
+- **Worker** (future) may handle email verification or invitation expiry.
+- **External** – no direct external API calls from Flutter for auth; all go through FastAPI.
+
+## Request Flow
 ```
 Flutter App
     ↓  HTTPS (JWT in Authorization header)
