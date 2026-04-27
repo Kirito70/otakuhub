@@ -12,35 +12,35 @@ if TYPE_CHECKING:
 
 class RelatedMedia(SQLModel, table=True):
     """Relationships between media entries (sequel/prequel, etc)."""
-    
+
     id: UUID = Field(
         default_factory=UUID,
         primary_key=True,
         nullable=False
     )
     source_media_id: UUID = Field(
-        foreign_key="mediaentry.id", 
+        foreign_key="mediaentry.id",
         nullable=False
     )
     related_media_id: UUID = Field(
-        foreign_key="mediaentry.id", 
+        foreign_key="mediaentry.id",
         nullable=False
     )
     relation_type: RelationType = Field(nullable=False)
-    
+
     # Timestamps
     created_at: datetime = Field(default_factory=datetime.utcnow)
-        
+
     # Relationships
     source_media: Optional["MediaEntry"] = Relationship(
-        back_populates="related_media_source", 
+        back_populates="related_media_source",
         foreign_key_constraint_name="fk_related_media_source_media_id"
     )
     related_media: Optional["MediaEntry"] = Relationship(
-        back_populates="related_media_target", 
+        back_populates="related_media_target",
         foreign_key_constraint_name="fk_related_media_related_media_id"
     )
-    
+
     # Create indexes for performance
     __table_args__ = (
         Index("idx_related_media_source", "source_media_id"),

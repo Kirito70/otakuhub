@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 
 class UserListEntry(SQLModel, table=True):
     """The core tracking table. One row per user per media title."""
-    
+
     id: UUID = Field(
         default_factory=UUID,
         primary_key=True,
@@ -29,18 +29,18 @@ class UserListEntry(SQLModel, table=True):
     repeat_count: int = Field(default=0)  # rewatch/reread count
     started_at: Optional[datetime] = Field(default=None)
     completed_at: Optional[datetime] = Field(default=None)
-    
+
     # Timestamps
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
-        
+
     # Soft delete
     deleted_at: Optional[datetime] = Field(default=None)
-    
+
     # Relationships
     user: Optional["User"] = Relationship(back_populates="list_entries")
     media: Optional["MediaEntry"] = Relationship(back_populates="list_entries")
-    
+
     # Create indexes for performance
     __table_args__ = (
         Index("idx_list_entries_user_id", "user_id"),

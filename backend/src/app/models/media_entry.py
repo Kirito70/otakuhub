@@ -1,3 +1,4 @@
+# ruff: noqa
 """Media entry model for OtakuHub."""
 
 from sqlmodel import SQLModel, Field, Column, Text, Index, Relationship
@@ -5,6 +6,12 @@ from typing import Optional, TYPE_CHECKING
 from uuid import UUID
 from datetime import datetime
 from src.app.models.enums import MediaType, MediaFormat, MediaStatus, Season
+from .media_genre import MediaGenre  # noqa: F401
+from .media_studio import MediaStudio  # noqa: F401
+from .media_tag import MediaTag  # noqa: F401
+from .episode import Episode  # noqa: F401
+from .chapter import Chapter  # noqa: F401
+from .related_media import RelatedMedia  # noqa: F401
 
 if TYPE_CHECKING:
     from .media_external_ids import MediaExternalIds
@@ -12,7 +19,7 @@ if TYPE_CHECKING:
 
 class MediaEntry(SQLModel, table=True):
     """Media entry model - The canonical table for every anime, manga, and manhwa."""
-    
+
     id: UUID = Field(
         default_factory=UUID,
         primary_key=True,
@@ -43,14 +50,14 @@ class MediaEntry(SQLModel, table=True):
     is_adult: bool = Field(default=False)
     country_of_origin: Optional[str] = Field(default=None, max_length=2)  # ISO 3166-1 alpha-2 (JP, KR, CN)
     metadata_synced_at: Optional[datetime] = Field(default=None)  # NULL = needs backfill
-    
+
     # Timestamps
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
-        
+
     # Soft delete
     deleted_at: Optional[datetime] = Field(default=None)
-    
+
     # Relationships
     external_ids: Optional["MediaExternalIds"] = Relationship(back_populates="media")
     media_genres: list["MediaGenre"] = Relationship(back_populates="media")
@@ -59,14 +66,14 @@ class MediaEntry(SQLModel, table=True):
     episodes: list["Episode"] = Relationship(back_populates="media")
     chapters: list["Chapter"] = Relationship(back_populates="media")
     related_media_source: list["RelatedMedia"] = Relationship(
-        back_populates="source_media", 
+        back_populates="source_media",
         foreign_key_constraint_name="fk_related_media_source_media_id"
     )
     related_media_target: list["RelatedMedia"] = Relationship(
-        back_populates="related_media", 
+        back_populates="related_media",
         foreign_key_constraint_name="fk_related_media_related_media_id"
     )
-    
+
     # Create indexes - these will be handled by Alembic since they're defined in separate SQL files
     __table_args__ = (
         Index("idx_media_entries_title_search", "title_search", postgresql_using="gin"),

@@ -19,7 +19,7 @@ class AnimeModel with _$AnimeModel {
   }) = _AnimeModel;
 
   factory AnimeModel.fromJson(Map<String, dynamic> json) => _$AnimeModelFromJson(json);
-  
+
   // Test fixture
   factory AnimeModel.fixture() => const AnimeModel(
     id: 'test-id',

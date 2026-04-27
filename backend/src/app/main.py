@@ -16,11 +16,11 @@ async def lifespan(app: FastAPI):
     print(f"🚀 Starting {settings.app_name}...")
     print(f"📝 Environment: {settings.environment}")
     print(f"🔧 Debug mode: {settings.debug}")
-    
+
     await connect_db()
-    
+
     yield
-    
+
     # Shutdown
     print(f"🛑 Shutting down {settings.app_name}...")
     await disconnect_db()

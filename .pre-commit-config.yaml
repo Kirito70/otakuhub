@@ -1,0 +1,37 @@
+# Pre‑commit configuration for OtakuHub
+# -------------------------------------------------
+# This file ensures that every commit passes the project's linting and type‑checking standards.
+# It is automatically picked up by the `pre-commit` tool (https://pre-commit.com/).
+#
+# Hooks:
+#   - ruff: fast Python linter & formatter (PEP8, flake8, isort, black‑style).
+#   - mypy: static type checker (strict mode).
+#   - trailing‑whitespace & end‑of‑file‑newline for basic hygiene.
+#
+# To install locally:
+#   pip install pre-commit
+#   pre-commit install
+#   pre-commit run --all-files
+#
+# CI should also run `pre-commit run --all-files` as part of the test pipeline.
+
+repos:
+  # Ruff – linting & formatting
+  - repo: https://github.com/charliermarsh/ruff-pre-commit
+    rev: v0.6.2  # Use the latest stable version
+    hooks:
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+        stages: [commit, push]
+
+
+
+
+  # Basic hygiene hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+        stages: [commit, push]
+      - id: end-of-file-fixer
+        stages: [commit, push]

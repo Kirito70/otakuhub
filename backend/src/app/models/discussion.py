@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 
 class Discussion(SQLModel, table=True):
     """Per-title discussion threads, scoped to a group."""
-    
+
     id: UUID = Field(
         default_factory=UUID,
         primary_key=True,
@@ -27,19 +27,19 @@ class Discussion(SQLModel, table=True):
     chapter_number: Optional[float] = Field(default=None)
     body: str = Field(nullable=False)
     has_spoilers: bool = Field(default=False)
-    
+
     # Timestamps
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
-        
+
     # Soft delete
     deleted_at: Optional[datetime] = Field(default=None)
-    
+
     # Relationships
     media: Optional["MediaEntry"] = Relationship(back_populates="discussions")
     group: Optional["Group"] = Relationship(back_populates="discussions")
     user: Optional["User"] = Relationship(back_populates="discussions")
-    
+
     # Create indexes for performance
     __table_args__ = (
         Index("idx_discussions_media_group", "media_id", "group_id", "created_at", postgresql_sort_order="DESC"),

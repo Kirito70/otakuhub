@@ -43,15 +43,15 @@ def extract_external_id(sources: list[str], domain: str) -> str | None:
 
 async def seed(dry_run: bool = False) -> None:
     entries = await download_database()
-    
+
     async with get_db_session() as db:
         media_rows = []
         id_rows = []
-        
+
         for entry in entries:
             media_id = str(uuid7())
             anilist_id = extract_external_id(entry["sources"], "anilist.co")
-            
+
             media_rows.append({
                 "id": media_id,
                 "title_romaji": entry["title"],
@@ -66,16 +66,16 @@ async def seed(dry_run: bool = False) -> None:
                 "mal_id": extract_external_id(entry["sources"], "myanimelist.net"),
                 "kitsu_id": extract_external_id(entry["sources"], "kitsu.app"),
             })
-        
+
         if dry_run:
             print(f"DRY RUN: Would insert {len(media_rows)} media entries")
             return
-        
+
         # Bulk upsert
         stmt = pg_insert(MediaEntry).values(media_rows)
         stmt = stmt.on_conflict_do_nothing(index_elements=["id"])
         await db.execute(stmt)
-        
+
         stmt = pg_insert(MediaExternalIds).values(id_rows)
         stmt = stmt.on_conflict_do_update(
             index_elements=["anilist_id"],
@@ -83,7 +83,7 @@ async def seed(dry_run: bool = False) -> None:
         )
         await db.execute(stmt)
         await db.commit()
-        
+
         print(f"✅ Seeded {len(media_rows)} anime entries")
         print("Next: run backfill worker to fetch full metadata from AniList")
 

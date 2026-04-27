@@ -1,46 +1,46 @@
 """Application configuration."""
 
 from pydantic_settings import BaseSettings
-from typing import List, Optional
+from typing import List
 
 
 class Settings(BaseSettings):
     # Application name
     app_name: str = "OtakuHub"
-    
+
     # Environment
     environment: str = "development"
     debug: bool = False
-    
+
     # Database
     database_url: str
     db_pool_size: int = 20
     db_max_overflow: int = 30
-    
+
     # CORS
     cors_origins: List[str] = ["*"]
     cors_allow_credentials: bool = True
-    
+
     # JWT
     jwt_secret: str
     jwt_algorithm: str = "HS256"
     access_token_expire_minutes: int = 15
     refresh_token_expire_days: int = 30
-    
+
     # External APIs
     anilist_client_id: str
     anilist_client_secret: str
     mal_client_id: str
-    
+
     # Apprise notifications
     apprise_urls: str = ""
-    
+
     # Frontend
     frontend_url: str = "http://localhost:8080"
-    
+
     # API prefix
     api_v1_prefix: str = "/api/v1"
-    
+
     class Config:
         case_sensitive = True
         env_file = ".env"

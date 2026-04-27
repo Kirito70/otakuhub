@@ -8,7 +8,7 @@ Perform a full security audit of the specified files or the entire codebase.
 ```bash
 # Check git history for accidentally committed secrets
 git log --all -S "API_KEY" --oneline
-git log --all -S "SECRET" --oneline  
+git log --all -S "SECRET" --oneline
 git log --all -S "sk-ant" --oneline
 git log --all -S "Bearer " --oneline
 # Grep current files
@@ -51,7 +51,7 @@ allow_origins=[settings.FRONTEND_URL, "http://localhost:3000"]
 
 ### 7. Token Security
 - Access token expiry ≤ 15 minutes
-- Refresh token expiry ≤ 30 days  
+- Refresh token expiry ≤ 30 days
 - Flutter: tokens stored in `flutter_secure_storage` not SharedPreferences
 - Refresh token rotation on use
 
@@ -73,7 +73,7 @@ Audited: [files/scope]
 
 ### Summary
 - Critical: N
-- High: N  
+- High: N
 - Medium: N
 - Low: N
 - Status: PASS | CONDITIONAL PASS | FAIL

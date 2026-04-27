@@ -8,7 +8,7 @@ from datetime import datetime
 
 class RefreshToken(SQLModel, table=True):
     """Refresh token model for OtakuHub."""
-    
+
     id: UUID = Field(
         default_factory=UUID,
         primary_key=True,
@@ -20,10 +20,10 @@ class RefreshToken(SQLModel, table=True):
     ip_address: Optional[str] = Field(default=None, max_length=45)
     expires_at: datetime = Field(nullable=False)
     revoked_at: Optional[datetime] = Field(default=None)
-    
+
     # Timestamps
     created_at: datetime = Field(default_factory=datetime.utcnow)
-        
+
     # Create indexes for performance
     __table_args__ = (
         Index("idx_refresh_tokens_user_id", "user_id"),

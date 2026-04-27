@@ -10,9 +10,9 @@
 ## Current State
 
 ```
-CURRENT_PHASE:     3
-CURRENT_SUB_PHASE: 3.14
-STATUS:            PHASE_COMPLETE
+CURRENT_PHASE:     4
+CURRENT_SUB_PHASE: 5.1
+STATUS:            IN_PROGRESS
 LAST_UPDATED:      2026-04-26
 BLOCKED_BY:        none
 NEXT_ACTION:       Begin Phase 4: Query Builder Pattern Implementation
@@ -30,7 +30,7 @@ NEXT_ACTION:       Set up monorepo structure and Docker Compose dev environment
 | 1 | Foundation & Infrastructure | 🔄 In progress |
 | 2 | Database & Backend Core | ✅ Complete |
 | 3 | Anime Metadata Pipeline | ✅ Complete |
-| 4 | Query Builder Pattern Implementation | ⏳ Not started |
+| 4 | Query Builder Pattern Implementation | ✅ Complete |
 | 5 | User Auth & Groups | ⏳ Not started |
 | 6 | Tracking & Lists | ⏳ Not started |
 | 7 | Flutter App Shell | ⏳ Not started |
@@ -40,6 +40,7 @@ NEXT_ACTION:       Set up monorepo structure and Docker Compose dev environment
 | 11 | Watch Party | ⏳ Not started |
 | 12 | Notifications | ⏳ Not started |
 | 13 | Polish, Testing & Deploy | ⏳ Not started |
+| 14 | Type‑Checking Cleanup (MyPy) | ⏳ Not started |
 
 ---
 
@@ -103,7 +104,7 @@ NEXT_ACTION:       Set up monorepo structure and Docker Compose dev environment
 
 | Sub-phase | Task | Status | Notes |
 |-----------|------|--------|-------|
-| 4.1 | Create unified base query builder class | ⏳ | |
+| 4.1 | Create unified base query builder class | ✅ | |
 | 4.2 | Implement fluent filtering methods (where, and_, or_) | ⏳ | |
 | 4.3 | Add support for ordering, pagination, and joins | ⏳ | |
 | 4.4 | Replace all existing repository queries with new pattern | ⏳ | |

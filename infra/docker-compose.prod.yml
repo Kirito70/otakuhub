@@ -58,7 +58,7 @@ services:
              gunicorn -w 4 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:8000 main:app --timeout 120"
     restart: unless-stopped
 
-  # Celery worker for background tasks  
+  # Celery worker for background tasks
   worker:
     build: ./backend
     depends_on:

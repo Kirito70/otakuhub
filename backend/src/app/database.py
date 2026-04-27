@@ -1,6 +1,5 @@
 """Database configuration and connection management using SQLModel."""
 
-from contextlib import asynccontextmanager
 from sqlmodel import SQLModel
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncEngine
 from sqlalchemy.orm import sessionmaker

@@ -1,10 +1,7 @@
 """Pydantic schemas for authentication endpoints."""
 
-from datetime import datetime
-from uuid import UUID
-from typing import Optional
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, constr
+from pydantic import BaseModel, ConfigDict, Field, constr
 
 
 class LoginRequest(BaseModel):

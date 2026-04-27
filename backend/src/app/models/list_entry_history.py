@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 class ListEntryHistory(SQLModel, table=True):
     """Append-only log of every status/progress change. Powers the activity feed."""
-    
+
     id: UUID = Field(
         default_factory=UUID,
         primary_key=True,
@@ -31,15 +31,15 @@ class ListEntryHistory(SQLModel, table=True):
     old_score: Optional[float] = Field(default=None)
     new_score: Optional[float] = Field(default=None)
     note: Optional[str] = Field(default=None)  # optional note attached to this update
-    
+
     # Timestamps
     created_at: datetime = Field(default_factory=datetime.utcnow)
-        
+
     # Relationships
     entry: Optional["UserListEntry"] = Relationship(back_populates="history")
     user: Optional["User"] = Relationship(back_populates="history")
     media: Optional["MediaEntry"] = Relationship(back_populates="history")
-    
+
     # Create indexes for performance
     __table_args__ = (
         Index("idx_history_user_id", "user_id", "created_at", postgresql_sort_order="DESC"),

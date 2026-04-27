@@ -11,14 +11,14 @@ if TYPE_CHECKING:
 
 class MediaExternalIds(SQLModel, table=True):
     """Cross-reference table mapping internal UUID to external platform IDs."""
-    
+
     id: UUID = Field(
         default_factory=UUID,
         primary_key=True,
         nullable=False
     )
     media_id: UUID = Field(
-        foreign_key="mediaentry.id", 
+        foreign_key="mediaentry.id",
         nullable=False
     )
     anilist_id: Optional[int] = Field(default=None, unique=True)
@@ -30,13 +30,13 @@ class MediaExternalIds(SQLModel, table=True):
     simkl_id: Optional[int] = Field(default=None)
     livechart_id: Optional[int] = Field(default=None)
     notify_moe_id: Optional[str] = Field(default=None, max_length=64)
-    
+
     # Timestamps
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
-        
+
     # Soft delete
     deleted_at: Optional[datetime] = Field(default=None)
-    
+
     # Relationships
     media: Optional["MediaEntry"] = Relationship(back_populates="external_ids")

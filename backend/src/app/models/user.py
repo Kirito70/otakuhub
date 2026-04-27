@@ -8,7 +8,7 @@ from datetime import datetime
 
 class User(SQLModel, table=True):
     """User model for OtakuHub."""
-    
+
     id: UUID = Field(
         default_factory=UUID,
         primary_key=True,
@@ -24,14 +24,14 @@ class User(SQLModel, table=True):
     is_active: bool = Field(default=True)
     is_admin: bool = Field(default=False)
     last_seen_at: Optional[datetime] = Field(default=None)
-    
+
     # Timestamps
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
-        
+
     # Soft delete
     deleted_at: Optional[datetime] = Field(default=None)
-    
+
     # Create indexes for performance
     __table_args__ = (
         Index("idx_users_username", "username", postgresql_ops={"username": "varchar_pattern_ops"}),

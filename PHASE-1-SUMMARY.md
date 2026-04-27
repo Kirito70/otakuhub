@@ -48,7 +48,7 @@ The project is now ready to begin Phase 2, which will focus on database and back
 
 ## Files Created
 - backend/ - FastAPI project with all core modules
-- mobile/ - Flutter project with cross-platform capabilities  
+- mobile/ - Flutter project with cross-platform capabilities
 - infra/ - Docker Compose configurations and Nginx setup
 - scripts/ - Development utilities
 - docs/ - Documentation including ADR files

@@ -8,7 +8,7 @@ from datetime import datetime
 
 class ExternalAuth(SQLModel, table=True):
     """External auth model for future AniList/MAL OAuth."""
-    
+
     id: UUID = Field(
         default_factory=UUID,
         primary_key=True,
@@ -21,11 +21,11 @@ class ExternalAuth(SQLModel, table=True):
     refresh_token: Optional[str] = Field(default=None)  # encrypted at rest
     token_expires_at: Optional[datetime] = Field(default=None)
     provider_username: Optional[str] = Field(default=None, max_length=255)
-    
+
     # Timestamps
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
-        
+
     # Create indexes for performance
     __table_args__ = (
         Index("idx_external_auth_user_provider", "user_id", "provider"),

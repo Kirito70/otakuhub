@@ -12,21 +12,21 @@ if TYPE_CHECKING:
 
 class MediaGenre(SQLModel, table=True):
     """Many-to-many relationship between media entries and genres."""
-    
+
     media_id: UUID = Field(
-        foreign_key="mediaentry.id", 
+        foreign_key="mediaentry.id",
         primary_key=True,
         nullable=False
     )
     genre_id: UUID = Field(
-        foreign_key="genre.id", 
+        foreign_key="genre.id",
         primary_key=True,
         nullable=False
     )
-    
+
     # Timestamps
     created_at: datetime = Field(default_factory=datetime.utcnow)
-        
+
     # Relationships
     media: Optional["MediaEntry"] = Relationship(back_populates="media_genres")
     genre: Optional["Genre"] = Relationship(back_populates="media_genres")

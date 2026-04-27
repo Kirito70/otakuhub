@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
 class Recommendation(SQLModel, table=True):
     """Friend recommending a title to specific people."""
-    
+
     id: UUID = Field(
         default_factory=UUID,
         primary_key=True,
@@ -24,19 +24,19 @@ class Recommendation(SQLModel, table=True):
     message: Optional[str] = Field(default=None)
     is_acknowledged: bool = Field(default=False)
     acknowledged_at: Optional[datetime] = Field(default=None)
-    
+
     # Timestamps
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
-        
+
     # Soft delete
     deleted_at: Optional[datetime] = Field(default=None)
-    
+
     # Relationships
     from_user: Optional["User"] = Relationship(back_populates="sent_recommendations", foreign_key_constraint_name="fk_recommendation_from_user")
     to_user: Optional["User"] = Relationship(back_populates="received_recommendations", foreign_key_constraint_name="fk_recommendation_to_user")
     media: Optional["MediaEntry"] = Relationship(back_populates="recommendations")
-    
+
     # Create indexes for performance
     __table_args__ = (
         Index("idx_recommendations_to_user", "to_user_id", "is_acknowledged", "created_at", postgresql_sort_order="DESC"),

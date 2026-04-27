@@ -1,9 +1,7 @@
 """Database commands for OtakuHub."""
 
 import typer
-from sqlmodel import create_engine
-from src.app.database import engine, connect_db
-from src.app.config import settings
+from src.app.database import connect_db
 
 app = typer.Typer(name="db", help="Database related commands")
 

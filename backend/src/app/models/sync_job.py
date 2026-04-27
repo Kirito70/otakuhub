@@ -8,7 +8,7 @@ from datetime import datetime
 
 class SyncJob(SQLModel, table=True):
     """Tracks every run of the background sync pipeline."""
-    
+
     id: UUID = Field(
         default_factory=UUID,
         primary_key=True,
@@ -23,10 +23,10 @@ class SyncJob(SQLModel, table=True):
     error_log: Optional[str] = Field(default=None)
     started_at: datetime = Field(default_factory=datetime.utcnow)
     completed_at: Optional[datetime] = Field(default=None)
-    
+
     # Timestamps
     created_at: datetime = Field(default_factory=datetime.utcnow)
-        
+
     # Create indexes for performance
     __table_args__ = (
         Index("idx_sync_jobs_type", "job_type", "started_at", postgresql_sort_order="DESC"),

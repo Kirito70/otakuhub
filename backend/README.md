@@ -5,7 +5,7 @@ FastAPI backend application with SQLModel, repository pattern, and proper projec
 ## Features
 
 - Clean FastAPI application structure
-- SQLModel for database operations 
+- SQLModel for database operations
 - Repository pattern implementation
 - Command-line interface using Typer
 - Proper configuration management

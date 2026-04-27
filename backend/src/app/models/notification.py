@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 class Notification(SQLModel, table=True):
     """Notification inbox for users."""
-    
+
     id: UUID = Field(
         default_factory=UUID,
         primary_key=True,
@@ -30,15 +30,15 @@ class Notification(SQLModel, table=True):
     is_read: bool = Field(default=False)
     read_at: Optional[datetime] = Field(default=None)
     sent_at: Optional[datetime] = Field(default=None)
-    
+
     # Timestamps
     created_at: datetime = Field(default_factory=datetime.utcnow)
-        
+
     # Relationships
     user: Optional["User"] = Relationship(back_populates="notifications")
     related_media: Optional["MediaEntry"] = Relationship(back_populates="notifications", foreign_key_constraint_name="fk_notification_related_media")
     related_user: Optional["RelatedUser"] = Relationship(back_populates="related_notifications", foreign_key_constraint_name="fk_notification_related_user")
-    
+
     # Create indexes for performance
     __table_args__ = (
         Index("idx_notifications_user", "user_id", "is_read", "created_at", postgresql_sort_order="DESC"),

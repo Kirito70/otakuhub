@@ -1,12 +1,12 @@
 """API routes for media management."""
 
-from fastapi import APIRouter, Depends, HTTPException, status
-from typing import List, Optional
+from fastapi import APIRouter, Depends, HTTPException
+from typing import Optional
 from uuid import UUID
 
 from src.app.services.media_service import MediaService
 from src.app.services.user_service import UserService
-from src.app.schemas.media import MediaDetailResponse, MediaSearchResponse
+from src.app.schemas.media import MediaDetailResponse
 from src.app.core.auth import get_current_user
 from src.app.models import User
 
@@ -59,7 +59,7 @@ async def search_media(
         limit=limit,
         offset=offset
     )
-    
+
     return {
         "items": media_list,
         "total": len(media_list),

@@ -1,6 +1,6 @@
 """Authentication routes."""
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel.ext.asyncio.session import AsyncSession
 from src.app.database import get_db_session
 from src.app.schemas.auth import LoginRequest, TokenResponse

@@ -3,7 +3,6 @@
 from typing import List, Optional
 from uuid import UUID
 
-from sqlmodel import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.app.models import Group

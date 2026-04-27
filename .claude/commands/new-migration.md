@@ -43,7 +43,7 @@ Add the new/modified table(s) to the schema documentation.
 def upgrade() -> None:
     # Create enum type first if needed
     op.execute("CREATE TYPE watch_status AS ENUM ('watching','completed','paused','dropped','plan_to_watch')")
-    
+
     op.create_table(
         "user_list_entries",
         sa.Column("user_id", postgresql.UUID(as_uuid=True),

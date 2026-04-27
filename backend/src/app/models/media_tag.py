@@ -12,22 +12,22 @@ if TYPE_CHECKING:
 
 class MediaTag(SQLModel, table=True):
     """Many-to-many relationship between media entries and tags."""
-    
+
     media_id: UUID = Field(
-        foreign_key="mediaentry.id", 
+        foreign_key="mediaentry.id",
         primary_key=True,
         nullable=False
     )
     tag_id: UUID = Field(
-        foreign_key="tag.id", 
+        foreign_key="tag.id",
         primary_key=True,
         nullable=False
     )
     rank: int = Field(default=0)  # AniList tag relevance 0–100
-    
+
     # Timestamps
     created_at: datetime = Field(default_factory=datetime.utcnow)
-        
+
     # Relationships
     media: Optional["MediaEntry"] = Relationship(back_populates="media_tags")
     tag: Optional["Tag"] = Relationship(back_populates="media_tags")

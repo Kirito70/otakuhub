@@ -11,14 +11,14 @@ if TYPE_CHECKING:
 
 class Chapter(SQLModel, table=True):
     """Chapter release data for manga."""
-    
+
     id: UUID = Field(
         default_factory=UUID,
         primary_key=True,
         nullable=False
     )
     media_id: UUID = Field(
-        foreign_key="mediaentry.id", 
+        foreign_key="mediaentry.id",
         nullable=False
     )
     chapter_number: float = Field(nullable=False)  # float allows 12.5 for sub-chapters
@@ -26,13 +26,13 @@ class Chapter(SQLModel, table=True):
     title: Optional[str] = Field(default=None, max_length=500)
     published_at: Optional[datetime] = Field(default=None)  # TIMESTAMPTZ
     mangadex_chapter_id: Optional[str] = Field(default=None, max_length=64)
-    
+
     # Timestamps
     created_at: datetime = Field(default_factory=datetime.utcnow)
-        
+
     # Relationships
     media: Optional["MediaEntry"] = Relationship(back_populates="chapters")
-    
+
     # Create indexes for performance
     __table_args__ = (
         Index("idx_chapters_media_id", "media_id"),

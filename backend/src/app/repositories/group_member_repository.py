@@ -1,6 +1,6 @@
 """Repository for group‑member operations using the QueryBuilder."""
 
-from typing import List, Optional
+from typing import List
 from uuid import UUID
 
 from sqlmodel import select

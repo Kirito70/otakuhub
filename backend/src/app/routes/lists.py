@@ -1,7 +1,7 @@
 """API routes for user list management."""
 
-from fastapi import APIRouter, Depends, HTTPException, status
-from typing import List, Optional
+from fastapi import APIRouter, Depends, HTTPException
+from typing import Optional
 from uuid import UUID
 
 from src.app.services.tracking_service import TrackingService
