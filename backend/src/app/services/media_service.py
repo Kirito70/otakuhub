@@ -9,6 +9,7 @@ from uuid import UUID
 from src.app.models import MediaEntry, MediaExternalIds, Genre, Studio, Tag, MediaGenre, MediaStudio, MediaTag
 from src.app.services.base_service import BaseService
 from src.app.schemas.media import MediaDetailResponse, MediaSearchResponse
+from src.app.repositories.media_repository import MediaRepository
 
 
 class MediaService(BaseService):
@@ -16,12 +17,16 @@ class MediaService(BaseService):
     
     def __init__(self, db_session: Optional[AsyncSession] = None):
         super().__init__(db_session)
+        self._media_repository = MediaRepository(self.db_session)
+    
+    @property
+    def media_repository(self) -> MediaRepository:
+        """Get media repository instance."""
+        return self._media_repository
     
     async def get_media_by_id(self, media_id: UUID) -> Optional[MediaEntry]:
         """Get a media entry by its ID."""
-        statement = select(MediaEntry).where(MediaEntry.id == media_id, MediaEntry.deleted_at.is_(None))
-        result = await self.db_session.exec(statement)
-        return result.one_or_none()
+        return await self._media_repository.get_by_id(media_id)
     
     async def search_media(
         self,
@@ -35,39 +40,16 @@ class MediaService(BaseService):
         offset: int = 0
     ) -> List[MediaEntry]:
         """Search media entries with various filters."""
-        statement = select(MediaEntry).where(MediaEntry.deleted_at.is_(None))
-        
-        # Apply filters
-        if query:
-            # Full text search using the title_search tsvector
-            statement = statement.where(
-                func.to_tsvector('simple', func.unaccent(MediaEntry.title_search)).match(
-                    func.unaccent(query)
-                )
-            )
-        
-        if media_type:
-            statement = statement.where(MediaEntry.media_type == media_type)
-        
-        if status:
-            statement = statement.where(MediaEntry.status == status)
-        
-        if year:
-            statement = statement.where(MediaEntry.season_year == year)
-        
-        if season:
-            statement = statement.where(MediaEntry.season == season)
-        
-        # Add genre filter if specified
-        if genres:
-            # This requires joining with media_genres table
-            statement = statement.join(MediaGenre).join(Genre).where(Genre.name.in_(genres))
-        
-        # Apply pagination
-        statement = statement.offset(offset).limit(limit)
-        
-        result = await self.db_session.exec(statement)
-        return result.all()
+        return await self._media_repository.search_media(
+            query_text=query,
+            media_type=media_type,
+            status=status,
+            genres=genres,
+            year=year,
+            season=season,
+            limit=limit,
+            offset=offset
+        )
     
     async def get_media_detail(self, media_id: UUID) -> Optional[MediaDetailResponse]:
         """Get detailed media information including related data."""
@@ -131,61 +113,25 @@ class MediaService(BaseService):
     
     async def get_related_media(self, media_id: UUID, relation_type: Optional[str] = None) -> List[MediaEntry]:
         """Get related media entries."""
-        statement = select(MediaEntry).join(
-            MediaEntry, 
-            and_(
-                MediaEntry.id == MediaEntry.id,  # This is a placeholder
-                MediaEntry.deleted_at.is_(None)
-            )
-        ).where(MediaEntry.id == media_id)
-        
-        result = await self.db_session.exec(statement)
-        return result.all()
+        # Note: This is a simplified placeholder - the actual implementation
+        # would need a proper relationship mapping
+        return []
     
     async def get_popular_media(self, media_type: Optional[str] = None, limit: int = 20) -> List[MediaEntry]:
         """Get popular media entries ordered by popularity."""
-        statement = select(MediaEntry).where(MediaEntry.deleted_at.is_(None))
-        
-        if media_type:
-            statement = statement.where(MediaEntry.media_type == media_type)
-        
-        statement = statement.order_by(MediaEntry.popularity.desc()).limit(limit)
-        
-        result = await self.db_session.exec(statement)
-        return result.all()
+        return await self._media_repository.get_popular_media(media_type=media_type, limit=limit)
     
     async def get_trending_media(self, media_type: Optional[str] = None, limit: int = 20) -> List[MediaEntry]:
         """Get trending media entries ordered by trending score."""
-        statement = select(MediaEntry).where(MediaEntry.deleted_at.is_(None))
-        
-        if media_type:
-            statement = statement.where(MediaEntry.media_type == media_type)
-        
-        statement = statement.order_by(MediaEntry.trending.desc()).limit(limit)
-        
-        result = await self.db_session.exec(statement)
-        return result.all()
+        return await self._media_repository.get_trending_media(media_type=media_type, limit=limit)
     
     async def create_media(self, media_data: Dict[str, Any]) -> MediaEntry:
         """Create a new media entry."""
-        media = MediaEntry(**media_data)
-        self.db_session.add(media)
-        await self.db_session.commit()
-        await self.db_session.refresh(media)
-        return media
+        return await self._media_repository.create(media_data)
     
     async def update_media(self, media_id: UUID, media_data: Dict[str, Any]) -> Optional[MediaEntry]:
         """Update an existing media entry."""
-        media = await self.get_media_by_id(media_id)
-        if not media:
-            return None
-        
-        for key, value in media_data.items():
-            setattr(media, key, value)
-        
-        await self.db_session.commit()
-        await self.db_session.refresh(media)
-        return media
+        return await self._media_repository.update(media_id, media_data)
     
     async def delete_media(self, media_id: UUID) -> bool:
         """Soft delete a media entry."""
@@ -196,3 +142,15 @@ class MediaService(BaseService):
         media.deleted_at = datetime.utcnow()
         await self.db_session.commit()
         return True
+    
+    async def get_by_external_id(self, external_id: int, external_source: str) -> Optional[MediaEntry]:
+        """Get media by external ID and source."""
+        return await self._media_repository.get_by_external_id(external_id, external_source)
+    
+    async def get_by_title(self, title: str) -> Optional[MediaEntry]:
+        """Get media by title."""
+        return await self._media_repository.get_by_title(title)
+    
+    async def get_by_status(self, status: str, limit: int = 20) -> List[MediaEntry]:
+        """Get media by status."""
+        return await self._media_repository.get_by_status(status, limit)

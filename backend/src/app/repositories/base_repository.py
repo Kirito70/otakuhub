@@ -5,6 +5,8 @@ from sqlmodel import SQLModel, select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from uuid import UUID
 
+from src.app.repositories.query_builder import QueryBuilderPattern
+
 
 ModelType = TypeVar("ModelType", bound=SQLModel)
 
@@ -15,6 +17,10 @@ class BaseRepository(Generic[ModelType]):
     def __init__(self, model: ModelType, db_session: AsyncSession):
         self.model = model
         self.db_session = db_session
+    
+    def query(self) -> QueryBuilderPattern:
+        """Get a query builder for this repository's model."""
+        return QueryBuilderPattern.build(self.model, self.db_session)
     
     async def get_by_id(self, id: UUID) -> Optional[ModelType]:
         """Get a model instance by its ID."""
