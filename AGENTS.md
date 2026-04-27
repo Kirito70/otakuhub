@@ -61,6 +61,12 @@ otakuhub/
 - Never commit `.env` files — use `.env.example` as template
 
 ## Agent Roles (see .claude/commands/ and .opencode/agents/)
+
+### Subagents
+| Subagent | Primary tool | Responsibility |
+|---|---|---|
+| tdd-enforcer | Claude Code | Ensures every code change is accompanied by a failing test first, validates existing code has adequate test coverage, and can auto‑generate missing test scaffolds when possible. |
+
 | Agent | Primary tool | Responsibility |
 |---|---|---|
 | architect | Claude Code | System design, ADRs, schema decisions |
@@ -73,6 +79,13 @@ otakuhub/
 | api-designer | Claude Code | OpenAPI spec, endpoint contracts |
 
 ## Critical Safety Rules
+- **Test‑Driven Development (TDD) is mandatory** – every new feature or bug‑fix must start with a failing test, and the test suite must pass before any code is merged.  The CI pipeline enforces this via the `pytest‑check‑new‑tests` pre‑commit hook and the standard test coverage checks.
+- NEVER write to the production database without explicit user confirmation
+- NEVER commit secrets, API keys, or tokens to Git
+- NEVER delete user tracking data or progress without a soft‑delete + confirmation
+- NEVER call AniList or MangaDex directly from Flutter — all external API calls go through FastAPI
+- ALWAYS run `alembic upgrade head` in a transaction; wrap migrations in `op.execute("BEGIN")`
+- ALWAYS check for existing Alembic revision before creating a new one
 - NEVER write to the production database without explicit user confirmation
 - NEVER commit secrets, API keys, or tokens to Git
 - NEVER delete user tracking data or progress without a soft-delete + confirmation
