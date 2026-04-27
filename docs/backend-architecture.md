@@ -88,9 +88,12 @@ PostgreSQL
 |-------|-------------|-------------------|
 | Router | Parse request, call service, return response | DB queries, business logic |
 | Service | Business rules, orchestrate repos, return schemas | Direct DB calls, HTTP details |
-| Repository | SQLAlchemy queries, return ORM models | Business logic, HTTP types |
+| Repository | **All SELECT‑type reads must go through the fluent `QueryBuilder`** (exposed via `self.query()`). Write operations (`create`, `update`, `soft_delete`) remain direct async SQLAlchemy calls. | Business logic, HTTP types |
 | Worker | Background tasks, external API calls | Responding to HTTP requests |
 | External | API client logic, rate limiting | Business logic, DB access |
+
+> **Note:** `BaseRepository` now implements `query()` which returns a `QueryBuilder` that automatically filters out soft‑deleted rows (see ADR 006). All concrete repositories should use this builder for reads.
+
 
 ## Auth Flow
 ```

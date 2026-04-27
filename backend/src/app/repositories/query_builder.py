@@ -24,6 +24,10 @@ class QueryBuilder(Generic[ModelType]):
         self._joins = []
         self._group_by = []
         self._having_conditions = []
+        # Soft‑delete handling: include only non‑deleted rows by default
+        self._include_deleted = False
+        # Detect if the model defines a ``deleted_at`` column
+        self._has_deleted_at = hasattr(model, "deleted_at")
     
     def filter(self, condition) -> 'QueryBuilder[ModelType]':
         """Add a filter condition."""
@@ -85,8 +89,15 @@ class QueryBuilder(Generic[ModelType]):
         return self
     
     def _apply_conditions(self):
-        """Apply all conditions to the statement."""
-        # Apply where conditions
+        """Apply all conditions to the statement, including the default soft‑delete filter."""
+        # ------------------------------------------------------------------
+        # Soft‑delete filter (global, unless overridden)
+        # ------------------------------------------------------------------
+        if self._has_deleted_at and not self._include_deleted:
+            # ``deleted_at`` is NULL for active rows
+            self._where_conditions.insert(0, self.model.deleted_at.is_(None))
+        
+        # Apply where conditions (including the soft‑delete clause if present)
         if self._where_conditions:
             self._statement = self._statement.where(
                 and_(*self._where_conditions)
@@ -170,6 +181,16 @@ class QueryBuilder(Generic[ModelType]):
         result = await self.db_session.exec(exists_statement)
         return result.one_or_none() or False
     
+    def with_deleted(self) -> 'QueryBuilder[ModelType]':
+        """Return a clone that includes soft‑deleted rows.
+        
+        By default the builder excludes rows where ``deleted_at`` is not ``NULL``.
+        Call ``with_deleted()`` when an admin view needs to see all rows.
+        """
+        cloned = self.clone()
+        cloned._include_deleted = True
+        return cloned
+
     def clone(self) -> 'QueryBuilder[ModelType]':
         """Create a clone of this query builder."""
         cloned = QueryBuilder(self.model, self.db_session)

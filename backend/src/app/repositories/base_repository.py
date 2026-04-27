@@ -23,16 +23,12 @@ class BaseRepository(Generic[ModelType]):
         return QueryBuilderPattern.build(self.model, self.db_session)
     
     async def get_by_id(self, id: UUID) -> Optional[ModelType]:
-        """Get a model instance by its ID."""
-        statement = select(self.model).where(self.model.id == id)
-        result = await self.db_session.exec(statement)
-        return result.one_or_none()
+        """Get a model instance by its ID using the QueryBuilder."""
+        return await self.query().filter(self.model.id == id).first()
     
     async def get_all(self, limit: int = 100, offset: int = 0) -> List[ModelType]:
-        """Get all model instances with pagination."""
-        statement = select(self.model).offset(offset).limit(limit)
-        result = await self.db_session.exec(statement)
-        return result.all()
+        """Get all model instances with pagination using the QueryBuilder."""
+        return await self.query().offset(offset).limit(limit).all()
     
     async def create(self, data: dict) -> ModelType:
         """Create a new model instance."""
@@ -70,7 +66,5 @@ class BaseRepository(Generic[ModelType]):
         return True
     
     async def count(self) -> int:
-        """Get count of all instances."""
-        statement = select(func.count(self.model.id))
-        result = await self.db_session.exec(statement)
-        return result.one_or_none() or 0
+        """Get count of all instances using the QueryBuilder (no filters)."""
+        return await self.query().count()
