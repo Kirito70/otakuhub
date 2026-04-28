@@ -20,7 +20,7 @@ class DiscussionReply(SQLModel, table=True):
     )
     discussion_id: UUID = Field(foreign_key="discussion.id", nullable=False)
     user_id: UUID = Field(foreign_key="user.id", nullable=False)
-    parent_reply_id: Optional[UUID] = Field(default=None, foreign_key="discussionreply.id")  # for threading
+    parent_reply_id: Optional[UUID] = Field(default=None, foreign_key="discussion_reply.id")  # for threading
     body: str = Field(nullable=False)
     has_spoilers: bool = Field(default=False)
 
@@ -36,11 +36,11 @@ class DiscussionReply(SQLModel, table=True):
     user: Optional["User"] = Relationship(back_populates="discussion_replies")
     parent_reply: Optional["DiscussionReply"] = Relationship(
         back_populates="child_replies",
-        foreign_key_constraint_name="fk_discussion_reply_parent"
+
     )
     child_replies: list["DiscussionReply"] = Relationship(back_populates="parent_reply")
 
     # Create indexes for performance
     __table_args__ = (
-        Index("idx_replies_discussion", "discussion_id", "created_at", postgresql_sort_order="ASC"),
+        Index("idx_replies_discussion", "discussion_id", "created_at"),
     )

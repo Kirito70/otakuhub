@@ -14,12 +14,12 @@ class CustomListEntry(SQLModel, table=True):
     """Entry in a custom list."""
 
     list_id: UUID = Field(
-        foreign_key="customlist.id",
+        foreign_key="custom_list.id",
         primary_key=True,
         nullable=False
     )
     media_id: UUID = Field(
-        foreign_key="mediaentry.id",
+        foreign_key="media_entries.id",
         primary_key=True,
         nullable=False
     )

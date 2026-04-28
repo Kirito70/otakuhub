@@ -19,11 +19,11 @@ class RelatedMedia(SQLModel, table=True):
         nullable=False
     )
     source_media_id: UUID = Field(
-        foreign_key="mediaentry.id",
+        foreign_key="media_entries.id",
         nullable=False
     )
     related_media_id: UUID = Field(
-        foreign_key="mediaentry.id",
+        foreign_key="media_entries.id",
         nullable=False
     )
     relation_type: RelationType = Field(nullable=False)
@@ -33,12 +33,10 @@ class RelatedMedia(SQLModel, table=True):
 
     # Relationships
     source_media: Optional["MediaEntry"] = Relationship(
-        back_populates="related_media_source",
-        foreign_key_constraint_name="fk_related_media_source_media_id"
+        back_populates="related_media_source"
     )
     related_media: Optional["MediaEntry"] = Relationship(
-        back_populates="related_media_target",
-        foreign_key_constraint_name="fk_related_media_related_media_id"
+        back_populates="related_media_target"
     )
 
     # Create indexes for performance

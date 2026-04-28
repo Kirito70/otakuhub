@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     debug: bool = False
 
     # Database
-    database_url: str
+    database_url: str = "sqlite+aiosqlite:///:memory:"
     db_pool_size: int = 20
     db_max_overflow: int = 30
 
@@ -22,15 +22,15 @@ class Settings(BaseSettings):
     cors_allow_credentials: bool = True
 
     # JWT
-    jwt_secret: str
+    jwt_secret: str = "test-secret"
     jwt_algorithm: str = "HS256"
     access_token_expire_minutes: int = 15
     refresh_token_expire_days: int = 30
 
     # External APIs
-    anilist_client_id: str
-    anilist_client_secret: str
-    mal_client_id: str
+    anilist_client_id: str = "dummy-anilist-id"
+    anilist_client_secret: str = "dummy-anilist-secret"
+    mal_client_id: str = "dummy-mal-id"
 
     # Apprise notifications
     apprise_urls: str = ""

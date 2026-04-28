@@ -66,20 +66,18 @@ class MediaEntry(SQLModel, table=True):
     episodes: list["Episode"] = Relationship(back_populates="media")
     chapters: list["Chapter"] = Relationship(back_populates="media")
     related_media_source: list["RelatedMedia"] = Relationship(
-        back_populates="source_media",
-        foreign_key_constraint_name="fk_related_media_source_media_id"
+        back_populates="source_media"
     )
     related_media_target: list["RelatedMedia"] = Relationship(
-        back_populates="related_media",
-        foreign_key_constraint_name="fk_related_media_related_media_id"
+        back_populates="related_media"
     )
 
     # Create indexes - these will be handled by Alembic since they're defined in separate SQL files
     __table_args__ = (
-        Index("idx_media_entries_title_search", "title_search", postgresql_using="gin"),
+        Index("idx_media_entries_title_search", "title_search"),
         Index("idx_media_entries_media_type", "media_type"),
         Index("idx_media_entries_status", "status"),
         Index("idx_media_entries_season", "season_year", "season"),
-        Index("idx_media_entries_score", "average_score", postgresql_sort_order="DESC"),
-        Index("idx_media_entries_synced_at", "metadata_synced_at", postgresql_nulls_first=True),
+        Index("idx_media_entries_score", "average_score"),
+        Index("idx_media_entries_synced_at", "metadata_synced_at"),
     )

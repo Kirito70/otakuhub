@@ -18,7 +18,7 @@ class Episode(SQLModel, table=True):
         nullable=False
     )
     media_id: UUID = Field(
-        foreign_key="mediaentry.id",
+        foreign_key="media_entries.id",
         nullable=False
     )
     episode_number: int = Field(nullable=False)

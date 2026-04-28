@@ -20,9 +20,9 @@ class ListEntryHistory(SQLModel, table=True):
         primary_key=True,
         nullable=False
     )
-    entry_id: UUID = Field(foreign_key="userlistentry.id", nullable=False)
+    entry_id: UUID = Field(foreign_key="user_list_entry.id", nullable=False)
     user_id: UUID = Field(foreign_key="user.id", nullable=False)
-    media_id: UUID = Field(foreign_key="mediaentry.id", nullable=False)
+    media_id: UUID = Field(foreign_key="media_entries.id", nullable=False)
     event_type: str = Field(nullable=False, max_length=50)  # 'status_changed', 'progress_updated', 'score_set', 'added', 'removed'
     old_status: Optional[WatchStatus] = Field(default=None)
     new_status: Optional[WatchStatus] = Field(default=None)
@@ -42,9 +42,9 @@ class ListEntryHistory(SQLModel, table=True):
 
     # Create indexes for performance
     __table_args__ = (
-        Index("idx_history_user_id", "user_id", "created_at", postgresql_sort_order="DESC"),
+        Index("idx_history_user_id", "user_id", "created_at"),
         Index("idx_history_entry_id", "entry_id"),
         Index("idx_history_media_id", "media_id"),
         # Powers group activity feed
-        Index("idx_history_group_feed", "user_id", "created_at", postgresql_sort_order="DESC"),
+        Index("idx_history_group_feed", "user_id", "created_at"),
     )

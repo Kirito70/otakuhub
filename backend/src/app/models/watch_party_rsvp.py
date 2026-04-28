@@ -15,7 +15,7 @@ class WatchPartyRsvp(SQLModel, table=True):
     """RSVP for a watch party."""
 
     party_id: UUID = Field(
-        foreign_key="watchparty.id",
+        foreign_key="watch_party.id",
         primary_key=True,
         nullable=False
     )

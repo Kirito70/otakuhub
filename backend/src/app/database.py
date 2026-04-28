@@ -10,8 +10,6 @@ from src.app.config import settings
 engine: AsyncEngine = create_async_engine(
     settings.database_url,
     echo=settings.debug,  # Set to True to see SQL queries
-    pool_size=settings.db_pool_size,
-    max_overflow=settings.db_max_overflow,
 )
 
 # Create async session maker

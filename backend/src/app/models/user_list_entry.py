@@ -20,7 +20,7 @@ class UserListEntry(SQLModel, table=True):
         nullable=False
     )
     user_id: UUID = Field(foreign_key="user.id", nullable=False)
-    media_id: UUID = Field(foreign_key="mediaentry.id", nullable=False)
+    media_id: UUID = Field(foreign_key="media_entries.id", nullable=False)
     status: WatchStatus = Field(nullable=False)
     progress: int = Field(default=0)  # episodes watched / chapters read
     score: Optional[float] = Field(default=None)  # user's personal score 0.0–10.0
@@ -46,6 +46,6 @@ class UserListEntry(SQLModel, table=True):
         Index("idx_list_entries_user_id", "user_id"),
         Index("idx_list_entries_media_id", "media_id"),
         Index("idx_list_entries_status", "user_id", "status"),
-        Index("idx_list_entries_updated", "user_id", "updated_at", postgresql_sort_order="DESC"),
+        Index("idx_list_entries_updated", "user_id", "updated_at"),
         Index("idx_list_entries_user_media", "user_id", "media_id", unique=True),
     )

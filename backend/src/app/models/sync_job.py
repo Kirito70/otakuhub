@@ -29,6 +29,6 @@ class SyncJob(SQLModel, table=True):
 
     # Create indexes for performance
     __table_args__ = (
-        Index("idx_sync_jobs_type", "job_type", "started_at", postgresql_sort_order="DESC"),
-        Index("idx_sync_jobs_status", "status", postgresql_where="status = 'running'"),
+        Index("idx_sync_jobs_type", "job_type", "started_at"),
+        Index("idx_sync_jobs_status", "status"),
     )

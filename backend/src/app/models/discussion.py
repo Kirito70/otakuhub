@@ -19,7 +19,7 @@ class Discussion(SQLModel, table=True):
         primary_key=True,
         nullable=False
     )
-    media_id: UUID = Field(foreign_key="mediaentry.id", nullable=False)
+    media_id: UUID = Field(foreign_key="media_entries.id", nullable=False)
     group_id: UUID = Field(foreign_key="group.id", nullable=False)
     user_id: UUID = Field(foreign_key="user.id", nullable=False)
     title: Optional[str] = Field(default=None, max_length=300)
@@ -42,6 +42,6 @@ class Discussion(SQLModel, table=True):
 
     # Create indexes for performance
     __table_args__ = (
-        Index("idx_discussions_media_group", "media_id", "group_id", "created_at", postgresql_sort_order="DESC"),
+        Index("idx_discussions_media_group", "media_id", "group_id", "created_at"),
         Index("idx_discussions_user", "user_id"),
     )

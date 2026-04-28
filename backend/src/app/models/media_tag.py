@@ -14,7 +14,7 @@ class MediaTag(SQLModel, table=True):
     """Many-to-many relationship between media entries and tags."""
 
     media_id: UUID = Field(
-        foreign_key="mediaentry.id",
+        foreign_key="media_entries.id",
         primary_key=True,
         nullable=False
     )

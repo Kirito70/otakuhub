@@ -18,7 +18,7 @@ class Chapter(SQLModel, table=True):
         nullable=False
     )
     media_id: UUID = Field(
-        foreign_key="mediaentry.id",
+        foreign_key="media_entries.id",
         nullable=False
     )
     chapter_number: float = Field(nullable=False)  # float allows 12.5 for sub-chapters
@@ -36,5 +36,5 @@ class Chapter(SQLModel, table=True):
     # Create indexes for performance
     __table_args__ = (
         Index("idx_chapters_media_id", "media_id"),
-        Index("idx_chapters_published_at", "published_at", postgresql_sort_order="DESC"),
+        Index("idx_chapters_published_at", "published_at"),
     )

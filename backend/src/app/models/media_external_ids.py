@@ -18,7 +18,7 @@ class MediaExternalIds(SQLModel, table=True):
         nullable=False
     )
     media_id: UUID = Field(
-        foreign_key="mediaentry.id",
+        foreign_key="media_entries.id",
         nullable=False
     )
     anilist_id: Optional[int] = Field(default=None, unique=True)
