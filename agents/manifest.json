@@ -1,0 +1,112 @@
+{
+  "agents": [
+    {
+      "name": "architect",
+      "description": "System design, ADRs, schema, API contracts",
+      "entry_point": ".claude/agents/architect.py",
+      "tools": ["bash","read","edit","write","glob","grep","task","skill"]
+    },
+    {
+      "name": "backend-dev",
+      "description": "FastAPI routes, services, repositories",
+      "entry_point": ".claude/agents/backend-dev.py",
+      "tools": ["bash","read","edit","write","glob","grep","task","skill"]
+    },
+    {
+      "name": "flutter-dev",
+      "description": "Flutter UI, Riverpod, GoRouter",
+      "entry_point": ".claude/agents/flutter-dev.py",
+      "tools": ["bash","read","edit","write","glob","grep","task","skill"]
+    },
+    {
+      "name": "db-designer",
+      "description": "Database schema, Alembic migrations",
+      "entry_point": ".claude/agents/db-designer.py",
+      "tools": ["bash","read","edit","write","glob","grep","task","skill"]
+    },
+    {
+      "name": "code-reviewer",
+      "description": "PR review, quality gates",
+      "entry_point": ".claude/agents/code-reviewer.py",
+      "tools": ["bash","read","edit","write","glob","grep","task","skill"]
+    },
+    {
+      "name": "security-auditor",
+      "description": "Auth, injection, secret handling",
+      "entry_point": ".claude/agents/security-auditor.py",
+      "tools": ["bash","read","edit","write","glob","grep","task","skill"]
+    },
+    {
+      "name": "sync-engineer",
+      "description": "AniList/MangaDex sync pipeline",
+      "entry_point": ".claude/agents/sync-engineer.py",
+      "tools": ["bash","read","edit","write","glob","grep","task","skill"]
+    },
+    {
+      "name": "api-designer",
+      "description": "OpenAPI spec, endpoint contracts",
+      "entry_point": ".claude/agents/api-designer.py",
+      "tools": ["bash","read","edit","write","glob","grep","task","skill"]
+    },
+    {
+      "name": "tdd-enforcer",
+      "description": "Enforce test‑first workflow",
+      "entry_point": ".claude/agents/tdd-enforcer.py",
+      "tools": ["bash","read","edit","write","glob","grep","task","skill"]
+    },
+    {
+      "name": "vibecoding-architect",
+      "description": "System design, ADRs, schema, API contracts for VibeCoding",
+      "entry_point": ".claude/agents/vibecoding-architect.py",
+      "tools": ["bash","read","edit","write","glob","grep","task","skill"]
+    },
+    {
+      "name": "vibecoding-backend-dev",
+      "description": "FastAPI routes, services, repositories for VibeCoding",
+      "entry_point": ".claude/agents/vibecoding-backend-dev.py",
+      "tools": ["bash","read","edit","write","glob","grep","task","skill"]
+    },
+    {
+      "name": "vibecoding-flutter-dev",
+      "description": "Flutter UI, Riverpod, GoRouter for VibeCoding",
+      "entry_point": ".claude/agents/vibecoding-flutter-dev.py",
+      "tools": ["bash","read","edit","write","glob","grep","task","skill"]
+    },
+    {
+      "name": "vibecoding-db-designer",
+      "description": "Database schema, Alembic migrations for VibeCoding",
+      "entry_point": ".claude/agents/vibecoding-db-designer.py",
+      "tools": ["bash","read","edit","write","glob","grep","task","skill"]
+    },
+    {
+      "name": "vibecoding-code-reviewer",
+      "description": "PR review, quality gates for VibeCoding",
+      "entry_point": ".claude/agents/vibecoding-code-reviewer.py",
+      "tools": ["bash","read","edit","write","glob","grep","task","skill"]
+    },
+    {
+      "name": "vibecoding-security-auditor",
+      "description": "Auth, injection, secret handling for VibeCoding",
+      "entry_point": ".claude/agents/vibecoding-security-auditor.py",
+      "tools": ["bash","read","edit","write","glob","grep","task","skill"]
+    },
+    {
+      "name": "vibecoding-sync-engineer",
+      "description": "Sync pipeline for VibeCoding",
+      "entry_point": ".claude/agents/vibecoding-sync-engineer.py",
+      "tools": ["bash","read","edit","write","glob","grep","task","skill"]
+    },
+    {
+      "name": "vibecoding-api-designer",
+      "description": "OpenAPI spec, endpoint contracts for VibeCoding",
+      "entry_point": ".claude/agents/vibecoding-api-designer.py",
+      "tools": ["bash","read","edit","write","glob","grep","task","skill"]
+    },
+    {
+      "name": "vibecoding-tdd-enforcer",
+      "description": "Enforce test‑first workflow for VibeCoding",
+      "entry_point": ".claude/agents/vibecoding-tdd-enforcer.py",
+      "tools": ["bash","read","edit","write","glob","grep","task","skill"]
+    }
+  ]
+}

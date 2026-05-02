@@ -20,6 +20,9 @@ not code. Other agents implement what you specify.
 ## Context
 <Why does this decision need to be made?>
 
+## Project Status check
+To check status of the project and know about its phase always refer to PROJECT-STATUS.md file at root of the project and once phase or sub phase is completed always update the project status.
+
 ## Decision
 <What are we doing?>
 
