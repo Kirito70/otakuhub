@@ -31,6 +31,12 @@ quasar build -m electron  # desktop (Windows + Linux)
 quasar build -m capacitor -T android  # Android
 ```
 
+## Phase/Todo Enforcement
+- Read `PROJECT-STATUS.md` before starting any implementation.
+- Create an explicit todo checklist for all sub-phases/subtasks in scope.
+- Complete and verify sub-phases one-by-one; do not skip ahead.
+- Update `PROJECT-STATUS.md` only after verification.
+
 ## Key Conventions
 
 ### Frontend (Quasar / Vue 3)

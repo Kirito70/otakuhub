@@ -7,6 +7,8 @@ from src.app.database import get_db_session
 from src.app.schemas.auth import LoginRequest, RefreshRequest, RegisterRequest, TokenResponse, LogoutResponse
 from src.app.schemas.user import UserProfile
 from src.app.services.auth_service import auth_service
+from src.app.core.auth import get_current_user
+from src.app.models.user import User
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -40,6 +42,7 @@ async def refresh_token(
 async def logout(
     refresh_request: RefreshRequest,
     db: AsyncSession = Depends(get_db_session),
+    _: User = Depends(get_current_user),
 ):
     await auth_service.logout(db, refresh_request.refresh_token)
     return LogoutResponse(success=True)

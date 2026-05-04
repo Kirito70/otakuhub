@@ -1,5 +1,11 @@
 # OtakuHub — Antigravity Agent Team
 
+## Mandatory Phase/Todo Policy (All Personas)
+- Read `PROJECT-STATUS.md` before any work.
+- Create a todo list for the current phase's sub-phases and sub-tasks.
+- Keep one active task at a time; update task status in real time.
+- Do not advance phase status without verifying each sub-phase.
+
 ## Team Personas
 
 ### Product Manager

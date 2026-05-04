@@ -76,6 +76,14 @@ otakuhub/
 | sync-engineer | Cline / OpenCode | AniList/MangaDex sync pipeline, Celery workers |
 | api-designer | Claude Code | OpenAPI spec, endpoint contracts |
 
+## Phase Execution Discipline (Mandatory)
+- Before starting implementation, read `PROJECT-STATUS.md` and identify the exact current phase/sub-phase.
+- Create a TODO checklist for all sub-phases in the current phase, and create sub-todos for non-trivial items.
+- Keep exactly one TODO item `in_progress` at a time.
+- Mark each sub-phase complete immediately after verification.
+- Do not mark a phase complete until all its sub-phases are implemented and verified.
+- Update `PROJECT-STATUS.md` after each completed sub-phase.
+
 ## Critical Safety Rules
 - NEVER write to production database without explicit user confirmation
 - NEVER commit secrets, API keys, or tokens to Git

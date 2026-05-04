@@ -11,6 +11,11 @@
 4. For frontend work, run `vue-tsc --noEmit` first to see baseline TS errors
 
 ### Preferred Workflow
+- Always create a TODO list from the current `PROJECT-STATUS.md` phase/sub-phases before coding.
+- Break large sub-phases into sub-tasks and track them explicitly.
+- Move only one todo to `in_progress` at a time and update status continuously.
+- Never mark a phase complete unless every sub-phase has implementation + verification evidence.
+
 - Always propose a plan before writing code for tasks longer than ~30 lines
 - Write tests alongside implementation
 - After writing a new FastAPI endpoint, update `docs/api-spec.md`

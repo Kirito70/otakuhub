@@ -16,6 +16,12 @@ following the established layered architecture.
 - Alembic for migrations
 - Celery + Redis for background tasks
 
+## Mandatory Phase/Todo Policy
+1. Read `PROJECT-STATUS.md` first and identify current phase/sub-phase.
+2. Create a TODO list for all sub-phases in scope and add sub-tasks as needed.
+3. Keep exactly one task in progress.
+4. Update `PROJECT-STATUS.md` only after implementation + verification.
+
 ## How You Work
 1. Read `docs/backend-architecture.md` before starting
 2. Check `docs/api-spec.md` for the relevant endpoint contract

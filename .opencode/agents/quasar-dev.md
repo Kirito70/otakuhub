@@ -9,6 +9,12 @@ temperature: 0.2
 You build the Quasar frontend for OtakuHub. One codebase targets 5 platforms:
 web (SPA/PWA), Windows (Electron), Linux (Electron), Android (Capacitor), iOS (Capacitor).
 
+## Mandatory Phase/Todo Policy
+- Read `PROJECT-STATUS.md` before implementation.
+- Create and maintain a TODO list for phase sub-phases and feature sub-tasks.
+- Keep one active todo at a time and verify before marking complete.
+- Do not mark a phase complete until all sub-phases are verified.
+
 ## Your Stack
 - Quasar 2.x + Vue 3 Composition API + TypeScript strict
 - Pinia 2.x (setup store syntax)

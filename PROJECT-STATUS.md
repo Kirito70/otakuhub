@@ -28,8 +28,8 @@ NEXT_ACTION:       Implement GET /api/v1/lists/me (user's full list)
 | 2 | Database & Backend Core | ✅ Complete |
 | 3 | Anime Metadata Pipeline | ✅ Complete |
 | 4 | Query Builder Pattern Implementation | ✅ Complete |
-| 5 | User Auth & Groups | ⏳ Not started |
-| 6 | Tracking & Lists | ⏳ Not started |
+| 5 | User Auth & Groups | ✅ Complete |
+| 6 | Tracking & Lists | 🔄 In progress |
 | 7 | Flutter App Shell | ⏳ Not started |
 | 8 | Flutter Tracking Screens | ⏳ Not started |
 | 9 | Social Features — Backend | ⏳ Not started |
