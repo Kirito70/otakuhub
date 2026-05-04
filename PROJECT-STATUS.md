@@ -11,11 +11,11 @@
 
 ```
 CURRENT_PHASE:     7
-CURRENT_SUB_PHASE: 7.1
+CURRENT_SUB_PHASE: 7.2
 STATUS:            IN_PROGRESS
 LAST_UPDATED:      2026-05-04
 BLOCKED_BY:        none
-NEXT_ACTION:       GoRouter setup: all named routes defined
+NEXT_ACTION:       AdaptiveScaffold shell: bottom nav (mobile), side nav (desktop)
 ```
 
 ---
@@ -147,7 +147,7 @@ NEXT_ACTION:       GoRouter setup: all named routes defined
 
 | Sub-phase | Task | Status | Notes |
 |-----------|------|--------|-------|
-| 7.1 | GoRouter setup: all named routes defined | ⏳ | |
+| 7.1 | GoRouter setup: all named routes defined | ✅ | Implemented Quasar router named-route map in frontend/src/router/routes.ts with auth/public route split |
 | 7.2 | AdaptiveScaffold shell: bottom nav (mobile), side nav (desktop) | ⏳ | |
 | 7.3 | Dio client + auth interceptor (token attach + refresh on 401) | ⏳ | |
 | 7.4 | flutter_secure_storage wrapper | ⏳ | |
@@ -324,6 +324,7 @@ NEXT_ACTION:       GoRouter setup: all named routes defined
 # 2026-05-04 | Phase 6.9 | Implemented PUT /api/v1/lists/custom/{id}/entries endpoint
 # 2026-05-04 | Phase 6.10 | Implemented explicit list-entry history auto-log event typing on updates
 # 2026-05-04 | Phase 6 | Tracking & Lists marked complete
+# 2026-05-04 | Phase 7.1 | Implemented frontend named routes and router setup scaffold
 ```
 
 ---
