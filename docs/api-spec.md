@@ -42,9 +42,21 @@
 ## Tracking Endpoints
 | Method | Path | Auth | Request Schema | Response Schema | Errors |
 |--------|------|------|----------------|----------------|--------|
-| **GET** | `/api/v1/lists/entries/{entry_id}` | Yes | – | `ListEntryResponse` | 404 Not found / 403 Forbidden |
-| **GET** | `/api/v1/lists/entries` | Yes | `ListRequest { status?: string, page?: int }` | `ListResponse` | 400 Bad request |
-| **POST** | `/api/v1/lists/entries` | Yes | `ListEntryCreate { media_id: UUID, status: string, progress?: int, score?: float }` | `ListEntryResponse` | 400 Validation / 409 Conflict |
-| **PATCH** | `/api/v1/lists/entries/{entry_id}` | Yes | `ListEntryUpdate { status?: string, progress?: int, score?: float, notes?: string }` | `ListEntryResponse` | 400 Validation / 404 Not found |
-| **DELETE** | `/api/v1/lists/entries/{entry_id}` | Yes | – | `{ "success": true }` | 404 Not found / 403 Forbidden |
+| **GET** | `/api/v1/lists/me` | Yes | `ListQuery { status?: string, media_type?: string, limit?: int, offset?: int }` | `UserListResponse { items: ListEntryResponse[], total: int, limit: int, offset: int }` | 401 Unauthorized |
+| **GET** | `/api/v1/lists/entries/{media_id}` | Yes | – | `ListEntryResponse` | 404 Not found |
+| **POST** | `/api/v1/lists` | Yes | `ListEntryCreate { media_id: UUID, status: string, progress?: int, score?: float, notes?: string }` | `ListEntryResponse` | 400 Validation / 409 Conflict |
+| **POST** | `/api/v1/lists/entries` | Yes | `ListEntryCreate { media_id: UUID, status: string, progress?: int, score?: float, notes?: string }` | `ListEntryResponse` | 400 Validation / 409 Conflict (legacy alias) |
+| **PATCH** | `/api/v1/lists/{media_id}` | Yes | `ListEntryUpdate { status?: string, progress?: int, score?: float, notes?: string }` | `ListEntryResponse` | 400 Validation / 404 Not found |
+| **PATCH** | `/api/v1/lists/entries/{media_id}` | Yes | `ListEntryUpdate { status?: string, progress?: int, score?: float, notes?: string }` | `ListEntryResponse` | 400 Validation / 404 Not found (legacy alias) |
+| **DELETE** | `/api/v1/lists/{media_id}` | Yes | – | `{ "message": "Entry deleted successfully" }` | 404 Not found |
+| **DELETE** | `/api/v1/lists/entries/{media_id}` | Yes | – | `{ "message": "Entry deleted successfully" }` | 404 Not found (legacy alias) |
+| **GET** | `/api/v1/lists/me/history` | Yes | `HistoryQuery { limit?: int }` | `UserListHistoryResponse { items: ListEntryHistoryResponse[], total: int, limit: int }` | 401 Unauthorized |
+| **POST** | `/api/v1/lists/custom` | Yes | `CustomListCreate { name: string, description?: string, is_public?: bool, cover_image?: string, sort_order?: int }` | `CustomListResponse` | 400 Validation |
+| **PUT** | `/api/v1/lists/custom/{list_id}/entries` | Yes | `CustomListEntriesReplaceRequest { entries: { media_id: UUID, sort_order?: int, note?: string }[] }` | `CustomListEntriesReplaceResponse { list_id: UUID, total_entries: int }` | 404 Not found |
 | **GET** | `/api/v1/lists/statistics` | Yes | – | `UserStatistics` | – |
+
+## Sync Endpoints
+| Method | Path | Auth | Request Schema | Response Schema | Errors |
+|--------|------|------|----------------|----------------|--------|
+| **POST** | `/api/v1/sync/import/anilist` | Yes | `SyncImportRequest { username?: string, overwrite_existing?: bool }` | `SyncImportResponse { job_id: UUID, provider: string, status: string, job_type: string, started_at: datetime, message: string }` | 401 Unauthorized |
+| **POST** | `/api/v1/sync/import/mal` | Yes | `SyncImportRequest { username?: string, overwrite_existing?: bool }` | `SyncImportResponse` | 401 Unauthorized |

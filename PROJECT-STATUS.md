@@ -10,12 +10,12 @@
 ## Current State
 
 ```
-CURRENT_PHASE:     6
-CURRENT_SUB_PHASE: 6.1
+CURRENT_PHASE:     7
+CURRENT_SUB_PHASE: 7.1
 STATUS:            IN_PROGRESS
 LAST_UPDATED:      2026-05-04
 BLOCKED_BY:        none
-NEXT_ACTION:       Implement GET /api/v1/lists/me (user's full list)
+NEXT_ACTION:       GoRouter setup: all named routes defined
 ```
 
 ---
@@ -29,8 +29,8 @@ NEXT_ACTION:       Implement GET /api/v1/lists/me (user's full list)
 | 3 | Anime Metadata Pipeline | ✅ Complete |
 | 4 | Query Builder Pattern Implementation | ✅ Complete |
 | 5 | User Auth & Groups | ✅ Complete |
-| 6 | Tracking & Lists | 🔄 In progress |
-| 7 | Flutter App Shell | ⏳ Not started |
+| 6 | Tracking & Lists | ✅ Complete |
+| 7 | Flutter App Shell | 🔄 In progress |
 | 8 | Flutter Tracking Screens | ⏳ Not started |
 | 9 | Social Features — Backend | ⏳ Not started |
 | 10 | Social Features — Flutter | ⏳ Not started |
@@ -131,16 +131,16 @@ NEXT_ACTION:       Implement GET /api/v1/lists/me (user's full list)
 
 | Sub-phase | Task | Status | Notes |
 |-----------|------|--------|-------|
-| 6.1 | GET /api/v1/lists/me (user's full list) | ⏳ | |
-| 6.2 | POST /api/v1/lists (add to list) | ⏳ | |
-| 6.3 | PATCH /api/v1/lists/{media_id} (update status/progress/score) | ⏳ | |
-| 6.4 | DELETE /api/v1/lists/{media_id} (soft delete) | ⏳ | |
-| 6.5 | GET /api/v1/lists/me/history (activity history) | ⏳ | |
-| 6.6 | POST /api/v1/sync/import/anilist (user list import) | ⏳ | |
-| 6.7 | POST /api/v1/sync/import/mal | ⏳ | |
-| 6.8 | POST /api/v1/lists/custom (create custom list) | ⏳ | |
-| 6.9 | PUT /api/v1/lists/custom/{id}/entries | ⏳ | |
-| 6.10 | List entry history auto-logged on every update | ⏳ | |
+| 6.1 | GET /api/v1/lists/me (user's full list) | ✅ | Implemented endpoint, filters, and response schema |
+| 6.2 | POST /api/v1/lists (add to list) | ✅ | Added root endpoint with legacy /entries alias for compatibility |
+| 6.3 | PATCH /api/v1/lists/{media_id} (update status/progress/score) | ✅ | Added root endpoint with /entries compatibility alias |
+| 6.4 | DELETE /api/v1/lists/{media_id} (soft delete) | ✅ | Added root endpoint with /entries compatibility alias |
+| 6.5 | GET /api/v1/lists/me/history (activity history) | ✅ | Added authenticated history endpoint with limit query |
+| 6.6 | POST /api/v1/sync/import/anilist (user list import) | ✅ | Added authenticated sync import endpoint returning created job metadata |
+| 6.7 | POST /api/v1/sync/import/mal | ✅ | Added authenticated sync import endpoint returning created job metadata |
+| 6.8 | POST /api/v1/lists/custom (create custom list) | ✅ | Added authenticated custom-list create endpoint and schema |
+| 6.9 | PUT /api/v1/lists/custom/{id}/entries | ✅ | Added ownership-checked replace-all entries endpoint |
+| 6.10 | List entry history auto-logged on every update | ✅ | Added explicit event_type mapping for status/progress/score updates |
 
 ### Phase 7 — Flutter App Shell
 **Goal**: Flutter app navigates correctly on all 5 platforms, auth flow works, Dio talks to backend.
@@ -313,7 +313,17 @@ NEXT_ACTION:       Implement GET /api/v1/lists/me (user's full list)
 # 2026-05-04 | Phase 4.7 | Query builder pattern documentation completed
 # 2026-05-04 | Phase 5.1 | Phase 5 started: auth register/login/refresh/logout scaffolding implemented
 # 2026-05-04 | Phase 5 | User Auth & Groups marked complete
-```
+# 2026-05-04 | Phase 6.1 | Implemented GET /api/v1/lists/me with auth, filters, and response envelope
+# 2026-05-04 | Phase 6.2 | Implemented POST /api/v1/lists with /entries compatibility alias
+# 2026-05-04 | Phase 6.3 | Implemented PATCH /api/v1/lists/{media_id} with /entries compatibility alias
+# 2026-05-04 | Phase 6.4 | Implemented DELETE /api/v1/lists/{media_id} with /entries compatibility alias
+# 2026-05-04 | Phase 6.5 | Implemented GET /api/v1/lists/me/history endpoint
+# 2026-05-04 | Phase 6.6 | Implemented POST /api/v1/sync/import/anilist endpoint
+# 2026-05-04 | Phase 6.7 | Implemented POST /api/v1/sync/import/mal endpoint
+# 2026-05-04 | Phase 6.8 | Implemented POST /api/v1/lists/custom endpoint
+# 2026-05-04 | Phase 6.9 | Implemented PUT /api/v1/lists/custom/{id}/entries endpoint
+# 2026-05-04 | Phase 6.10 | Implemented explicit list-entry history auto-log event typing on updates
+# 2026-05-04 | Phase 6 | Tracking & Lists marked complete
 ```
 
 ---
