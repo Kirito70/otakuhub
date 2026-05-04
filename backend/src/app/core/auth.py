@@ -1,17 +1,25 @@
-"""Authentication utilities for route dependencies.
+"""Authentication dependencies (Phase 5 bootstrap)."""
 
-For the purpose of the test suite we provide a very simple implementation that
-always raises a 401 Unauthorized error. This satisfies the FastAPI dependency
-signature without requiring a full JWT implementation.
-"""
+from fastapi import Depends, HTTPException, status
+from sqlmodel import select
+from sqlmodel.ext.asyncio.session import AsyncSession
 
-from fastapi import HTTPException, status
+from src.app.database import get_db_session
+from src.app.models.user import User
 
 
-async def get_current_user():
-    """Dependency that raises 401 – routes that require auth will return 401.
+async def get_current_user(db: AsyncSession = Depends(get_db_session)) -> User:
+    """Return a current user for protected routes.
 
-    The test suite only checks that the endpoint is reachable and may accept
-    either 200 or 401, so this minimal stub is sufficient.
+    Phase 5 bootstrap behavior:
+    - loads the first active, non-deleted user in DB
+    - returns 401 if none exists
+
+    NOTE: This is an interim implementation until header-based JWT auth is added.
     """
-    raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
+    stmt = select(User).where(User.deleted_at.is_(None), User.is_active == True).limit(1)  # noqa: E712
+    result = await db.exec(stmt)
+    user = result.one_or_none()
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
+    return user

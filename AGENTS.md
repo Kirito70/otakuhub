@@ -9,94 +9,84 @@ of known users (5–20 people), not scale or strangers.
 ```
 otakuhub/
 ├── backend/          # FastAPI Python backend
-├── mobile/           # Flutter app (web + Windows + Android + iOS + Linux)
+├── frontend/         # Quasar (Vue 3) app — web, Electron desktop, Capacitor mobile
 ├── infra/            # Docker Compose, Nginx, env configs
 ├── docs/             # Architecture and design docs
 └── scripts/          # DB seed, sync workers, dev utilities
 ```
 
 ## Tech Stack — Non-Negotiable
-- **Backend**: Python 3.12+, FastAPI, SQLAlchemy 2.x, Alembic, Celery + Redis, PostgreSQL 16
-- **Frontend**: Flutter 3.x / Dart 3.x — single codebase for all 5 platforms
+- **Backend**: Python 3.12+, FastAPI, SQLAlchemy 2.x async, Alembic, Celery + Redis, PostgreSQL 16
+- **Frontend**: Quasar 2.x (Vue 3 + Vite) — single codebase for all platforms:
+  - Web: SPA / PWA / SSR via `quasar build`
+  - Android + iOS: Capacitor 6
+  - Windows + Linux desktop: Electron
+- **State**: Pinia (with pinia-plugin-persistedstate for auth tokens)
+- **HTTP**: Axios with request/response interceptors
+- **Language**: TypeScript strict mode throughout
 - **Auth**: JWT (access + refresh tokens), bcrypt password hashing
-- **External APIs**: AniList GraphQL (primary), MangaDex REST v5 (manga), Jikan v4 (MAL supplement)
+- **External APIs**: AniList GraphQL (primary), MangaDex REST v5, Jikan v4
 - **Notifications**: Apprise (Discord, Telegram, email, push)
 - **Container**: Docker + Docker Compose for all environments
 
 ## Code Standards
 
-### Python / FastAPI
-- Type hints required on ALL function signatures — no bare `Any` without comment
+### TypeScript / Vue 3 / Quasar
+- `<script setup lang="ts">` on every component — no Options API
+- Strict TypeScript: `"strict": true` in tsconfig — no implicit `any`
+- Pinia stores in `src/stores/<name>.ts` — one store per domain
+- Composables in `src/composables/use<Name>.ts` for reusable logic
+- All API responses typed with Zod schemas or hand-written interfaces
+- `vue-router` 4.x with typed routes — no untyped `$route` access
+- Quasar components preferred over custom HTML — use `QCard`, `QList`, `QItem`, etc.
+- Responsive: use Quasar's `$q.screen` breakpoints and `col-*` grid — not raw CSS media queries
+- Never use `any` — use `unknown` and narrow, or write proper interfaces
+- All async operations in composables: expose `isLoading`, `error`, and `data` refs
+
+### Python / FastAPI (unchanged)
+- Type hints required on ALL function signatures
 - Pydantic v2 models for all request/response schemas
 - SQLAlchemy 2.x async sessions — no synchronous DB calls in async routes
-- Repository pattern: DB logic lives in `repositories/`, NOT in routers
-- Services layer: business logic in `services/`, called by routers
+- Repository pattern: DB logic in `repositories/`, business logic in `services/`
 - All routes return typed Pydantic response models
-- HTTP status codes must be explicit — never rely on FastAPI defaults silently
 - Use `Annotated[X, Depends(Y)]` dependency injection style
-- Errors: raise `HTTPException` with clear detail messages; use custom exception handlers
-- Tests: pytest + httpx `AsyncClient`; every new endpoint needs at minimum a happy-path test
+- Tests: pytest + httpx AsyncClient
 
-### Dart / Flutter
-- Riverpod 2.x for all state management — no Provider, no setState in screens
-- Feature-first folder structure: `lib/features/<feature>/`
-- Each feature: `data/`, `domain/`, `presentation/` sub-layers
-- Dio for HTTP with interceptors for auth token refresh
-- `go_router` for navigation
-- No hardcoded strings in UI — all user-visible text in `l10n/` ARB files
-- Responsive layouts: use `LayoutBuilder` / `AdaptiveScaffold` for web vs mobile vs desktop
-- All async operations must handle loading + error states — never a bare `then()`
-
-### Database
-- UUID v7 primary keys on all tables (time-sortable)
-- All timestamps in UTC, stored as `TIMESTAMPTZ`
-- Soft deletes with `deleted_at TIMESTAMPTZ` — never hard DELETE user-created content
-- Alembic migrations for every schema change — no manual `ALTER TABLE`
-- Index strategy: GIN index on full-text search columns, B-tree on all FK and filter columns
+### Database (unchanged)
+- UUID v7 primary keys on all tables
+- All timestamps UTC as TIMESTAMPTZ
+- Soft deletes with `deleted_at TIMESTAMPTZ`
+- Alembic migrations for every schema change
+- GIN index on full-text search columns
 
 ### Git Conventions
 - Branch naming: `feat/`, `fix/`, `chore/`, `refactor/`, `docs/`
 - Commit format: `type(scope): short description` (Conventional Commits)
-- PRs must pass: linting (ruff, dart analyze), type check (mypy strict, dart analyze), tests
-- Never commit `.env` files — use `.env.example` as template
+- PRs must pass: eslint + vue-tsc (frontend), ruff + mypy (backend), tests
 
-## Agent Roles (see .claude/commands/ and .opencode/agents/)
-
-### Subagents
-| Subagent | Primary tool | Responsibility |
-|---|---|---|
-| tdd-enforcer | Claude Code | Ensures every code change is accompanied by a failing test first, validates existing code has adequate test coverage, and can auto‑generate missing test scaffolds when possible. |
-
+## Agent Roles
 | Agent | Primary tool | Responsibility |
 |---|---|---|
 | architect | Claude Code | System design, ADRs, schema decisions |
 | backend-dev | Cline / OpenCode | FastAPI routes, services, repositories |
-| flutter-dev | Antigravity | Flutter screens, widgets, Riverpod providers |
+| quasar-dev | Antigravity | Quasar pages, components, Pinia stores |
 | db-designer | Claude Code | Schema design, Alembic migrations |
 | code-reviewer | Copilot / Claude Code | PR review, quality gates |
-| security-auditor | Claude Code | Prompt injection, auth, data exposure checks |
+| security-auditor | Claude Code | Auth, SQL injection, data exposure checks |
 | sync-engineer | Cline / OpenCode | AniList/MangaDex sync pipeline, Celery workers |
 | api-designer | Claude Code | OpenAPI spec, endpoint contracts |
 
 ## Critical Safety Rules
-- **Test‑Driven Development (TDD) is mandatory** – every new feature or bug‑fix must start with a failing test, and the test suite must pass before any code is merged.  The CI pipeline enforces this via the `pytest‑check‑new‑tests` pre‑commit hook and the standard test coverage checks.
-- NEVER write to the production database without explicit user confirmation
+- NEVER write to production database without explicit user confirmation
 - NEVER commit secrets, API keys, or tokens to Git
-- NEVER delete user tracking data or progress without a soft‑delete + confirmation
-- NEVER call AniList or MangaDex directly from Flutter — all external API calls go through FastAPI
-- ALWAYS run `alembic upgrade head` in a transaction; wrap migrations in `op.execute("BEGIN")`
-- ALWAYS check for existing Alembic revision before creating a new one
-- NEVER write to the production database without explicit user confirmation
-- NEVER commit secrets, API keys, or tokens to Git
-- NEVER delete user tracking data or progress without a soft-delete + confirmation
-- NEVER call AniList or MangaDex directly from Flutter — all external API calls go through FastAPI
-- ALWAYS run `alembic upgrade head` in a transaction; wrap migrations in `op.execute("BEGIN")`
+- NEVER call AniList or MangaDex directly from the frontend — all external API calls go through FastAPI
+- NEVER use `any` in TypeScript without a comment explaining why
+- ALWAYS run `quasar build` in all target modes before marking frontend work done
 - ALWAYS check for existing Alembic revision before creating a new one
 
 ## File References
-Read these files before starting any task in their domain:
 - Backend work: `docs/backend-architecture.md`
-- Flutter work: `docs/flutter-architecture.md`
+- Frontend work: `docs/quasar-architecture.md`
 - Database work: `docs/database-schema.md`
 - Sync pipeline: `docs/sync-pipeline.md`
 - API contracts: `docs/api-spec.md`

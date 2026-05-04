@@ -749,188 +749,261 @@ PHASE 5 COMPLETE. Update PROJECT-STATUS.md:
 
 ---
 
-# PHASE 6 — Flutter App Shell
+# OtakuHub — PROJECT-PROMPT.md Replacement: Phases 6–12 (Quasar)
 
-**Primary tool**: Antigravity (flutter-dev agent) or Claude Code
-**Goal**: Flutter app navigates on all 5 platforms, auth flow works end-to-end.
-
----
-
-### Prompt 6.1–6.4 — Router and HTTP client
-```
-Read AGENTS.md, docs/flutter-architecture.md, and PROJECT-STATUS.md. Current task: 6.1–6.4.
-
-Use the flutter-dev skill (.claude/skills/flutter-dev/SKILL.md).
-
-Create lib/core/router/app_router.dart:
-  - All named routes from docs/flutter-architecture.md
-  - ShellRoute with bottom nav (mobile) + side nav (desktop)
-  - Auth redirect guard using authStateProvider
-
-Create lib/core/network/dio_client.dart:
-  - Base URL from AppConfig
-  - AuthInterceptor: attach Bearer token, handle 401 → refresh → retry
-  - RetryInterceptor: 3 retries on 5xx with exponential backoff
-  - LogInterceptor: debug mode only
-
-Create lib/core/storage/secure_storage.dart:
-  - flutter_secure_storage wrapper
-  - Methods: saveTokens, getAccessToken, getRefreshToken, clearTokens
-
-Run dart analyze — zero errors.
-Update PROJECT-STATUS.md: mark 6.1–6.4 ✅, advance to 6.5.
-```
+> Replace phases 6–12 in your existing PROJECT-PROMPT.md with this content.
+> Phases 1–5 (backend, database, sync, auth, tracking API) are unchanged.
 
 ---
 
-### Prompt 6.5–6.9 — Auth feature
+# PHASE 6 — Quasar App Shell
+
+**Primary tool**: Antigravity or Claude Code
+**Goal**: Quasar app navigates correctly on all 5 platforms, auth flow works, Axios talks to backend.
+
+---
+
+### Prompt 6.1 — Quasar project init
 ```
-Read AGENTS.md and PROJECT-STATUS.md. Current task: 6.5–6.9.
+Read AGENTS.md, docs/quasar-architecture.md, and PROJECT-STATUS.md. Current task: 6.1.
 
-Use the flutter-screen skill (.antigravity/skills/flutter-screen.md).
+Create the Quasar frontend:
+  npm create quasar@latest frontend
+  Wizard choices:
+    ✓ Quasar App with Vite
+    ✓ Vue 3 Composition API with <script setup>
+    ✓ TypeScript: Yes
+    ✓ Quasar CLI with Vite as build tool
 
-Build lib/features/auth/:
-  domain/models/user_model.dart (Freezed)
-  domain/repositories/auth_repository.dart (abstract)
-  data/datasources/auth_remote_datasource.dart (Dio calls to /api/v1/auth/)
-  data/repositories/auth_repository_impl.dart
-  presentation/providers/auth_provider.dart (@riverpod AuthNotifier, keepAlive: true)
-    - States: loading, authenticated(user), unauthenticated
-    - Methods: login, register, logout, refreshToken
-  presentation/screens/login_screen.dart
-    - Email + password fields
-    - Login button with loading state
-    - Navigate to register
-    - Shows error snackbar on failure
-  presentation/screens/register_screen.dart
-    - Username, email, password fields
-    - Register button with loading state
+After init, install all additional dependencies:
+  npm install pinia pinia-plugin-persistedstate axios zod
 
-Auth guard in app_router.dart:
-  If unauthenticated → redirect to /auth/login
-  If authenticated on auth route → redirect to /
+  npm install -D vitest @vue/test-utils @pinia/testing \
+    @quasar/quasar-app-extension-testing-unit-vitest \
+    vue-tsc eslint eslint-plugin-vue
 
-Run: dart run build_runner build --delete-conflicting-outputs
-Run: dart analyze → zero errors
-Run: flutter test test/features/auth/
+Create the folder structure from docs/quasar-architecture.md:
+  src/types/, src/stores/, src/composables/, src/components/shared/
 
-Update PROJECT-STATUS.md: mark 6.5–6.9 ✅, advance to 6.10.
+Set up tsconfig.json with "strict": true.
+Set up .eslintrc.cjs with eslint-plugin-vue + typescript rules.
+
+Run: vue-tsc --noEmit && quasar build
+Must complete with zero errors.
+
+Update PROJECT-STATUS.md: mark 6.1 ✅, advance to 6.2.
 ```
 
 ---
 
-### Prompt 6.10 — Platform verification
+### Prompt 6.2 — Axios boot + auth interceptor
 ```
-Read PROJECT-STATUS.md. Current task: 6.10.
+Read AGENTS.md, docs/quasar-architecture.md, and PROJECT-STATUS.md. Current task: 6.2.
 
-Verify the app builds and runs correctly on 3 platforms:
+Create src/boot/axios.ts:
+  - Axios instance with baseURL from process.env.API_BASE_URL
+  - Request interceptor: attach Bearer token from auth store
+  - Response interceptor: on 401 → call auth.refreshToken() → retry original request
+  - Export the api instance for use across the app
 
-1. Web: flutter run -d web-server --web-port 8080
-   Confirm: login screen loads, API calls reach backend, navigation works
+Create src/boot/pinia.ts:
+  - Configure pinia-plugin-persistedstate
+  - On Capacitor: use Capacitor Preferences as storage
+  - On web/Electron: use localStorage (default)
 
-2. Windows: flutter run -d windows
-   Confirm: same as web, window resizes correctly, side nav appears at wide width
+Register both boot files in quasar.config.ts.
 
-3. Android: flutter run -d android (or flutter build apk --debug)
-   Confirm: bottom nav shows, login works
+Create src/types/api.ts:
+  interface PaginatedResponse<T> { items: T[]; nextCursor: string | null; total: number }
+  function getErrorMessage(error: unknown): string (extracts message from Axios errors)
 
-Fix any platform-specific issues found.
+Run: vue-tsc --noEmit
+Update PROJECT-STATUS.md: mark 6.2 ✅, advance to 6.3.
+```
+
+---
+
+### Prompt 6.3 — Router + auth guard
+```
+Read docs/quasar-architecture.md and PROJECT-STATUS.md. Current task: 6.3.
+
+Create src/router/routes.ts with ALL named routes from docs/quasar-architecture.md.
+Set meta: { requiresAuth: true } on all protected routes.
+Use lazy imports: component: () => import('pages/...')
+
+Create src/router/index.ts:
+  - Auth guard: if route.meta.requiresAuth && !auth.accessToken → redirect to login
+  - If already logged in and on auth route → redirect to discover
+
+Run: vue-tsc --noEmit
+Update PROJECT-STATUS.md: mark 6.3 ✅, advance to 6.4.
+```
+
+---
+
+### Prompt 6.4 — Auth Pinia store
+```
+Read PROJECT-STATUS.md. Current task: 6.4.
+
+Create src/types/auth.ts:
+  User interface (id, username, displayName, email, avatarUrl)
+  LoginRequest, RegisterRequest, TokenResponse interfaces
+
+Create src/stores/auth.ts (persisted):
+  State: accessToken, refreshToken, user
+  Actions:
+    login(email, password) → calls POST /api/v1/auth/login → stores tokens
+    register(username, email, password) → POST /api/v1/auth/register
+    refreshToken() → POST /api/v1/auth/refresh → updates accessToken
+    logout() → POST /api/v1/auth/logout → clears state
+    fetchMe() → GET /api/v1/users/me → updates user
+  persist: true
+
+Write store test: src/stores/__tests__/auth.test.ts
+  - login action stores token
+  - logout action clears state
+
+Run: vue-tsc --noEmit
+Update PROJECT-STATUS.md: mark 6.4 ✅, advance to 6.5.
+```
+
+---
+
+### Prompt 6.5–6.6 — Auth pages
+```
+Read PROJECT-STATUS.md. Current task: 6.5–6.6.
+
+Use the quasar-page skill (.antigravity/skills/quasar-page.md).
+
+Create src/layouts/AuthLayout.vue:
+  Centered card layout, no navigation, brand logo at top.
+
+Create src/pages/auth/LoginPage.vue:
+  QCard with QInput (email + password, outlined, lazy-rules)
+  QBtn "Login" with loading state
+  Link to register page
+  On submit: call authStore.login() → redirect to discover on success
+  Show QBanner with error message on failure
+
+Create src/pages/auth/RegisterPage.vue:
+  QCard with QInput (username, email, password, confirm password)
+  Client-side validation with Quasar rules
+  On submit: authStore.register() → redirect to login on success
+
+Write component tests: loading state, error banner, success redirect.
+
+Run: vue-tsc --noEmit && quasar build
+Update PROJECT-STATUS.md: mark 6.5–6.6 ✅, advance to 6.7.
+```
+
+---
+
+### Prompt 6.7 — MainLayout (responsive shell)
+```
+Read docs/quasar-architecture.md and PROJECT-STATUS.md. Current task: 6.7.
+
+Create src/layouts/MainLayout.vue using docs/quasar-architecture.md pattern:
+  QLayout with QDrawer (desktop persistent side nav) + QFooter (mobile bottom tabs)
+  Side nav items: Discover, My List, Feed, Watch Party, Notifications, Profile
+  Bottom tabs (mobile, $q.screen.lt.md): same 5 items as icons only
+  Notification badge on bell icon (from notifications store count)
+  User avatar in top of side nav → click → profile page
+  Logout button at bottom of side nav
+
+Quasar theme:
+  Create src/css/quasar.variables.scss with anime-appropriate brand colours:
+    $primary: #6C63FF (purple)
+    $secondary: #1DB954 (teal-green)
+    $accent: #FF6B6B (coral)
+
+Run: quasar dev → visually confirm layout on wide and narrow viewport.
+Update PROJECT-STATUS.md: mark 6.7 ✅, advance to 6.8.
+```
+
+---
+
+### Prompt 6.8 — Platform verification
+```
+Read PROJECT-STATUS.md. Current task: 6.8.
+
+Verify the app builds and runs on all targets:
+
+1. Web SPA: quasar build → serve dist/spa/ → confirm login → discover works
+2. Electron: quasar build -m electron → confirm .exe/.AppImage produced, app launches
+3. Android: quasar build -m capacitor -T android → confirm APK produced
+   (or quasar dev -m capacitor -T android if device available)
+
+Fix any platform-specific issues.
 
 PHASE 6 COMPLETE. Update PROJECT-STATUS.md:
-  - Mark 6.10 ✅
+  - Mark 6.8 ✅
   - Set CURRENT_PHASE to 7, CURRENT_SUB_PHASE to 7.1
   - Add Phase 6 complete to Completion Log
 ```
 
 ---
 
-# PHASE 7 — Flutter Tracking Screens
+# PHASE 7 — Quasar Tracking Pages
 
-**Primary tool**: Antigravity (startcycle workflow)
+**Primary tool**: Antigravity (`/startcycle` workflow)
 
-For each screen in this phase, run in Antigravity:
-```
-/startcycle <screen-name>
-```
-Then approve each PM spec and Design brief before implementation proceeds.
+For each page, run in Antigravity: `/startcycle <description>`
 
 ---
 
-### Prompt 7.1 — Discover screen
+### Prompt 7.1 — Discover page
 ```
-/startcycle Discover screen — search for anime and manga by title, filter by type and genre, shows cover art and score. Calls GET /api/v1/media/search with debounced input. Results in a responsive grid (2 cols mobile, 4 cols desktop). Tapping a card navigates to media detail.
-```
-
-### Prompt 7.2 — Media detail screen
-```
-/startcycle Media detail screen — shows full anime/manga info: cover, banner, title, synopsis, genres, studios, score, episode count. Has an "Add to list" button that opens a bottom sheet. If already in user's list, shows current status and progress instead. Tapping episodes shows airing schedule.
+/startcycle Discover page — search for anime and manga by title. QInput with debounced search (300ms), calls GET /api/v1/media/search. Results in a responsive QCard grid (1 col mobile, 2 col tablet, 4 col desktop). Each card shows q-img cover art, title, format badge (TV/Manga), score chip. QVirtualScroll for infinite scroll. Tapping a card navigates to media-detail route.
 ```
 
-### Prompt 7.3 — Add to list bottom sheet
+### Prompt 7.2 — Media detail page
 ```
-/startcycle Add-to-list bottom sheet — slides up when user taps "Add to list" on detail screen. Lets user pick status (watching/reading/plan to watch/etc), set initial progress, and optionally score. Calls POST /api/v1/lists. Dismisses on success and updates the detail screen state.
-```
-
-### Prompt 7.4 — My list screen
-```
-/startcycle My list screen — shows the user's tracking list. Tabbed by status: Watching, Reading, Completed, Paused, Dropped, Plan to watch. Each tab is a scrollable list of media cards with progress and score. Pull to refresh. Tapping a card opens detail screen.
+/startcycle Media detail page — full info for an anime or manga. q-img banner at top, cover image overlapping, title, native title, synopsis (expandable with See more). Chips for genres. Studio and season info. Score (QRating). Episode count. "Add to list" QBtn → opens QDialog to pick status and set initial progress. If already in user's list, shows current status and quick +1 episode/chapter button instead.
 ```
 
-### Prompt 7.5–7.6 — Progress and score widgets
+### Prompt 7.3 — My list page
 ```
-Read PROJECT-STATUS.md. Current task: 7.5–7.6.
-
-Create reusable widgets in lib/features/tracking/presentation/widgets/:
-
-ProgressUpdateWidget:
-  - Shows current episode/chapter number
-  - +1 / -1 buttons
-  - Direct number input on long press
-  - Calls PATCH /api/v1/lists/{media_id} on change
-  - Optimistic update (update UI immediately, revert on error)
-
-ScoreWidget:
-  - Star rating or numeric 0.0–10.0 selector
-  - Shows average AniList score as reference
-  - Saves on dismiss
-
-Both widgets used inline in MyListScreen card items and on DetailScreen.
-
-Run dart analyze, flutter test. Update PROJECT-STATUS.md: mark 7.5–7.6 ✅, advance to 7.7.
+/startcycle My list page — user's tracking list. QTabs across the top: Watching, Reading, Completed, Paused, Dropped, Plan to watch. Each tab shows a QList of entries with cover thumbnail, title, progress (ep X/Y or ch X/Y), and score. QBtn +1 per entry for quick progress increment. Pull-to-refresh on mobile. Calls GET /api/v1/lists/me?status=<tab>.
 ```
 
-### Prompt 7.7 — Airing calendar
+### Prompt 7.4 — Progress + score widgets
 ```
-/startcycle Airing calendar screen — shows upcoming episode air dates for anime in user's "Watching" list. Organised by date (today, tomorrow, this week, later). Each row shows anime title, episode number, and countdown. Calls GET /api/v1/media/airing. Tapping navigates to media detail.
+Read PROJECT-STATUS.md. Current task: 7.4.
+
+Create src/components/tracking/ProgressWidget.vue:
+  Props: mediaId, currentProgress, maxProgress (episode/chapter count)
+  Shows: "Ep 5 / 12" or "Ch 23 / 100"
+  Buttons: –1, +1 (calls PATCH /api/v1/lists/{mediaId})
+  Long-press on number: opens QDialog for direct number input
+  Optimistic update: update local store immediately, revert on API error
+
+Create src/components/tracking/ScoreWidget.vue:
+  Props: mediaId, currentScore, averageScore
+  QRating (max 10, half-star precision)
+  Shows AniList average score as reference text
+  Saves on value change (debounced 500ms)
+
+Export both from src/components/tracking/index.ts.
+Write Vitest tests for both components.
+
+Update PROJECT-STATUS.md: mark 7.4 ✅, advance to 7.5.
 ```
 
-### Prompt 7.8 — Import list screen
+### Prompt 7.5 — Airing calendar
 ```
-/startcycle Import list screen — lets user import their existing list from AniList or MyAnimeList. Shows two option cards. Tapping AniList opens OAuth browser flow. On callback, calls POST /api/v1/sync/import/anilist with the auth code. Shows progress bar during import, then success screen with count of imported titles.
+/startcycle Airing calendar page — upcoming episode air dates for anime in user's Watching list. Grouped by date section headers (Today, Tomorrow, This week, Later). Each QItem shows: anime cover thumbnail, title, episode number, air time, countdown chip (e.g. "in 3h"). QBadge if the episode has already aired. Calls GET /api/v1/media/airing. Tapping navigates to media detail.
 ```
 
-### Prompt 7.9–7.10 — Custom lists and widget tests
+### Prompt 7.6 — Import list page
 ```
-Read PROJECT-STATUS.md. Current task: 7.9–7.10.
+/startcycle Import list page — import existing list from AniList or MyAnimeList. Two QCard options with logos. Tapping AniList opens OAuth in browser (Capacitor Browser plugin on mobile, window.open on web). On redirect callback, calls POST /api/v1/sync/import/anilist with the auth code. QLinearProgress bar during import. QBanner success with count ("Imported 347 titles"). QBanner error with retry.
+```
 
-1. Build lib/features/tracking/presentation/screens/custom_lists_screen.dart:
-   - Lists user's custom lists (GET /api/v1/lists/custom)
-   - FAB to create new list
-   - Tapping opens list detail with its media items
+### Prompt 7.7 — Custom lists
+```
+/startcycle Custom lists — user's curated lists ("Best Isekai", "Watch with friends"). Main page: QList of custom lists with title, item count, cover mosaic (4 tiny covers). FAB to create new list (QDialog: name + description). Clicking a list opens its detail page: QList of media items with drag-to-reorder (VueDraggable). Remove item with swipe-to-delete action. Share button copies a shareable link.
 
-2. Write widget tests for ALL screens built in Phase 7:
-   test/features/tracking/presentation/screens/
-     discover_screen_test.dart
-     media_detail_screen_test.dart
-     my_list_screen_test.dart
-     airing_calendar_screen_test.dart
-
-   Each test covers: loading state, data state, error state + retry.
-
-Run: flutter test test/features/tracking/
-
-PHASE 7 COMPLETE. Update PROJECT-STATUS.md:
-  - Mark 7.9–7.10 ✅
+PHASE 7 COMPLETE after this. Update PROJECT-STATUS.md:
   - Set CURRENT_PHASE to 8, CURRENT_SUB_PHASE to 8.1
   - Add Phase 7 complete to Completion Log
 ```
@@ -938,128 +1011,45 @@ PHASE 7 COMPLETE. Update PROJECT-STATUS.md:
 ---
 
 # PHASE 8 — Social Features Backend
-
-**Primary tool**: Cline or OpenCode (`@backend-dev` agent)
-
----
-
-### Prompt 8.1 — Activity feed endpoint
-```
-Read AGENTS.md and PROJECT-STATUS.md. Current task: 8.1.
-
-Create backend/routers/social.py.
-
-GET /api/v1/social/feed:
-  - Auth required
-  - User must be in a group (use group_id query param, validate membership)
-  - Returns recent ListEntryHistory for all group members
-  - Fields: user display_name + avatar, media title + cover, event_type, new_status, new_progress, new_score, created_at
-  - Cursor-based pagination (limit 20)
-  - Include group_id filter: ?group_id=<uuid>
-
-Query: JOIN list_entry_history → users → media_entries
-  WHERE user_id IN (SELECT user_id FROM group_members WHERE group_id = ?)
-  AND deleted_at IS NULL
-  ORDER BY created_at DESC
-
-Write test: feed returns entries for group members, excludes non-members.
-Update PROJECT-STATUS.md: mark 8.1 ✅, advance to 8.2.
-```
+**Unchanged from the original PROJECT-PROMPT.md — copy Prompts 8.1–8.8 from there.**
 
 ---
 
-### Prompt 8.2–8.4 — Recommendations
+# PHASE 9 — Social Features Frontend
+
+**Primary tool**: Antigravity (`/startcycle` workflow)
+
+### Prompt 9.1 — Activity feed
 ```
-Read PROJECT-STATUS.md. Current task: 8.2–8.4.
-
-Add to backend/routers/social.py:
-
-POST /api/v1/social/recommend
-  body: { to_user_id, media_id, message }
-  Validates: both users in same group, not recommending to self, no duplicate
-
-GET /api/v1/social/recommendations/inbox
-  Returns pending recommendations for current user (is_acknowledged = false)
-  Include: from_user display_name, media title + cover, message, created_at
-
-PATCH /api/v1/social/recommendations/{id}/acknowledge
-  Sets is_acknowledged = true
-  Only the recipient can acknowledge
-
-Write tests. Update PROJECT-STATUS.md: mark 8.2–8.4 ✅, advance to 8.5.
+/startcycle Group activity feed page — what friends have been watching/reading. QList with avatar, friend name, media cover, action text ("started watching Attack on Titan", "rated Berserk 9/10", "reached episode 12 of One Piece"). Infinite scroll with QInfiniteScroll. Group selector QSelect at top if user is in multiple groups. Calls GET /api/v1/social/feed. Tapping a card navigates to media detail.
 ```
 
----
-
-### Prompt 8.5–8.8 — Discussions and profiles
+### Prompt 9.2 — Friend profile
 ```
-Read PROJECT-STATUS.md. Current task: 8.5–8.8.
-
-Add to backend/routers/social.py:
-
-POST /api/v1/social/discussions
-  body: { media_id, group_id, title, body, episode_number?, has_spoilers }
-  Validate: user is group member
-
-GET /api/v1/social/discussions/{media_id}?group_id=
-  Returns discussions for this media in the group
-
-POST /api/v1/social/discussions/{id}/replies
-  body: { body, has_spoilers, parent_reply_id? }
-
-GET /api/v1/social/discussions/{id}/replies
-
-backend/routers/users.py — add:
-GET /api/v1/users/{username}/profile
-  Public profile: display_name, avatar, list stats (total watching, completed, etc.)
-  Only visible to group members
-
-PHASE 8 COMPLETE. Update PROJECT-STATUS.md:
-  - Mark 8.5–8.8 ✅
-  - Set CURRENT_PHASE to 9, CURRENT_SUB_PHASE to 9.1
-  - Add Phase 8 complete to Completion Log
-```
-
----
-
-# PHASE 9 — Social Features Flutter
-
-**Primary tool**: Antigravity (startcycle workflow)
-
-### Prompt 9.1 — Activity feed screen
-```
-/startcycle Group activity feed screen — shows what friends have recently been watching or reading. Each item shows: friend avatar + name, anime/manga cover, what they did ("started watching", "completed", "rated 8/10", "reached episode 12"). Cards are tappable to open media detail. Group selector at top if user is in multiple groups. Pulls from GET /api/v1/social/feed with infinite scroll.
-```
-
-### Prompt 9.2 — Friend profile screen
-```
-/startcycle Friend profile screen — shows another user's public profile. Header with avatar and display name. Stats row: total watching, completed, total hours estimated. Below: their recent activity (last 10 history entries). Calls GET /api/v1/users/{username}/profile.
+/startcycle Friend profile page — another user's public profile. QCard header with q-avatar, display name, member since. Row of stat chips: X watching, Y completed, Z hours estimated. QList of recent activity (last 10 history entries). Calls GET /api/v1/users/{username}/profile.
 ```
 
 ### Prompt 9.3–9.4 — Recommendations
 ```
-/startcycle Recommendation system — two screens: (1) Send recommendation: search for a title, pick a friend from the group, add an optional message, send. (2) Recommendations inbox: list of pending recommendations from friends, each showing sender name, media cover, message, and an "Add to list" button that adds it directly and marks as acknowledged.
+/startcycle Recommendations feature — two pages: (1) Send recommendation: QInput to search for a title (reuse discover composable), QSelect to pick a friend from group, QInput optional message, QBtn send. (2) Recommendations inbox: QList of pending recs. Each item shows sender avatar, media cover, message text, QBtn "Add to list" (adds + marks acknowledged), QBtn "Dismiss".
 ```
 
 ### Prompt 9.5–9.6 — Discussions
 ```
-/startcycle Discussion threads — per-anime discussion screen accessible from the media detail page. Shows list of discussions for this anime in the user's group. Tapping opens a thread view with replies. Spoiler posts are blurred until tapped. New discussion FAB. Reply button on each thread. Episode number tag on episode-specific discussions.
+/startcycle Discussion threads — per-media discussions accessible from media detail page. QList of threads with title, author, reply count, episode tag chip. Tapping opens thread detail with QChat-style replies. Spoiler content blurred with QBtn to reveal. New discussion FAB opens QDialog: title, body QEditor, episode number QInput, spoiler QToggle. Reply QInput at bottom of thread page.
 ```
 
 ### Prompt 9.7 — Group management
 ```
 Read PROJECT-STATUS.md. Current task: 9.7.
 
-Build lib/features/groups/presentation/screens/group_screen.dart:
-  - Group name and avatar at top
-  - Invite link card (tap to copy, shows the invite code prominently)
-  - Members list with avatars and online status (last_seen_at)
-  - "Leave group" button (with confirmation dialog)
-
-Run dart analyze, flutter test.
+Create src/pages/social/GroupPage.vue:
+  QCard: group name, avatar, member count
+  QCard: invite code displayed large, QBtn to copy link, QBtn to regenerate
+  QList: members with q-avatar, username, last seen
+  QBtn "Leave group" → QDialog confirmation → calls DELETE /api/v1/groups/{id}/members/me
 
 PHASE 9 COMPLETE. Update PROJECT-STATUS.md:
-  - Mark 9.7 ✅
   - Set CURRENT_PHASE to 10, CURRENT_SUB_PHASE to 10.1
   - Add Phase 9 complete to Completion Log
 ```
@@ -1067,141 +1057,78 @@ PHASE 9 COMPLETE. Update PROJECT-STATUS.md:
 ---
 
 # PHASE 10 — Watch Party
+**Backend prompts 10.1–10.3 unchanged from original PROJECT-PROMPT.md.**
 
-**Primary tool**: Cline (backend) + Antigravity (Flutter)
-
-### Prompt 10.1–10.3 — Watch party backend
+### Prompt 10.4–10.6 — Watch party frontend
 ```
-Read AGENTS.md and PROJECT-STATUS.md. Current task: 10.1–10.3.
-
-Create backend/routers/watchparty.py:
-
-POST /api/v1/watchparty
-  body: { group_id, media_id, episode_number, title, scheduled_at, stream_url, sync_url, notes }
-  Validates group membership. Creates WatchParty. Auto-creates RSVP for host as 'attending'.
-
-GET /api/v1/watchparty?group_id=
-  Returns upcoming + recent parties for the group (status != cancelled)
-  Ordered by scheduled_at DESC
-
-GET /api/v1/watchparty/{id}
-  Full detail including RSVP list
-
-POST /api/v1/watchparty/{id}/rsvp
-  body: { status: attending|declined }
-  User must be group member
-
-PATCH /api/v1/watchparty/{id} (host only — update details or cancel)
-
-Write tests. Update PROJECT-STATUS.md: mark 10.1–10.3 ✅, advance to 10.4.
-```
-
-### Prompt 10.4–10.6 — Watch party Flutter
-```
-/startcycle Watch party feature — three screens: (1) Watch party list: upcoming events in the group, each showing anime title, episode, date/time, RSVP count, and user's own RSVP status. (2) Create watch party: pick anime from search, episode number, date/time picker, optional stream URL (HiAnime/Crunchyroll link) and sync URL (SyncParty/Rave). (3) Watch party detail: full info, countdown timer, attendee list with avatars, stream link button, RSVP buttons (Attending / Declined).
+/startcycle Watch party feature — three pages: (1) Watch party list: upcoming events, QCard per party showing anime cover, title, episode, scheduled date/time, RSVP count chips (attending/declined), user's own RSVP status chip. (2) Create watch party: QSelect to search anime, QInput episode number, QDatetimePicker for scheduled time, QInput optional stream URL and sync URL, QBtn create. (3) Watch party detail: countdown QCard, attendee QList with avatars, QBtnGroup RSVP (Attending / Declined), QBtn "Open stream" linking to stream URL.
 
 PHASE 10 COMPLETE. Update PROJECT-STATUS.md:
   - Set CURRENT_PHASE to 11, CURRENT_SUB_PHASE to 11.1
-  - Add Phase 10 complete to Completion Log
 ```
 
 ---
 
 # PHASE 11 — Notifications
+**Backend prompts 11.1–11.7 unchanged.**
 
-**Primary tool**: Cline or Claude Code (backend) + Antigravity (Flutter)
-
-### Prompt 11.1–11.7 — Notification backend
+### Prompt 11.8–11.9 — Notification frontend
 ```
-Read AGENTS.md, docs/sync-pipeline.md, and PROJECT-STATUS.md. Current task: 11.1–11.7.
-
-Create backend/external/apprise_client.py:
-  send(title, body, urls: list[str]) — async Apprise notification delivery
-
-Create backend/workers/notification_tasks.py:
-  check_new_episodes()
-    - Find all users with watch_status = 'watching' for currently-airing anime
-    - Check if a new episode aired since last notification
-    - Send via Apprise to users who have new_episode = true in preferences
-    - Create Notification row in DB
-
-  check_new_chapters()
-    - Same pattern for manga/manhwa readers
-
-  watch_party_reminder()
-    - Find parties scheduled within next 30 minutes
-    - Send reminder to all 'attending' RSVPs
-
-Create backend/routers/notifications.py:
-  GET /api/v1/notifications (paginated, unread first)
-  PATCH /api/v1/notifications/read (mark all or specific IDs as read)
-  GET /api/v1/notifications/preferences
-  PATCH /api/v1/notifications/preferences (update discord_webhook, channels, etc.)
-
-Add notification tasks to Celery beat schedule.
-Write tests.
-Update PROJECT-STATUS.md: mark 11.1–11.7 ✅, advance to 11.8.
-```
-
-### Prompt 11.8–11.9 — Notification Flutter screens
-```
-/startcycle Notifications feature — two screens: (1) Notification bell screen: list of notifications with unread badge count in nav bar. Each item shows icon (episode, chapter, recommendation, watch party), title, body, and time ago. Tap marks as read and navigates to relevant content. (2) Notification preferences screen: toggles for each notification type (new episodes, new chapters, friend activity, recommendations, watch party invites). Fields for Discord webhook URL and Telegram chat ID. Save button.
+/startcycle Notifications feature — two pages: (1) Notification page: QList with unread badge count in nav. Each QItem: q-avatar with type icon (episode=play_circle, chapter=menu_book, rec=thumb_up, party=groups), title bold, body, timeago chip. Swipe to mark as read. QBtn "Mark all read". (2) Preferences page: QToggle for each notification type. QInput for Discord webhook URL. QInput for Telegram chat ID. QBtn Save.
 
 PHASE 11 COMPLETE. Update PROJECT-STATUS.md:
   - Set CURRENT_PHASE to 12, CURRENT_SUB_PHASE to 12.1
-  - Add Phase 11 complete to Completion Log
 ```
 
 ---
 
 # PHASE 12 — Polish, Testing & Deploy
 
-**Primary tool**: Claude Code (tests + security) + Antigravity (Flutter builds)
-
 ### Prompt 12.1–12.2 — Test coverage
 ```
-Read AGENTS.md and PROJECT-STATUS.md. Current task: 12.1–12.2.
+Read PROJECT-STATUS.md. Current task: 12.1–12.2.
 
-Backend coverage audit:
+Backend coverage:
   pytest --cov=backend --cov-report=term-missing
-  Find all routes/services with < 80% coverage
-  Write missing tests until coverage reaches 80%+
+  Target: 80%+ coverage. Write missing tests.
 
-Flutter widget test audit:
-  flutter test --coverage
-  Find all screens missing tests
-  Write widget tests for any uncovered screens
+Frontend coverage:
+  npx vitest run --coverage
+  Find all pages missing component tests.
+  Write Vitest tests for any uncovered pages.
+  Target: loading, error, data state covered for every page.
 
-Report: list of tests added and final coverage numbers.
 Update PROJECT-STATUS.md: mark 12.1–12.2 ✅, advance to 12.3.
 ```
 
 ### Prompt 12.3 — Security audit
 ```
 Read PROJECT-STATUS.md. Current task: 12.3.
+Run .claude/commands/audit-security.md full audit.
+Add frontend-specific checks:
+  grep -rn "anilist\|mangadex\|jikan" frontend/src/ --include="*.ts" --include="*.vue"
+  → Any hit outside boot/axios.ts is a BLOCKER
+  grep -rn "any" frontend/src/stores/ frontend/src/pages/ --include="*.ts"
+  → Review each hit — should be eliminated or commented
 
-Run the full security audit using .claude/commands/audit-security.md.
-Run every check in the audit command (secrets scan, auth coverage, IDOR scan, raw SQL check, Flutter external calls, CORS, token security).
-Report all findings with severity.
-Fix all CRITICAL and HIGH findings before advancing.
-
-Update PROJECT-STATUS.md: mark 12.3 ✅, advance to 12.4.
+Fix all CRITICAL and HIGH findings. Update PROJECT-STATUS.md: mark 12.3 ✅.
 ```
 
-### Prompt 12.4 — Performance check
+### Prompt 12.4 — Performance
 ```
 Read PROJECT-STATUS.md. Current task: 12.4.
 
-Run performance checks:
-1. Search endpoint: use httpx to send 50 concurrent search requests, measure p95 latency
-   Target: < 200ms p95
-2. If slow: check EXPLAIN ANALYZE on the search query, add any missing indexes
+Backend: p95 search latency < 200ms under 50 concurrent requests.
 
-3. Flutter web: run Lighthouse audit on http://localhost:8080
-   Target: Performance score > 85
+Frontend:
+  quasar build
+  npx lighthouse dist/spa/index.html --output json | jq '.categories.performance.score'
+  Target: > 0.85
 
-Fix any issues found.
-Update PROJECT-STATUS.md: mark 12.4 ✅, advance to 12.5.
+Check bundle size: quasar build produces a report — ensure no single chunk > 500KB.
+Enable code splitting for heavy pages if needed (already handled by lazy route imports).
+
+Update PROJECT-STATUS.md: mark 12.4 ✅.
 ```
 
 ### Prompt 12.5 — Platform builds
@@ -1210,107 +1137,35 @@ Read PROJECT-STATUS.md. Current task: 12.5.
 
 Build and verify all 5 platforms:
 
-flutter build web --release --wasm
-  → Confirm: builds without error, index.html generated
+quasar build              → dist/spa/ → serve and confirm login + discover works
+quasar build -m pwa       → confirm service worker registered, offline works
+quasar build -m electron  → confirm Electron app launches on Windows or Linux
+quasar build -m capacitor -T android → confirm APK builds in Android Studio
+quasar build -m capacitor -T ios     → confirm IPA builds in Xcode (requires Mac)
 
-flutter build windows --release
-  → Confirm: .exe produced, runs without error
-
-flutter build apk --release
-  → Confirm: .apk produced
-
-flutter build ios --release --no-codesign
-  → Confirm: .app produced (requires Mac)
-
-flutter build linux --release
-  → Confirm: binary produced, runs
-
-Log any platform-specific issues and fix them.
+Fix any platform-specific issues found.
 Update PROJECT-STATUS.md: mark 12.5 ✅, advance to 12.6.
 ```
 
-### Prompt 12.6–12.7 — Production deploy
-```
-Read PROJECT-STATUS.md. Current task: 12.6–12.7.
-
-1. Test production Docker Compose:
-   docker compose -f infra/docker-compose.prod.yml up -d
-   Confirm: all services healthy, backend responds, nginx proxies correctly
-
-2. Copy Flutter web build into nginx html dir:
-   cp -r mobile/build/web/* infra/nginx/html/
-
-3. Run full smoke test against production stack:
-   - Register a user
-   - Login
-   - Search for anime
-   - Add to list
-   - Verify in DB
-
-4. Nginx TLS configuration (self-signed for local, placeholder for real cert):
-   Generate self-signed cert, configure nginx.conf for HTTPS on 443
-
-Update PROJECT-STATUS.md: mark 12.6–12.7 ✅, advance to 12.8.
-```
-
-### Prompt 12.8–12.9 — README and ADRs
-```
-Read PROJECT-STATUS.md. Current task: 12.8–12.9.
-
-1. Write a comprehensive README.md:
-   Project description
-   Architecture diagram (ASCII or Mermaid)
-   Prerequisites (Docker, Flutter, Python 3.12)
-   Quick start: 5 commands to get running
-   How to run each platform
-   How to run tests
-   Environment variables reference
-   How to trigger sync jobs manually
-
-2. Write ADRs for all major decisions made during the build:
-   docs/adr/001-flutter-over-react-native.md
-   docs/adr/002-anilist-as-primary-metadata-source.md
-   docs/adr/003-uuid-v7-primary-keys.md
-   docs/adr/004-soft-deletes-everywhere.md
-   docs/adr/005-fastapi-layered-architecture.md
-   docs/adr/006-celery-for-sync-pipeline.md
-
-PHASE 12 COMPLETE — PROJECT COMPLETE.
-Update PROJECT-STATUS.md:
-  - Mark 12.8–12.9 ✅
-  - Set CURRENT_PHASE to COMPLETE
-  - Set STATUS to COMPLETE
-  - Add final "Project complete" entry to Completion Log
+### Prompts 12.6–12.9
+**Unchanged from original PROJECT-PROMPT.md** — Docker prod, Nginx, README, ADRs.
+Add one extra ADR: `docs/adr/001-quasar-over-flutter.md`
+  - Context: needed web + desktop (Windows/Linux) + mobile from one codebase
+  - Decision: Quasar (Vue 3 + Electron + Capacitor) over Flutter
+  - Rationale: team knows TypeScript/Vue, faster development, Electron covers both desktop targets
+  - Tradeoffs: larger desktop bundle (Electron ~150MB vs Flutter ~30MB), WebView on mobile
 ```
 
 ---
 
-## Quick Reference: Which Tool for Which Phase
+## Updated Tool Table for Phases 6–12
 
 | Phase | Primary Tool | Agent/Mode |
 |-------|-------------|------------|
-| 1 — Foundation | Claude Code / OpenCode | default |
-| 2 — Database | Claude Code / OpenCode | `@db-designer` |
-| 3 — Sync pipeline | Cline / OpenCode | `@sync-engineer` |
-| 4 — Auth | Cline / Claude Code | `@backend-dev` |
-| 5 — Tracking API | Cline / Claude Code | `@backend-dev` |
-| 6 — Flutter shell | Antigravity / Claude Code | flutter-dev agent |
-| 7 — Flutter tracking | Antigravity | `/startcycle` workflow |
+| 6 — Quasar shell | Antigravity / Claude Code | quasar-dev agent |
+| 7 — Tracking pages | Antigravity | `/startcycle` workflow |
 | 8 — Social API | Cline / OpenCode | `@backend-dev` |
-| 9 — Social Flutter | Antigravity | `/startcycle` workflow |
+| 9 — Social pages | Antigravity | `/startcycle` workflow |
 | 10 — Watch party | Cline + Antigravity | split |
 | 11 — Notifications | Cline + Antigravity | split |
 | 12 — Polish | Claude Code | `/review-pr`, `/audit-security` |
-
----
-
-## Universal Rules for Every Prompt
-
-Every AI agent working on this project must, without exception:
-1. Read `PROJECT-STATUS.md` before starting
-2. Read `AGENTS.md` for conventions
-3. Read the relevant `docs/` file for the domain
-4. Only work on the current sub-phase
-5. Update `PROJECT-STATUS.md` when done
-6. Run lint + tests before marking ✅
-7. Never skip a sub-phase

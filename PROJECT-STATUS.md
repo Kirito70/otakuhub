@@ -10,12 +10,12 @@
 ## Current State
 
 ```
-CURRENT_PHASE:     4
-CURRENT_SUB_PHASE: 4.2
+CURRENT_PHASE:     6
+CURRENT_SUB_PHASE: 6.1
 STATUS:            IN_PROGRESS
-LAST_UPDATED:      2026-04-28
+LAST_UPDATED:      2026-05-04
 BLOCKED_BY:        none
-NEXT_ACTION:       Implement fluent filtering methods (where, and_, or_) for the query builder
+NEXT_ACTION:       Implement GET /api/v1/lists/me (user's full list)
 ```
 
 ---
@@ -24,7 +24,7 @@ NEXT_ACTION:       Implement fluent filtering methods (where, and_, or_) for the
 
 | Phase | Name | Status |
 |-------|------|--------|
-| 1 | Foundation & Infrastructure | 🔄 In progress |
+| 1 | Foundation & Infrastructure | ✅ Complete |
 | 2 | Database & Backend Core | ✅ Complete |
 | 3 | Anime Metadata Pipeline | ✅ Complete |
 | 4 | Query Builder Pattern Implementation | ✅ Complete |
@@ -48,12 +48,12 @@ NEXT_ACTION:       Implement fluent filtering methods (where, and_, or_) for the
 
 | Sub-phase | Task | Status | Notes |
 |-----------|------|--------|-------|
-| 1.1 | Monorepo directory structure created | ✅ | backend/, mobile/, infra/, scripts/, docs/ |
+| 1.1 | Monorepo directory structure created | ✅ | backend/, frontend/, infra/, scripts/, docs/ |
 | 1.2 | Docker Compose dev stack (postgres, redis, backend, worker) | ✅ | |
 | 1.3 | Docker Compose prod stack | ✅ | |
 | 1.4 | FastAPI app skeleton (main.py, core/, routers/) | ✅ | |
 | 1.5 | Alembic configured, initial empty migration | ✅ | |
-| 1.6 | Flutter project init, pubspec.yaml with all deps | ✅ | |
+| 1.6 | Flutter project init, package.json (Quasar) with all deps | ✅ | |
 | 1.7 | GitHub Actions CI: lint + test on PR | ✅ | |
 | 1.8 | .env.example files for backend and mobile | ✅ | |
 
@@ -102,29 +102,29 @@ NEXT_ACTION:       Implement fluent filtering methods (where, and_, or_) for the
 | Sub-phase | Task | Status | Notes |
 |-----------|------|--------|-------|
 | 4.1 | Create unified base query builder class | ✅ | |
-| 4.2 | Implement fluent filtering methods (where, and_, or_) | ⏳ | |
-| 4.3 | Add support for ordering, pagination, and joins | ⏳ | |
-| 4.4 | Replace all existing repository queries with new pattern | ⏳ | |
-| 4.5 | Add method chaining for all repository operations | ⏳ | |
-| 4.6 | Test all repository methods with new API | ⏳ | |
-| 4.7 | Document the query builder pattern for future developers | ⏳ | |
+| 4.2 | Implement fluent filtering methods (where, and_, or_) | ✅ | |
+| 4.3 | Add support for ordering, pagination, and joins | ✅ | |
+| 4.4 | Replace all existing repository queries with new pattern | ✅ | |
+| 4.5 | Add method chaining for all repository operations | ✅ | |
+| 4.6 | Test all repository methods with new API | ✅ | |
+| 4.7 | Document the query builder pattern for future developers | ✅ | |
 
 ### Phase 5 — User Auth & Groups
 **Goal**: Register, login, JWT refresh, group creation and invite system working end-to-end.
 
 | Sub-phase | Task | Status | Notes |
 |-----------|------|--------|-------|
-| 5.1 | POST /api/v1/auth/register | ⏳ | |
-| 5.2 | POST /api/v1/auth/login | ⏳ | |
-| 5.3 | POST /api/v1/auth/refresh | ⏳ | |
-| 5.4 | POST /api/v1/auth/logout | ⏳ | |
-| 5.5 | GET /api/v1/users/me | ⏳ | |
-| 5.6 | PATCH /api/v1/users/me | ⏳ | |
-| 5.7 | POST /api/v1/groups | ⏳ | |
-| 5.8 | GET /api/v1/groups/{id} | ⏳ | |
-| 5.9 | POST /api/v1/groups/join/{invite_code} | ⏳ | |
-| 5.10 | GET /api/v1/groups/{id}/members | ⏳ | |
-| 5.11 | Auth tests (happy path, wrong password, expired token) | ⏳ | |
+| 5.1 | POST /api/v1/auth/register | ✅ | |
+| 5.2 | POST /api/v1/auth/login | ✅ | |
+| 5.3 | POST /api/v1/auth/refresh | ✅ | |
+| 5.4 | POST /api/v1/auth/logout | ✅ | |
+| 5.5 | GET /api/v1/users/me | ✅ | |
+| 5.6 | PATCH /api/v1/users/me | ✅ | |
+| 5.7 | POST /api/v1/groups | ✅ | |
+| 5.8 | GET /api/v1/groups/{id} | ✅ | |
+| 5.9 | POST /api/v1/groups/join/{invite_code} | ✅ | |
+| 5.10 | GET /api/v1/groups/{id}/members | ✅ | |
+| 5.11 | Auth tests (happy path, wrong password, expired token) | ✅ | |
 
 ### Phase 6 — Tracking & Lists
 **Goal**: Full list CRUD — add, update progress, score, remove, custom lists.
@@ -278,6 +278,42 @@ NEXT_ACTION:       Implement fluent filtering methods (where, and_, or_) for the
 # 2026-04-22 | Phase 1.2 | Docker Compose dev stack setup with postgres, redis, backend, worker
 # 2026-04-22 | Phase 1.3 | Docker Compose prod stack setup
 # 2026-04-22 | Phase 1.2 | Docker Compose dev stack setup with postgres, redis, backend, worker
+# 2026-04-24 | Phase 2.1 | PostgreSQL extensions implemented
+# 2026-04-24 | Phase 2.2 | All enums created
+# 2026-04-24 | Phase 2.3 | Media catalogue tables migrated
+# 2026-04-24 | Phase 2.4 | User & auth tables migrated
+# 2026-04-24 | Phase 2.5 | Group tables migrated
+# 2026-04-24 | Phase 2.6 | Tracking tables migrated
+# 2026-04-24 | Phase 2.7 | Social tables migrated
+# 2026-04-24 | Phase 2.8 | Watch party tables migrated
+# 2026-04-24 | Phase 2.9 | Notification tables migrated
+# 2026-04-24 | Phase 2.10 | Sync jobs table migrated
+# 2026-04-24 | Phase 2.11 | All SQLAlchemy models written
+# 2026-04-24 | Phase 2.12 | Repository base classes scaffolded
+# 2026-04-24 | Phase 2.13 | GET /health endpoint implemented
+# 2026-04-24 | Phase 2.14 | GET /api/v1/status endpoint implemented
+# 2026-04-26 | Phase 3.1 | AniList GraphQL client implemented
+# 2026-04-26 | Phase 3.2 | MangaDex REST client implemented
+# 2026-04-26 | Phase 3.3 | Jikan client implemented
+# 2026-04-26 | Phase 3.4 | Seed script: download + import anime-offline-database created
+# 2026-04-26 | Phase 3.5 | Celery app + Redis broker configured
+# 2026-04-26 | Phase 3.6 | Backfill worker: AniList batch fetch implemented
+# 2026-04-26 | Phase 3.7 | MangaDex detail worker implemented
+# 2026-04-26 | Phase 3.8 | Weekly refresh cron task implemented
+# 2026-04-26 | Phase 3.9 | On-demand fetch mechanism implemented
+# 2026-04-26 | Phase 3.10 | Media search endpoint implemented
+# 2026-04-26 | Phase 3.11 | Media detail endpoint implemented
+# 2026-04-26 | Phase 3.12 | Airing calendar endpoint implemented
+# 2026-04-26 | Phase 3.13 | Seed script tested and functional
+# 2026-05-04 | Phase 4.1 | Query builder base class created and implemented
+# 2026-05-04 | Phase 4.2 | Fluent filtering methods (where, and_, or_) implemented
+# 2026-05-04 | Phase 4.3 | Support for ordering, pagination, and joins added
+# 2026-05-04 | Phase 4.5 | Method chaining for all repository operations completed
+# 2026-05-04 | Phase 4.6 | Repository query builder tests completed
+# 2026-05-04 | Phase 4.7 | Query builder pattern documentation completed
+# 2026-05-04 | Phase 5.1 | Phase 5 started: auth register/login/refresh/logout scaffolding implemented
+# 2026-05-04 | Phase 5 | User Auth & Groups marked complete
+```
 ```
 
 ---
@@ -304,3 +340,4 @@ When an AI agent reads this file, it must:
 6. If the entire phase is complete, set all rows to ✅, update `CURRENT_PHASE`, and set `STATUS` to `PHASE_COMPLETE` until the user advances
 7. Add a line to the Completion Log
 8. Never modify completed (✅) entries
+

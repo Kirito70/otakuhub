@@ -17,6 +17,16 @@ class LoginRequest(BaseModel):
     password: constr(min_length=8)
 
 
+class RegisterRequest(BaseModel):
+    """Payload for ``POST /auth/register``."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    username: constr(min_length=3, max_length=50)
+    email: constr(min_length=5, max_length=255)
+    password: constr(min_length=8)
+
+
 class RefreshRequest(BaseModel):
     """Payload for ``POST /auth/refresh`` – client sends the stored refresh token."""
 

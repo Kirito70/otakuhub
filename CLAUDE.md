@@ -5,64 +5,45 @@
 ## How Claude Should Work on This Project
 
 ### Before Starting Any Task
-1. Read the relevant `docs/` file for the domain you're working in
+1. Read the relevant `docs/` file for the domain
 2. Run `git status` to understand current state
-3. Check for open Alembic revisions before touching the DB: `alembic heads`
-4. For Flutter work, run `flutter analyze` first to see baseline issues
+3. Check for open Alembic revisions before touching DB: `alembic heads`
+4. For frontend work, run `vue-tsc --noEmit` first to see baseline TS errors
 
 ### Preferred Workflow
 - Always propose a plan before writing code for tasks longer than ~30 lines
-- Write tests alongside implementation — not as a separate step
-- After writing a new FastAPI endpoint, also update `docs/api-spec.md`
-- After writing a new DB migration, add the table/column to `docs/database-schema.md`
+- Write tests alongside implementation
+- After writing a new FastAPI endpoint, update `docs/api-spec.md`
+- After writing a new DB migration, update `docs/database-schema.md`
+- After a new Quasar page, update the route table in `docs/quasar-architecture.md`
 
 ### Custom Commands Available
-Use these slash commands (defined in `.claude/commands/`):
-- `/design-feature <name>` — Generate an ADR + data model + API contract for a new feature
+- `/design-feature <name>` — ADR + data model + API contract + Pinia store shape
 - `/review-pr` — Full code review: logic, types, tests, security, performance
-- `/new-migration <name>` — Create a properly structured Alembic migration
-- `/audit-security` — Security scan: auth, SQL injection, data exposure, prompt injection
-- `/spec-endpoint <route>` — Write OpenAPI spec for a given route
-- `/seed-db` — Generate the DB seed script for the anime-offline-database import
-- `/flutter-screen <name>` — Scaffold a new Flutter feature screen with Riverpod provider
-- `/sync-worker <name>` — Create a Celery worker for a new sync task
+- `/new-migration <name>` — Properly structured Alembic migration
+- `/audit-security` — Security scan: auth, SQL injection, data exposure
+- `/quasar-page <name>` — Scaffold a new Quasar page + Pinia store + tests
+- `/seed-db` — Generate the DB seed script
+- `/sync-worker <name>` — Create a Celery worker for a sync task
+- `/next-phase` — Mark current sub-phase done, advance PROJECT-STATUS.md
 
 ### Code Review Checklist (use /review-pr)
-When reviewing, check ALL of these:
-- [ ] Type annotations complete and correct
-- [ ] No N+1 queries (check for missing `selectinload`/`joinedload`)
-- [ ] Pydantic response models used (no raw dict returns)
-- [ ] Auth dependency on all protected routes
-- [ ] Rate limiting considered for sync/external API calls
-- [ ] Soft delete respected (no hard DELETEs on user data)
-- [ ] Migration is reversible (has `downgrade()` implemented)
-- [ ] Flutter: no `setState` in screen files; Riverpod only
-- [ ] Flutter: loading + error states handled in all async widgets
-- [ ] No secrets or API keys in code
-
-### Architecture Decision Records
-
-## Critical Safety Rules
-- **Test‑Driven Development (TDD) is mandatory** – every new feature or bug‑fix must start with a failing test, and the test suite must pass before any code is merged.  The CI pipeline enforces this via the `pytest‑check‑new‑tests` pre‑commit hook and the standard test coverage checks.
-- NEVER write to the production database without explicit user confirmation
-- NEVER commit secrets, API keys, or tokens to Git
-- NEVER delete user tracking data or progress without a soft‑delete + confirmation
-- NEVER call AniList or MangaDex directly from Flutter — all external API calls go through FastAPI
-- ALWAYS run `alembic upgrade head` in a transaction; wrap migrations in `op.execute("BEGIN")`
-- ALWAYS check for existing Alembic revision before creating a new one
-When making a significant architectural choice, create an ADR in `docs/adr/`:
-```
-docs/adr/
-  001-database-uuid-v7.md
-  002-anilist-as-primary-source.md
-  003-riverpod-state-management.md
-  ...
-```
-ADR template: Title, Status, Context, Decision, Consequences.
+- [ ] TypeScript strict — no `any`, no `as unknown as X` hacks
+- [ ] `<script setup lang="ts">` on every component
+- [ ] Pinia store used for shared state — no prop drilling beyond 2 levels
+- [ ] All async: `isLoading`, `error`, `data` refs exposed from composable
+- [ ] Quasar components used (QCard, QList, etc.) — not raw divs where Quasar has a component
+- [ ] Responsive: `$q.screen` breakpoints used, not raw CSS media queries
+- [ ] No direct AniList/MangaDex calls from frontend
+- [ ] Axios interceptor handles 401 → token refresh
+- [ ] Backend: type hints complete, Pydantic v2 responses, repository pattern
+- [ ] Migrations: downgrade() implemented, round-trip tested
+- [ ] Tests present for new endpoints and new pages
 
 ### Context Always Relevant
-- The anime metadata DB is seeded from `manami-project/anime-offline-database`
-- AniList IDs are the canonical foreign keys across the system
-- MangaDex IDs supplement manga/manhwa entries
-- User tracking data (progress, ratings, lists) is entirely in our DB — not synced back to AniList
-- The Flutter app talks ONLY to our FastAPI backend, never to external APIs directly
+- Frontend is Quasar 2.x with Vue 3 Composition API, TypeScript strict, Pinia, Axios
+- Mobile: Capacitor 6 (wraps web build in native shell for Android/iOS)
+- Desktop: Electron (wraps web build for Windows/Linux)
+- The frontend NEVER calls AniList/MangaDex directly — always via FastAPI
+- User tokens stored in `localStorage` with pinia-plugin-persistedstate (Electron/web)
+  and Capacitor Preferences plugin on mobile native

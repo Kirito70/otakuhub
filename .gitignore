@@ -9,6 +9,8 @@ __pycache__/
 .coverage.*
 .cache
 
+patches
+
 # Distribution
 dist/
 build/

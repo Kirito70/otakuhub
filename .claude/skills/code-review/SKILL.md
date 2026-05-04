@@ -1,65 +1,75 @@
 ---
 name: code-review
-description: Perform a structured code review of a diff, file, or PR. Returns severity-tagged findings and a final verdict.
+description: Full code review of a diff or PR. Returns severity-tagged findings and a final verdict.
 ---
 
 # Code Review Skill
 
-## Inputs Needed
-- The diff (`git diff main`) or specific files to review
-- Context: what feature does this implement?
-
 ## Review Process
 
-### Pass 1 — Architecture (read all changed files first)
-- Does this change respect the layered architecture (router → service → repository)?
-- Are responsibilities in the right layer?
-- Are there new dependencies that weren't designed?
+### Pass 1 — Architecture
+- Backend: router → service → repository layer respected?
+- Frontend: store logic in Pinia (not in components), composables for reusable async?
+- No business logic leaking into components?
 
-### Pass 2 — Correctness (line by line)
-- Logic errors, off-by-one, wrong conditions
-- Async/await correctness — missing awaits on coroutines
-- SQLAlchemy: sync calls in async context? Missing selectinload causing N+1?
+### Pass 2 — TypeScript / Vue 3 (Frontend)
+- `<script setup lang="ts">` on every component?
+- No `any` types — every value has a proper interface?
+- Props typed with `defineProps<{...}>()`?
+- Every async action has `isLoading`, `error`, `data` pattern?
+- Loading state shown while fetching?
+- Error state shown with retry option?
+- No raw `fetch()` calls — Axios boot file used?
+- No AniList/MangaDex calls from frontend?
+- Long lists use `QVirtualScroll`?
+- Routing uses named routes (not raw paths)?
 
-### Pass 3 — Types & Contracts
-- Python: type hints complete? Pydantic models used for all responses?
-- Dart: no dynamic types? AsyncValue.when() complete?
+### Pass 3 — Python / FastAPI (Backend)
+- Type hints on every function signature?
+- Pydantic v2 response models — no raw dict returns?
+- Repository pattern — no DB queries in routers or services?
+- Async SQLAlchemy — no sync calls in async context?
+- N+1 check — `selectinload`/`joinedload` used for relationships?
+- `async with session.begin()` wrapping all writes?
+- Auth dependency on all protected routes?
+- Correct HTTP status codes?
 
 ### Pass 4 — Security
-- Auth on all protected routes?
-- IDOR risk on any ID-based endpoint?
-- User input going into raw SQL?
-- Secrets in code?
-- Flutter calling external APIs directly?
+- No secrets in code?
+- No raw SQL string building?
+- Auth checked before user-specific data returned?
+- IDOR risk on ID-based endpoints?
+- No external API calls from frontend?
 
 ### Pass 5 — Tests
-- Tests present for new endpoints?
-- Coverage of error cases?
+- New endpoint: happy path, auth failure, not-found?
+- New page: loading state, error state, data state?
+- Vitest tests run: `npx vitest run`?
+- Pytest tests run: `pytest tests/ -v`?
 
 ## Output Format
 ```
-## Code Review — <feature name>
-**Files reviewed**: list of files
-**Summary**: 2-sentence summary of what changed and overall quality
+## Code Review — <feature>
+**Summary**: 2-sentence overview
 
 ### Findings
 
-**[BLOCKER]** `backend/routers/media.py:45`
-Issue: No auth dependency on GET /media/{id}
-Fix: Add `current_user: Annotated[User, Depends(get_current_user)]` parameter
+**[BLOCKER]** `src/stores/tracking.ts:45`
+Issue: Calling AniList API directly from Pinia store
+Fix: Move the call to the FastAPI backend and call /api/v1/... instead
 
-**[MAJOR]** `backend/repositories/media_repository.py:23`
-Issue: N+1 query — genres loaded lazily in a loop
-Fix: Add `.options(selectinload(MediaEntry.genres))` to the base query
+**[MAJOR]** `src/pages/DiscoverPage.vue:23`
+Issue: No error state — if API call fails, page shows nothing
+Fix: Add v-else-if="store.error" block with QBanner
 
-**[MINOR]** `mobile/lib/features/media/presentation/screens/detail_screen.dart:67`
-Issue: Missing error state handler
-Fix: Add `error: (e, _) => ErrorView(message: e.toString())` to .when()
+**[MINOR]** `backend/routers/lists.py:67`
+Issue: Missing selectinload on UserListEntry.media relationship
+Fix: Add .options(selectinload(UserListEntry.media)) to the query
 
-**[NIT]** `backend/services/media_service.py:12`
+**[NIT]** `src/stores/media.ts:12`
 Issue: Variable name `d` is not descriptive
-Fix: Rename to `media_detail`
+Fix: Rename to `mediaDetail`
 
 ### Verdict
-🔄 Changes Requested — 1 BLOCKER, 1 MAJOR must be fixed before merge
+✅ Approved | 🔄 Changes Requested | 🚫 Blocked
 ```

@@ -31,3 +31,24 @@
 | POST /api/v1/groups/{group_id}/members | 2 req/s per user | 5 |
 
 *All request/response bodies are defined as Pydantic models in `backend/schemas/auth.py` and `backend/schemas/group.py`.*
+
+## Media Endpoints
+| Method | Path | Auth | Request Schema | Response Schema | Errors |
+|--------|------|------|----------------|----------------|--------|
+| **GET** | `/api/v1/media/{media_id}` | No | – | `MediaDetailResponse` | 404 Not found |
+| **GET** | `/api/v1/media/search` | No | `MediaSearchRequest { query?: string, type?: string, page?: int }` | `MediaSearchResponse` | 400 Bad request |
+| **GET** | `/api/v1/media/popular` | No | – | `MediaListResponse` | – |
+| **GET** | `/api/v1/media/trending` | No | – | `MediaListResponse` | – |
+| **GET** | `/api/v1/media/airing` | No | `AiringRequest { page?: int, per_page?: int }` | `AiringResponse` | 400 Bad request |
+
+## Tracking Endpoints
+| Method | Path | Auth | Request Schema | Response Schema | Errors |
+|--------|------|------|----------------|----------------|--------|
+| **GET** | `/api/v1/lists/entries/{entry_id}` | Yes | – | `ListEntryResponse` | 404 Not found / 403 Forbidden |
+| **GET** | `/api/v1/lists/entries` | Yes | `ListRequest { status?: string, page?: int }` | `ListResponse` | 400 Bad request |
+| **POST** | `/api/v1/lists/entries` | Yes | `ListEntryCreate { media_id: UUID, status: string, progress?: int, score?: float }` | `ListEntryResponse` | 400 Validation / 409 Conflict |
+| **PATCH** | `/api/v1/lists/entries/{entry_id}` | Yes | `ListEntryUpdate { status?: string, progress?: int, score?: float, notes?: string }` | `ListEntryResponse` | 400 Validation / 404 Not found |
+| **DELETE** | `/api/v1/lists/entries/{entry_id}` | Yes | – | `{ "success": true }` | 404 Not found / 403 Forbidden |
+| **GET** | `/api/v1/lists/statistics` | Yes | – | `UserStatistics` | – |
+
+*All request/response bodies are defined as Pydantic models in `backend/schemas/tracking.py`.*
