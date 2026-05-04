@@ -69,3 +69,29 @@ _*_test.py
 test_*.pyc
 
 sample-repos
+
+# Node / Frontend
+node_modules/
+frontend/node_modules/
+frontend/.quasar/
+frontend/dist/
+frontend/src-capacitor/
+frontend/src-electron/
+
+# Quasar / JS caches
+.npm/
+.pnpm-store/
+
+# Mobile / desktop build artifacts
+*.keystore
+*.jks
+*.apk
+*.aab
+*.appimage
+*.exe
+
+# Local environment files
+.env
+.env.*
+!.env.example
+!.env.*.example

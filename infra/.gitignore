@@ -1,0 +1,7 @@
+# Local override files
+*.local.yml
+*.override.yml
+
+# Generated certs and secrets
+certs/
+secrets/

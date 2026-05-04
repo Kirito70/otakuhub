@@ -1,0 +1,20 @@
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Test/coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# Virtual env
+.venv/
+venv/
+
+# Local env
+.env
+.env.*
+
+# Alembic local artifacts
+alembic.ini.local

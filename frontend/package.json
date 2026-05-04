@@ -1,0 +1,25 @@
+{
+  "name": "otakuhub-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "quasar dev",
+    "build": "quasar build",
+    "build:electron": "quasar build -m electron",
+    "build:android": "quasar build -m capacitor -T android"
+  },
+  "dependencies": {
+    "@quasar/extras": "^1.18.0",
+    "axios": "^1.8.4",
+    "pinia": "^2.1.7",
+    "quasar": "^2.18.2",
+    "vue": "^3.5.13",
+    "vue-router": "^4.5.1"
+  },
+  "devDependencies": {
+    "@quasar/app-vite": "^2.1.0",
+    "electron": "^41.5.0",
+    "electron-builder": "^26.8.1",
+    "typescript": "^5.8.3"
+  }
+}

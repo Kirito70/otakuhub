@@ -11,11 +11,11 @@
 
 ```
 CURRENT_PHASE:     7
-CURRENT_SUB_PHASE: 7.2
+CURRENT_SUB_PHASE: 7.10
 STATUS:            IN_PROGRESS
-LAST_UPDATED:      2026-05-04
-BLOCKED_BY:        none
-NEXT_ACTION:       AdaptiveScaffold shell: bottom nav (mobile), side nav (desktop)
+LAST_UPDATED:      2026-05-05
+BLOCKED_BY:        Android release build environment missing (JAVA_HOME / JDK)
+NEXT_ACTION:       Set JAVA_HOME and rerun: quasar build -m capacitor -T android
 ```
 
 ---
@@ -148,14 +148,14 @@ NEXT_ACTION:       AdaptiveScaffold shell: bottom nav (mobile), side nav (deskto
 | Sub-phase | Task | Status | Notes |
 |-----------|------|--------|-------|
 | 7.1 | GoRouter setup: all named routes defined | ✅ | Implemented Quasar router named-route map in frontend/src/router/routes.ts with auth/public route split |
-| 7.2 | AdaptiveScaffold shell: bottom nav (mobile), side nav (desktop) | ⏳ | |
-| 7.3 | Dio client + auth interceptor (token attach + refresh on 401) | ⏳ | |
-| 7.4 | flutter_secure_storage wrapper | ⏳ | |
-| 7.5 | Auth feature: login screen | ⏳ | |
-| 7.6 | Auth feature: register screen | ⏳ | |
-| 7.7 | Auth Riverpod provider (AuthNotifier) | ⏳ | |
-| 7.8 | App theme: Material 3 light + dark | ⏳ | |
-| 7.9 | Auth guard in GoRouter redirect | ⏳ | |
+| 7.2 | AdaptiveScaffold shell: bottom nav (mobile), side nav (desktop) | ✅ | Implemented responsive MainLayout with desktop drawer + mobile bottom tabs navigation |
+| 7.3 | Dio client + auth interceptor (token attach + refresh on 401) | ✅ | Implemented Quasar Axios boot client with bearer attach and 401 refresh retry flow |
+| 7.4 | flutter_secure_storage wrapper | ✅ | Implemented secure storage service wrapper for token persistence and auth store hydration |
+| 7.5 | Auth feature: login screen | ✅ | Implemented LoginPage with auth store integration, loading state, and error banner |
+| 7.6 | Auth feature: register screen | ✅ | Implemented RegisterPage with auth store integration and post-auth redirect |
+| 7.7 | Auth Riverpod provider (AuthNotifier) | ✅ | Implemented Quasar-equivalent Pinia auth store with login/register/refresh/logout + hydration |
+| 7.8 | App theme: Material 3 light + dark | ✅ | Added theme composable, dark-mode toggle, and Quasar palette variables with auto dark boot |
+| 7.9 | Auth guard in GoRouter redirect | ✅ | Added router beforeEach guard for protected routes and auth-page redirect when logged in |
 | 7.10 | App runs on: web, Windows, Android (confirm all three) | ⏳ | |
 
 ### Phase 8 — Flutter Tracking Screens
@@ -325,6 +325,14 @@ NEXT_ACTION:       AdaptiveScaffold shell: bottom nav (mobile), side nav (deskto
 # 2026-05-04 | Phase 6.10 | Implemented explicit list-entry history auto-log event typing on updates
 # 2026-05-04 | Phase 6 | Tracking & Lists marked complete
 # 2026-05-04 | Phase 7.1 | Implemented frontend named routes and router setup scaffold
+# 2026-05-04 | Phase 7.2 | Implemented adaptive app shell with responsive drawer and bottom tabs
+# 2026-05-04 | Phase 7.3 | Implemented Axios auth interceptor with token attach and automatic refresh retry
+# 2026-05-04 | Phase 7.4 | Implemented frontend secure token storage wrapper and auth hydration store
+# 2026-05-04 | Phase 7.5 | Implemented login screen with auth submission flow
+# 2026-05-04 | Phase 7.6 | Implemented register screen with auth submission flow
+# 2026-05-04 | Phase 7.7 | Implemented Pinia auth provider/store replacing Riverpod intent for Quasar
+# 2026-05-04 | Phase 7.8 | Implemented light/dark theme scaffolding and runtime toggle
+# 2026-05-04 | Phase 7.9 | Implemented router auth guard and redirect rules
 ```
 
 ---
@@ -335,7 +343,7 @@ NEXT_ACTION:       AdaptiveScaffold shell: bottom nav (mobile), side nav (deskto
 
 ```
 # Format: [OPEN/RESOLVED] Phase X.Y — description
-# (none currently)
+[OPEN] Phase 7.10 — Android build blocked: JAVA_HOME/JDK not configured in environment
 ```
 
 ---

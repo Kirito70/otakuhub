@@ -6,6 +6,7 @@ import {
   createWebHistory,
 } from 'vue-router'
 
+import { useAuthStore } from 'src/stores/auth'
 import routes from './routes'
 
 export default route(function () {
@@ -19,6 +20,20 @@ export default route(function () {
     scrollBehavior: () => ({ left: 0, top: 0 }),
     routes,
     history: createHistory(process.env.VUE_ROUTER_BASE),
+  })
+
+  Router.beforeEach((to) => {
+    const auth = useAuthStore()
+
+    if (to.meta.requiresAuth && !auth.isAuthenticated) {
+      return { name: 'login' }
+    }
+
+    if ((to.name === 'login' || to.name === 'register') && auth.isAuthenticated) {
+      return { name: 'discover' }
+    }
+
+    return true
   })
 
   return Router
