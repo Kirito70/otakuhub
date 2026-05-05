@@ -36,9 +36,9 @@ class ListEntryHistory(SQLModel, table=True):
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
     # Relationships
-    entry: Optional["UserListEntry"] = Relationship(back_populates="history")
-    user: Optional["User"] = Relationship(back_populates="history")
-    media: Optional["MediaEntry"] = Relationship(back_populates="history")
+    entry: Optional["UserListEntry"] = Relationship()
+    user: Optional["User"] = Relationship()
+    media: Optional["MediaEntry"] = Relationship()
 
     # Create indexes for performance
     __table_args__ = (

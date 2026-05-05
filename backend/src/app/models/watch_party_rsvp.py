@@ -14,6 +14,8 @@ if TYPE_CHECKING:
 class WatchPartyRsvp(SQLModel, table=True):
     """RSVP for a watch party."""
 
+    __tablename__ = "watch_party_rsvp"
+
     party_id: UUID = Field(
         foreign_key="watch_party.id",
         primary_key=True,
@@ -31,8 +33,8 @@ class WatchPartyRsvp(SQLModel, table=True):
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
     # Relationships
-    party: Optional["WatchParty"] = Relationship(back_populates="rsvps")
-    user: Optional["User"] = Relationship(back_populates="watch_party_rsvps")
+    party: Optional["WatchParty"] = Relationship()
+    user: Optional["User"] = Relationship()
 
     # Create indexes for performance
     __table_args__ = (

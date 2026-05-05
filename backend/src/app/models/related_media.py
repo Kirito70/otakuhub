@@ -31,13 +31,7 @@ class RelatedMedia(SQLModel, table=True):
     # Timestamps
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
-    # Relationships
-    source_media: Optional["MediaEntry"] = Relationship(
-        back_populates="related_media_source"
-    )
-    related_media: Optional["MediaEntry"] = Relationship(
-        back_populates="related_media_target"
-    )
+    # Relationships intentionally omitted to avoid ambiguous FK mapper setup
 
     # Create indexes for performance
     __table_args__ = (

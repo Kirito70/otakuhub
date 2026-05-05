@@ -32,10 +32,7 @@ class Recommendation(SQLModel, table=True):
     # Soft delete
     deleted_at: Optional[datetime] = Field(default=None)
 
-    # Relationships
-    from_user: Optional["User"] = Relationship(back_populates="sent_recommendations")
-    to_user: Optional["User"] = Relationship(back_populates="received_recommendations")
-    media: Optional["MediaEntry"] = Relationship(back_populates="recommendations")
+    # Relationships intentionally omitted to avoid ambiguous FK mapper setup
 
     # Create indexes for performance
     __table_args__ = (

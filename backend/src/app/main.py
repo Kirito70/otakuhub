@@ -57,3 +57,9 @@ async def root():
         "docs": "/docs",
         "health": f"{settings.api_v1_prefix}/health",
     }
+
+
+@app.get("/health")
+async def health():
+    """Health endpoint for legacy tests and load balancers."""
+    return {"status": "healthy", "service": settings.app_name}

@@ -15,6 +15,8 @@ if TYPE_CHECKING:
 class WatchParty(SQLModel, table=True):
     """Watch party event model."""
 
+    __tablename__ = "watch_party"
+
     id: UUID = Field(
         default_factory=UUID,
         primary_key=True,
@@ -39,9 +41,9 @@ class WatchParty(SQLModel, table=True):
     deleted_at: Optional[datetime] = Field(default=None)
 
     # Relationships
-    group: Optional["Group"] = Relationship(back_populates="watch_parties")
-    host_user: Optional["User"] = Relationship(back_populates="hosted_watch_parties")
-    media: Optional["MediaEntry"] = Relationship(back_populates="watch_parties")
+    group: Optional["Group"] = Relationship()
+    host_user: Optional["User"] = Relationship()
+    media: Optional["MediaEntry"] = Relationship()
 
     # Create indexes for performance
     __table_args__ = (

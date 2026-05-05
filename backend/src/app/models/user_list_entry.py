@@ -14,6 +14,8 @@ if TYPE_CHECKING:
 class UserListEntry(SQLModel, table=True):
     """The core tracking table. One row per user per media title."""
 
+    __tablename__ = "user_list_entry"
+
     id: UUID = Field(
         default_factory=UUID,
         primary_key=True,
@@ -38,8 +40,8 @@ class UserListEntry(SQLModel, table=True):
     deleted_at: Optional[datetime] = Field(default=None)
 
     # Relationships
-    user: Optional["User"] = Relationship(back_populates="list_entries")
-    media: Optional["MediaEntry"] = Relationship(back_populates="list_entries")
+    user: Optional["User"] = Relationship()
+    media: Optional["MediaEntry"] = Relationship()
 
     # Create indexes for performance
     __table_args__ = (

@@ -13,6 +13,8 @@ if TYPE_CHECKING:
 class CustomListEntry(SQLModel, table=True):
     """Entry in a custom list."""
 
+    __tablename__ = "custom_list_entry"
+
     list_id: UUID = Field(
         foreign_key="custom_list.id",
         primary_key=True,
@@ -28,8 +30,8 @@ class CustomListEntry(SQLModel, table=True):
     added_at: datetime = Field(default_factory=datetime.utcnow)
 
     # Relationships
-    list: Optional["CustomList"] = Relationship(back_populates="entries")
-    media: Optional["MediaEntry"] = Relationship(back_populates="custom_list_entries")
+    list: Optional["CustomList"] = Relationship()
+    media: Optional["MediaEntry"] = Relationship()
 
     # Create indexes for performance
     __table_args__ = (

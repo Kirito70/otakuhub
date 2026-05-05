@@ -20,6 +20,8 @@ if TYPE_CHECKING:
 class MediaEntry(SQLModel, table=True):
     """Media entry model - The canonical table for every anime, manga, and manhwa."""
 
+    __tablename__ = "media_entries"
+
     id: UUID = Field(
         default_factory=UUID,
         primary_key=True,
@@ -65,12 +67,7 @@ class MediaEntry(SQLModel, table=True):
     media_tags: list["MediaTag"] = Relationship(back_populates="media")
     episodes: list["Episode"] = Relationship(back_populates="media")
     chapters: list["Chapter"] = Relationship(back_populates="media")
-    related_media_source: list["RelatedMedia"] = Relationship(
-        back_populates="source_media"
-    )
-    related_media_target: list["RelatedMedia"] = Relationship(
-        back_populates="related_media"
-    )
+    # related media relationships intentionally omitted to avoid ambiguous FK mapper setup
 
     # Create indexes - these will be handled by Alembic since they're defined in separate SQL files
     __table_args__ = (

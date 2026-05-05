@@ -29,5 +29,5 @@ class MediaStudio(SQLModel, table=True):
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
     # Relationships
-    media: Optional["MediaEntry"] = Relationship(back_populates="media_studios")
-    studio: Optional["Studio"] = Relationship(back_populates="media_studios")
+    media: Optional["MediaEntry"] = Relationship()
+    studio: Optional["Studio"] = Relationship()

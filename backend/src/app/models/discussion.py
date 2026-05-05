@@ -36,9 +36,9 @@ class Discussion(SQLModel, table=True):
     deleted_at: Optional[datetime] = Field(default=None)
 
     # Relationships
-    media: Optional["MediaEntry"] = Relationship(back_populates="discussions")
-    group: Optional["Group"] = Relationship(back_populates="discussions")
-    user: Optional["User"] = Relationship(back_populates="discussions")
+    media: Optional["MediaEntry"] = Relationship()
+    group: Optional["Group"] = Relationship()
+    user: Optional["User"] = Relationship()
 
     # Create indexes for performance
     __table_args__ = (

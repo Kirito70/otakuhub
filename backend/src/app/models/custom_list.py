@@ -9,6 +9,8 @@ from datetime import datetime
 class CustomList(SQLModel, table=True):
     """User-created curated lists ("Best Isekai", "Watch with friends")."""
 
+    __tablename__ = "custom_list"
+
     id: UUID = Field(
         default_factory=UUID,
         primary_key=True,

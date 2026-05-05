@@ -28,5 +28,5 @@ class MediaGenre(SQLModel, table=True):
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
     # Relationships
-    media: Optional["MediaEntry"] = Relationship(back_populates="media_genres")
-    genre: Optional["Genre"] = Relationship(back_populates="media_genres")
+    media: Optional["MediaEntry"] = Relationship()
+    genre: Optional["Genre"] = Relationship()

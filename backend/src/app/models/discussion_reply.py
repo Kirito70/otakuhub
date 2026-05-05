@@ -13,6 +13,8 @@ if TYPE_CHECKING:
 class DiscussionReply(SQLModel, table=True):
     """Reply to a discussion thread."""
 
+    __tablename__ = "discussion_reply"
+
     id: UUID = Field(
         default_factory=UUID,
         primary_key=True,
@@ -32,13 +34,13 @@ class DiscussionReply(SQLModel, table=True):
     deleted_at: Optional[datetime] = Field(default=None)
 
     # Relationships
-    discussion: Optional["Discussion"] = Relationship(back_populates="replies")
-    user: Optional["User"] = Relationship(back_populates="discussion_replies")
+    discussion: Optional["Discussion"] = Relationship()
+    user: Optional["User"] = Relationship()
     parent_reply: Optional["DiscussionReply"] = Relationship(
         back_populates="child_replies",
 
     )
-    child_replies: list["DiscussionReply"] = Relationship(back_populates="parent_reply")
+    child_replies: list["DiscussionReply"] = Relationship()
 
     # Create indexes for performance
     __table_args__ = (

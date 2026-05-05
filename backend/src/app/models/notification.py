@@ -34,10 +34,7 @@ class Notification(SQLModel, table=True):
     # Timestamps
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
-    # Relationships
-    user: Optional["User"] = Relationship(back_populates="notifications")
-    related_media: Optional["MediaEntry"] = Relationship(back_populates="notifications")
-    related_user: Optional["RelatedUser"] = Relationship(back_populates="related_notifications")
+    # Relationships intentionally omitted to avoid ambiguous FK mapper setup
 
     # Create indexes for performance
     __table_args__ = (
