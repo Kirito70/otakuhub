@@ -1,0 +1,68 @@
+export type WatchStatus =
+  | 'watching'
+  | 'reading'
+  | 'completed'
+  | 'paused'
+  | 'dropped'
+  | 'plan_to_watch'
+  | 'plan_to_read'
+  | 'rewatching'
+  | 'rereading'
+
+export interface ListEntry {
+  id: string
+  media_id: string
+  status: WatchStatus
+  progress: number
+  score?: number | null
+  notes?: string | null
+  title?: string
+  cover_image_medium?: string | null
+}
+
+export interface UserListResponse {
+  items: ListEntry[]
+  total: number
+  limit: number
+  offset: number
+}
+
+export interface ListEntryCreate {
+  media_id: string
+  status: WatchStatus
+  progress?: number
+  score?: number
+  notes?: string
+}
+
+export interface ListEntryUpdate {
+  status?: WatchStatus
+  progress?: number
+  score?: number | null
+  notes?: string
+}
+
+export interface CustomList {
+  id: string
+  name: string
+  description?: string | null
+  is_public: boolean
+  cover_image?: string | null
+  sort_order: number
+}
+
+export interface CustomListCreate {
+  name: string
+  description?: string
+  is_public?: boolean
+  cover_image?: string
+  sort_order?: number
+}
+
+export interface CustomListEntriesReplaceRequest {
+  entries: Array<{
+    media_id: string
+    sort_order?: number
+    note?: string
+  }>
+}

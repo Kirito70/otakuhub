@@ -10,12 +10,12 @@
 ## Current State
 
 ```
-CURRENT_PHASE:     7
-CURRENT_SUB_PHASE: 7.10
+CURRENT_PHASE:     9
+CURRENT_SUB_PHASE: 9.1
 STATUS:            IN_PROGRESS
 LAST_UPDATED:      2026-05-05
-BLOCKED_BY:        Android release build environment missing (JAVA_HOME / JDK)
-NEXT_ACTION:       Set JAVA_HOME and rerun: quasar build -m capacitor -T android
+BLOCKED_BY:        none
+NEXT_ACTION:       GET /api/v1/social/feed (group activity feed)
 ```
 
 ---
@@ -156,23 +156,23 @@ NEXT_ACTION:       Set JAVA_HOME and rerun: quasar build -m capacitor -T android
 | 7.7 | Auth Riverpod provider (AuthNotifier) | ✅ | Implemented Quasar-equivalent Pinia auth store with login/register/refresh/logout + hydration |
 | 7.8 | App theme: Material 3 light + dark | ✅ | Added theme composable, dark-mode toggle, and Quasar palette variables with auto dark boot |
 | 7.9 | Auth guard in GoRouter redirect | ✅ | Added router beforeEach guard for protected routes and auth-page redirect when logged in |
-| 7.10 | App runs on: web, Windows, Android (confirm all three) | ⏳ | |
+| 7.10 | App runs on: web, Windows, Android (confirm all three) | ✅ | Verified quasar build (web), quasar build -m electron (Windows), and quasar build -m capacitor -T android |
 
 ### Phase 8 — Flutter Tracking Screens
 **Goal**: Users can search anime/manga, add to list, update progress from the app.
 
 | Sub-phase | Task | Status | Notes |
 |-----------|------|--------|-------|
-| 8.1 | Discover/search screen (calls GET /media/search) | ⏳ | |
-| 8.2 | Media detail screen (full info page) | ⏳ | |
-| 8.3 | Add to list bottom sheet | ⏳ | |
-| 8.4 | My list screen (tabbed by status) | ⏳ | |
-| 8.5 | Progress update widget (episode counter, chapter counter) | ⏳ | |
-| 8.6 | Score widget | ⏳ | |
-| 8.7 | Airing calendar screen | ⏳ | |
-| 8.8 | Import list screen (AniList/MAL OAuth) | ⏳ | |
-| 8.9 | Custom list creation + management | ⏳ | |
-| 8.10 | Widget tests for all new screens | ⏳ | |
+| 8.1 | Discover/search screen (calls GET /media/search) | ✅ | Implemented DiscoverPage search UI + useMediaSearch composable calling /api/v1/media/search |
+| 8.2 | Media detail screen (full info page) | ✅ | Implemented MediaDetailPage with API detail fetch, metadata display, and synopsis panel |
+| 8.3 | Add to list bottom sheet | ✅ | Added AddToListSheet component with status/progress/score inputs and POST /api/v1/lists integration |
+| 8.4 | My list screen (tabbed by status) | ✅ | Implemented MyListPage with status tabs and Pinia tracking store-backed list rendering |
+| 8.5 | Progress update widget (episode counter, chapter counter) | ✅ | Added reusable ProgressWidget and wired PATCH updates from My List items |
+| 8.6 | Score widget | ✅ | Added reusable ScoreWidget and wired score updates through tracking store patch endpoint |
+| 8.7 | Airing calendar screen | ✅ | Implemented AiringCalendarPage with /api/v1/media/airing fetch and media detail navigation |
+| 8.8 | Import list screen (AniList/MAL OAuth) | ✅ | Implemented ImportListPage using sync import endpoints for AniList and MAL job creation |
+| 8.9 | Custom list creation + management | ✅ | Added custom list create/entries management flows in MyListPage with tracking store methods |
+| 8.10 | Widget tests for all new screens | ✅ | Added Vitest coverage for Discover, Media Detail, My List, Airing, and Import screens (5 passing tests) |
 
 ### Phase 9 — Social Features — Backend
 **Goal**: Friend activity feed, recommendations, and discussion endpoints live.
@@ -333,6 +333,19 @@ NEXT_ACTION:       Set JAVA_HOME and rerun: quasar build -m capacitor -T android
 # 2026-05-04 | Phase 7.7 | Implemented Pinia auth provider/store replacing Riverpod intent for Quasar
 # 2026-05-04 | Phase 7.8 | Implemented light/dark theme scaffolding and runtime toggle
 # 2026-05-04 | Phase 7.9 | Implemented router auth guard and redirect rules
+# 2026-05-05 | Phase 7.10 | Verified app build/run targets on web, Windows (Electron), and Android (Capacitor release)
+# 2026-05-05 | Phase 7 | Flutter App Shell marked complete
+# 2026-05-05 | Phase 8.1 | Implemented discover/search screen with API-backed media search and result cards
+# 2026-05-05 | Phase 8.2 | Implemented media detail screen with backend fetch and structured metadata display
+# 2026-05-05 | Phase 8.3 | Implemented add-to-list bottom sheet component wired to tracking endpoint
+# 2026-05-05 | Phase 8.4 | Implemented tabbed My List screen grouped by watch status
+# 2026-05-05 | Phase 8.5 | Implemented progress update widget and inline list progress patch flow
+# 2026-05-05 | Phase 8.6 | Implemented score widget and inline score patch flow
+# 2026-05-05 | Phase 8.7 | Implemented airing calendar screen backed by media airing endpoint
+# 2026-05-05 | Phase 8.8 | Implemented list import screen for AniList/MAL sync job start
+# 2026-05-05 | Phase 8.9 | Implemented custom list creation and entry management UI/store actions
+# 2026-05-05 | Phase 8.10 | Added and ran frontend widget tests for newly delivered tracking screens
+# 2026-05-05 | Phase 8 | Flutter Tracking Screens marked complete
 ```
 
 ---
@@ -343,7 +356,7 @@ NEXT_ACTION:       Set JAVA_HOME and rerun: quasar build -m capacitor -T android
 
 ```
 # Format: [OPEN/RESOLVED] Phase X.Y — description
-[OPEN] Phase 7.10 — Android build blocked: JAVA_HOME/JDK not configured in environment
+[RESOLVED] Phase 7.10 — Android SDK configured; Capacitor Android release build succeeds
 ```
 
 ---
