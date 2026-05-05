@@ -22,7 +22,7 @@ def get_user_service():
     """Get UserService instance."""
     return UserService()
 
-@router.get("/media/{media_id}", response_model=MediaDetailResponse)
+@router.get("/media/{media_id:uuid}", response_model=MediaDetailResponse)
 async def get_media_detail(
     media_id: UUID,
     media_service: MediaService = Depends(get_media_service),

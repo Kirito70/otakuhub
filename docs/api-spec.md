@@ -60,3 +60,16 @@
 |--------|------|------|----------------|----------------|--------|
 | **POST** | `/api/v1/sync/import/anilist` | Yes | `SyncImportRequest { username?: string, overwrite_existing?: bool }` | `SyncImportResponse { job_id: UUID, provider: string, status: string, job_type: string, started_at: datetime, message: string }` | 401 Unauthorized |
 | **POST** | `/api/v1/sync/import/mal` | Yes | `SyncImportRequest { username?: string, overwrite_existing?: bool }` | `SyncImportResponse` | 401 Unauthorized |
+
+## Operational Sync Job Endpoints (planned contract)
+| Method | Path | Auth | Request Schema | Response Schema | Errors |
+|--------|------|------|----------------|----------------|--------|
+| **POST** | `/api/v1/admin/sync/seed` | Yes (admin) | `SeedRequest { batch_size?: int }` | `JobEnqueueResponse { job_id: UUID, job_type: "seed", status: "queued" }` | 401 / 403 |
+| **POST** | `/api/v1/admin/sync/weekly-refresh` | Yes (admin) | – | `JobEnqueueResponse { job_id: UUID, job_type: "weekly_refresh", status: "queued" }` | 401 / 403 |
+| **GET** | `/api/v1/admin/sync/jobs` | Yes (admin) | `SyncJobsQuery { job_type?: string, status?: string, limit?: int, offset?: int }` | `SyncJobsResponse { items: SyncJob[], total: int, limit: int, offset: int }` | 401 / 403 |
+| **GET** | `/api/v1/admin/sync/jobs/{job_id}` | Yes (admin) | – | `SyncJobDetail` | 401 / 403 / 404 |
+
+### Sync job response notes
+- `SyncJob.status` uses: `running | completed | failed | partial`.
+- `error_log` should be structured JSON for retry tooling.
+- `processed_items`, `failed_items`, and `total_items` must be present for all long-running fetch jobs.

@@ -181,3 +181,22 @@ tests/
 └── workers/                 ← Celery task unit tests (mocked external APIs)
 ```
 Run: `pytest tests/ -v --asyncio-mode=auto --cov=backend --cov-report=term`
+
+## Sync Jobs Runbook (developer)
+
+From `backend/` with uv:
+
+```bash
+# API server
+uv run otakuhub-dev
+
+# Celery processes
+uv run otakuhub celery worker --loglevel info --queue sync
+uv run otakuhub celery beat --loglevel info
+
+# Trigger jobs
+uv run otakuhub celery seed --batch-size 50
+uv run otakuhub celery weekly-refresh
+```
+
+Design note: routers should enqueue sync jobs; workers own external API calls, retries, rate limits, and progress persistence in `sync_jobs`.

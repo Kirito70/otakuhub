@@ -63,6 +63,23 @@ AniList GraphQL (primary metadata), and MangaDex REST (manga detail).
 
 ## Celery Configuration
 
+### Runtime Commands (uv)
+
+Use backend CLI wrappers so workers/jobs are runnable the same way in local/dev CI:
+
+```bash
+# from backend/
+uv run otakuhub celery worker --loglevel info --queue sync
+uv run otakuhub celery beat --loglevel info
+
+# enqueue jobs
+uv run otakuhub celery seed --batch-size 50
+uv run otakuhub celery weekly-refresh
+
+# direct seed script path (non-celery)
+uv run otakuhub seed run
+```
+
 ### Workers
 ```
 celery -A backend.workers.celery_app worker \
@@ -103,6 +120,54 @@ beat_schedule = {
     },
 }
 ```
+
+## Sync Service Implementation Contract (must-follow)
+
+When implementing/expanding `sync_service.py` and worker tasks, use these fixed rules:
+
+1. **Job audit row first**
+   - Create `sync_jobs` row at task start with `status='running'`.
+   - Always store `job_type`, `total_items`, and `started_at`.
+
+2. **Progress updates in-loop**
+   - Update `processed_items` and `failed_items` at batch boundaries.
+   - Never keep progress only in memory.
+
+3. **Terminal status is mandatory**
+   - `completed` when all items succeeded,
+   - `partial` when some failed,
+   - `failed` for unrecoverable task-level failure.
+   - Set `completed_at` for all terminal states.
+
+4. **Error log format**
+   - Persist machine-readable JSON in `sync_jobs.error_log`:
+   - `[{"item": <id>, "source": "anilist|mangadex|mal", "error": "..."}]`
+
+5. **Idempotent upserts only**
+   - Seed/backfill jobs must be rerunnable without creating duplicates.
+   - Use external IDs (especially `anilist_id`) as conflict keys where applicable.
+
+6. **Rate-limit in worker layer, not router layer**
+   - Router only enqueues jobs.
+   - Worker task enforces external API pacing/retries.
+
+7. **No user progress write-back to external providers**
+   - Import from AniList/MAL is read-only external access.
+   - Canonical tracking stays in OtakuHub DB.
+
+8. **Freshness updates for metadata jobs**
+   - Any successful metadata update must set `media_entries.metadata_synced_at = NOW()`.
+
+## Recommended Job Types (canonical names)
+
+Keep `sync_jobs.job_type` values consistent:
+
+- `seed`
+- `backfill_anilist`
+- `mangadex_detail`
+- `weekly_refresh`
+- `user_import_anilist`
+- `user_import_mal`
 
 ## Upsert Strategy
 

@@ -61,3 +61,12 @@ class RecommendationResponse(BaseModel):
     acknowledged_at: datetime | None = None
     created_at: datetime
     updated_at: datetime
+
+
+class RecommendationInboxResponse(BaseModel):
+    """Paginated inbox recommendations for current user."""
+
+    items: list[RecommendationResponse]
+    total: int
+    limit: int
+    offset: int

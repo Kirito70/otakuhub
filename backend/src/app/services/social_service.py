@@ -29,6 +29,41 @@ class SocialService(BaseService):
         result = await self.db_session.exec(statement)
         return result.all()
 
+    async def get_user_recommendations_inbox(
+        self,
+        user_id: UUID,
+        limit: int = 20,
+        offset: int = 0,
+        include_acknowledged: bool = True,
+    ) -> List[Recommendation]:
+        """Get paginated recommendation inbox for a user."""
+        statement = select(Recommendation).where(
+            Recommendation.to_user_id == user_id,
+            Recommendation.deleted_at.is_(None),
+        )
+        if not include_acknowledged:
+            statement = statement.where(Recommendation.is_acknowledged == False)  # noqa: E712
+
+        statement = statement.order_by(Recommendation.created_at.desc()).offset(offset).limit(limit)
+        result = await self.db_session.exec(statement)
+        return result.all()
+
+    async def count_user_recommendations_inbox(
+        self,
+        user_id: UUID,
+        include_acknowledged: bool = True,
+    ) -> int:
+        """Count inbox recommendations for pagination metadata."""
+        statement = select(func.count(Recommendation.id)).where(
+            Recommendation.to_user_id == user_id,
+            Recommendation.deleted_at.is_(None),
+        )
+        if not include_acknowledged:
+            statement = statement.where(Recommendation.is_acknowledged == False)  # noqa: E712
+
+        result = await self.db_session.exec(statement)
+        return result.one_or_none() or 0
+
     async def get_group_activity_feed(
         self,
         user_id: UUID,

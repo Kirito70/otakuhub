@@ -10,6 +10,7 @@ from src.app.database import get_db_session
 from src.app.models import User
 from src.app.schemas.social import (
     RecommendationCreateRequest,
+    RecommendationInboxResponse,
     RecommendationResponse,
     SocialFeedItemResponse,
     SocialFeedResponse,
@@ -67,3 +68,31 @@ async def create_recommendation(
         raise HTTPException(status_code=status_code, detail=detail) from exc
 
     return RecommendationResponse.model_validate(recommendation)
+
+
+@router.get("/recommendations/inbox", response_model=RecommendationInboxResponse)
+async def get_recommendation_inbox(
+    limit: int = Query(default=50, ge=1, le=200),
+    offset: int = Query(default=0, ge=0),
+    include_acknowledged: bool = Query(default=True),
+    social_service: SocialService = Depends(get_social_service),
+    user: User = Depends(get_current_user),
+) -> RecommendationInboxResponse:
+    """Phase 9.3 — current user's recommendation inbox."""
+    items = await social_service.get_user_recommendations_inbox(
+        user_id=user.id,
+        limit=limit,
+        offset=offset,
+        include_acknowledged=include_acknowledged,
+    )
+    total = await social_service.count_user_recommendations_inbox(
+        user_id=user.id,
+        include_acknowledged=include_acknowledged,
+    )
+
+    return RecommendationInboxResponse(
+        items=[RecommendationResponse.model_validate(item) for item in items],
+        total=total,
+        limit=limit,
+        offset=offset,
+    )
