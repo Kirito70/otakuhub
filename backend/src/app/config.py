@@ -1,10 +1,18 @@
 """Application configuration."""
 
 from pydantic_settings import BaseSettings
+from pydantic_settings import SettingsConfigDict
 from typing import List
 
 
 class Settings(BaseSettings):
+    model_config = SettingsConfigDict(
+        case_sensitive=False,
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
+
     # Application name
     app_name: str = "OtakuHub"
 
@@ -18,7 +26,7 @@ class Settings(BaseSettings):
     db_max_overflow: int = 30
 
     # CORS
-    cors_origins: List[str] = ["*"]
+    cors_origins: str = "*"
     cors_allow_credentials: bool = True
 
     # JWT
@@ -41,11 +49,9 @@ class Settings(BaseSettings):
     # API prefix
     api_v1_prefix: str = "/api/v1"
 
-    class Config:
-        case_sensitive = True
-        env_file = ".env"
-        env_file_encoding = "utf-8"
-
+    @property
+    def cors_origins_list(self) -> List[str]:
+        return [item.strip() for item in self.cors_origins.split(",") if item.strip()]
 
 # Create settings instance
 settings = Settings()

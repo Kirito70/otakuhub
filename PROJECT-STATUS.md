@@ -11,11 +11,11 @@
 
 ```
 CURRENT_PHASE:     9
-CURRENT_SUB_PHASE: 9.1
+CURRENT_SUB_PHASE: 9.2
 STATUS:            IN_PROGRESS
 LAST_UPDATED:      2026-05-05
 BLOCKED_BY:        none
-NEXT_ACTION:       GET /api/v1/social/feed (group activity feed)
+NEXT_ACTION:       POST /api/v1/social/recommend
 ```
 
 ---
@@ -179,7 +179,7 @@ NEXT_ACTION:       GET /api/v1/social/feed (group activity feed)
 
 | Sub-phase | Task | Status | Notes |
 |-----------|------|--------|-------|
-| 9.1 | GET /api/v1/social/feed (group activity feed) | ⏳ | |
+| 9.1 | GET /api/v1/social/feed (group activity feed) | ✅ | Implemented authenticated shared-group activity feed endpoint with pagination metadata |
 | 9.2 | POST /api/v1/social/recommend | ⏳ | |
 | 9.3 | GET /api/v1/social/recommendations/inbox | ⏳ | |
 | 9.4 | PATCH /api/v1/social/recommendations/{id}/acknowledge | ⏳ | |
@@ -346,6 +346,7 @@ NEXT_ACTION:       GET /api/v1/social/feed (group activity feed)
 # 2026-05-05 | Phase 8.9 | Implemented custom list creation and entry management UI/store actions
 # 2026-05-05 | Phase 8.10 | Added and ran frontend widget tests for newly delivered tracking screens
 # 2026-05-05 | Phase 8 | Flutter Tracking Screens marked complete
+# 2026-05-05 | Phase 9.1 | Implemented GET /api/v1/social/feed using shared group-member activity history
 ```
 
 ---
@@ -372,4 +373,3 @@ When an AI agent reads this file, it must:
 6. If the entire phase is complete, set all rows to ✅, update `CURRENT_PHASE`, and set `STATUS` to `PHASE_COMPLETE` until the user advances
 7. Add a line to the Completion Log
 8. Never modify completed (✅) entries
-

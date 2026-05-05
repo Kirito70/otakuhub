@@ -1,7 +1,7 @@
 """API routes package."""
 
 from fastapi import APIRouter
-from . import auth, media, lists, users, groups, sync
+from . import auth, media, lists, users, groups, sync, social
 
 api_router = APIRouter()
 
@@ -16,3 +16,5 @@ api_router.include_router(users.router)
 api_router.include_router(groups.router)
 # sync router uses prefix=/sync
 api_router.include_router(sync.router)
+# social router uses prefix=/social
+api_router.include_router(social.router)

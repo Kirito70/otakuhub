@@ -1,14 +1,14 @@
 """Social service for managing recommendations, discussions, and notifications."""
 
 from typing import List, Optional, Dict, Any
-from sqlmodel import select, and_
+from sqlmodel import select, and_, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime
 from uuid import UUID
 
 from src.app.models import (
     Recommendation, Discussion, DiscussionReply,
-    Notification, NotificationPreference
+    Notification, NotificationPreference, ListEntryHistory, GroupMember, User
 )
 from src.app.services.base_service import BaseService
 
@@ -29,6 +29,46 @@ class SocialService(BaseService):
         result = await self.db_session.exec(statement)
         return result.all()
 
+    async def get_group_activity_feed(
+        self,
+        user_id: UUID,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> List[ListEntryHistory]:
+        """Return recent list activity by members who share a group with the user."""
+        group_ids_stmt = select(GroupMember.group_id).where(GroupMember.user_id == user_id)
+
+        member_ids_stmt = (
+            select(GroupMember.user_id)
+            .where(GroupMember.group_id.in_(group_ids_stmt))
+            .where(GroupMember.user_id != user_id)
+            .distinct()
+        )
+
+        statement = (
+            select(ListEntryHistory)
+            .where(ListEntryHistory.user_id.in_(member_ids_stmt))
+            .order_by(ListEntryHistory.created_at.desc())
+            .offset(offset)
+            .limit(limit)
+        )
+        result = await self.db_session.exec(statement)
+        return result.all()
+
+    async def count_group_activity_feed(self, user_id: UUID) -> int:
+        """Count total feed items visible to user for pagination metadata."""
+        group_ids_stmt = select(GroupMember.group_id).where(GroupMember.user_id == user_id)
+        member_ids_stmt = (
+            select(GroupMember.user_id)
+            .where(GroupMember.group_id.in_(group_ids_stmt))
+            .where(GroupMember.user_id != user_id)
+            .distinct()
+        )
+
+        count_stmt = select(func.count(ListEntryHistory.id)).where(ListEntryHistory.user_id.in_(member_ids_stmt))
+        count_result = await self.db_session.exec(count_stmt)
+        return count_result.one_or_none() or 0
+
     async def get_user_sent_recommendations(self, user_id: UUID, limit: int = 20) -> List[Recommendation]:
         """Get recommendations sent by a user."""
         statement = select(Recommendation).where(Recommendation.from_user_id == user_id)
@@ -45,6 +85,61 @@ class SocialService(BaseService):
             to_user_id=to_user_id,
             media_id=media_id,
             message=message
+        )
+        self.db_session.add(recommendation)
+        await self.db_session.commit()
+        await self.db_session.refresh(recommendation)
+        return recommendation
+
+    async def create_recommendation_for_shared_group(
+        self,
+        from_user_id: UUID,
+        to_user_id: UUID,
+        media_id: UUID,
+        message: str | None = None,
+    ) -> Recommendation:
+        """Create recommendation only when users share a group and refs exist."""
+        if from_user_id == to_user_id:
+            raise ValueError("Cannot recommend media to yourself")
+
+        to_user_stmt = select(User).where(
+            User.id == to_user_id,
+            User.deleted_at.is_(None),
+            User.is_active == True,  # noqa: E712
+        )
+        to_user = (await self.db_session.exec(to_user_stmt)).one_or_none()
+        if to_user is None:
+            raise ValueError("Recipient user not found")
+
+        shared_group_stmt = (
+            select(GroupMember.group_id)
+            .where(GroupMember.user_id == from_user_id)
+            .where(
+                GroupMember.group_id.in_(
+                    select(GroupMember.group_id).where(GroupMember.user_id == to_user_id)
+                )
+            )
+            .limit(1)
+        )
+        shared_group = (await self.db_session.exec(shared_group_stmt)).one_or_none()
+        if shared_group is None:
+            raise ValueError("Users must share at least one group")
+
+        existing_stmt = select(Recommendation).where(
+            Recommendation.from_user_id == from_user_id,
+            Recommendation.to_user_id == to_user_id,
+            Recommendation.media_id == media_id,
+            Recommendation.deleted_at.is_(None),
+        )
+        existing = (await self.db_session.exec(existing_stmt)).one_or_none()
+        if existing is not None:
+            raise ValueError("Recommendation already exists for this user and media")
+
+        recommendation = Recommendation(
+            from_user_id=from_user_id,
+            to_user_id=to_user_id,
+            media_id=media_id,
+            message=message,
         )
         self.db_session.add(recommendation)
         await self.db_session.commit()
