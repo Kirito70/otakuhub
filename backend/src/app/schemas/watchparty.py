@@ -7,6 +7,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from src.app.models.enums import RsvpStatus
+
 
 class WatchPartyCreateRequest(BaseModel):
     """Payload to create a watch party."""
@@ -39,3 +41,30 @@ class WatchPartyResponse(BaseModel):
     notes: str | None = None
     created_at: datetime
     updated_at: datetime
+
+
+class WatchPartyListResponse(BaseModel):
+    """Paginated upcoming watch parties visible to current user."""
+
+    items: list[WatchPartyResponse]
+    total: int
+    limit: int
+    offset: int
+
+
+class WatchPartyRsvpRequest(BaseModel):
+    """Payload to RSVP to a watch party."""
+
+    status: RsvpStatus = RsvpStatus.pending
+
+
+class WatchPartyRsvpResponse(BaseModel):
+    """Watch party RSVP response model."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    party_id: UUID
+    user_id: UUID
+    status: RsvpStatus
+    responded_at: datetime | None = None
+    created_at: datetime

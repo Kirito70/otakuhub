@@ -2,13 +2,15 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlmodel.ext.asyncio.session import AsyncSession
+from uuid import UUID
 
 from src.app.core.auth import get_current_user
 from src.app.database import get_db_session
 from src.app.models import User
-from src.app.schemas.watchparty import WatchPartyCreateRequest, WatchPartyResponse
+from src.app.schemas.watchparty import WatchPartyCreateRequest, WatchPartyListResponse, WatchPartyResponse
+from src.app.schemas.watchparty import WatchPartyRsvpRequest, WatchPartyRsvpResponse
 from src.app.services.watch_party_service import WatchPartyService
 
 router = APIRouter(prefix="/watchparty", tags=["watchparty"])
@@ -44,3 +46,56 @@ async def create_watch_party(
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     return WatchPartyResponse.model_validate(party)
+
+
+@router.get("", response_model=WatchPartyListResponse)
+async def get_upcoming_watch_parties(
+    group_id: UUID | None = Query(default=None),
+    limit: int = Query(default=50, ge=1, le=200),
+    offset: int = Query(default=0, ge=0),
+    watchparty_service: WatchPartyService = Depends(get_watch_party_service),
+    user: User = Depends(get_current_user),
+) -> WatchPartyListResponse:
+    """Phase 10.2 — list upcoming parties in user's groups."""
+    try:
+        items = await watchparty_service.get_upcoming_watch_parties_for_user(
+            user_id=user.id,
+            group_id=group_id,
+            limit=limit,
+            offset=offset,
+        )
+        total = await watchparty_service.count_upcoming_watch_parties_for_user(
+            user_id=user.id,
+            group_id=group_id,
+        )
+    except PermissionError as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from exc
+
+    return WatchPartyListResponse(
+        items=[WatchPartyResponse.model_validate(item) for item in items],
+        total=total,
+        limit=limit,
+        offset=offset,
+    )
+
+
+@router.post("/{party_id}/rsvp", response_model=WatchPartyRsvpResponse)
+async def rsvp_watch_party(
+    party_id: UUID,
+    payload: WatchPartyRsvpRequest,
+    watchparty_service: WatchPartyService = Depends(get_watch_party_service),
+    user: User = Depends(get_current_user),
+) -> WatchPartyRsvpResponse:
+    """Phase 10.3 — RSVP to a watch party."""
+    try:
+        rsvp = await watchparty_service.rsvp_to_watch_party_for_group_member(
+            party_id=party_id,
+            user_id=user.id,
+            status=payload.status.value,
+        )
+    except LookupError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except PermissionError as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from exc
+
+    return WatchPartyRsvpResponse.model_validate(rsvp)

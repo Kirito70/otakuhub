@@ -11,11 +11,11 @@
 
 ```
 CURRENT_PHASE:     10
-CURRENT_SUB_PHASE: 10.2
+CURRENT_SUB_PHASE: 11.1
 STATUS:            IN_PROGRESS
 LAST_UPDATED:      2026-05-05
 BLOCKED_BY:        test-db missing seeded media rows for FK-dependent social integration tests
-NEXT_ACTION:       GET /api/v1/watchparty
+NEXT_ACTION:       Apprise client configured
 ```
 
 ---
@@ -33,8 +33,8 @@ NEXT_ACTION:       GET /api/v1/watchparty
 | 7 | Flutter App Shell | 🔄 In progress |
 | 8 | Flutter Tracking Screens | ⏳ Not started |
 | 9 | Social Features — Backend | ✅ Complete |
-| 10 | Social Features — Flutter | ⏳ Not started |
-| 11 | Watch Party | 🔄 In progress |
+| 10 | Social Features — Flutter | ✅ Complete |
+| 11 | Watch Party | ✅ Complete |
 | 12 | Notifications | ⏳ Not started |
 | 13 | Polish, Testing & Deploy | ⏳ Not started |
 | 14 | Type‑Checking Cleanup (MyPy) | ⏳ Not started |
@@ -194,11 +194,11 @@ NEXT_ACTION:       GET /api/v1/watchparty
 | Sub-phase | Task | Status | Notes |
 |-----------|------|--------|-------|
 | 10.1 | POST /api/v1/watchparty | ✅ | Implemented group-membership-checked creation with graceful 400 when media is not yet seeded/synced |
-| 10.2 | GET /api/v1/watchparty (upcoming in group) | ⏳ | |
-| 10.3 | POST /api/v1/watchparty/{id}/rsvp | ⏳ | |
-| 10.4 | Watch party list screen (Flutter) | ⏳ | |
-| 10.5 | Create watch party screen (Flutter) | ⏳ | |
-| 10.6 | Watch party detail + RSVP screen (Flutter) | ⏳ | |
+| 10.2 | GET /api/v1/watchparty (upcoming in group) | ✅ | Implemented membership-scoped upcoming party listing with pagination and optional group filter |
+| 10.3 | POST /api/v1/watchparty/{id}/rsvp | ✅ | Implemented RSVP endpoint with watch-party existence checks and group-membership authorization |
+| 10.4 | Watch party list screen (Flutter) | ✅ | Implemented WatchPartyPage with Pinia watchparty store, loading/error states, and upcoming-list rendering |
+| 10.5 | Create watch party screen (Flutter) | ✅ | Added create-watch-party form on WatchPartyPage with store-backed POST flow and success/error handling |
+| 10.6 | Watch party detail + RSVP screen (Flutter) | ✅ | Added per-party detail display and RSVP actions (attending/pending/declined) wired to backend RSVP endpoint |
 
 ### Phase 11 — Notifications
 **Goal**: New episode/chapter alerts and group activity push via Apprise.
@@ -266,6 +266,11 @@ NEXT_ACTION:       GET /api/v1/watchparty
 # 2026-05-05 | Phase 9.7 | Discussion replies endpoint implemented with authorization and validation
 # 2026-05-05 | Phase 9.8 | Public profile endpoint implemented with safe response schema
 # 2026-05-05 | Phase 10.1 | Watch party create endpoint implemented with group membership authorization
+# 2026-05-05 | Phase 10.2 | Watch party upcoming list endpoint implemented with membership filtering
+# 2026-05-05 | Phase 10.3 | Watch party RSVP endpoint implemented with membership authorization
+# 2026-05-05 | Phase 10.4 | Watch party list screen implemented with store-backed fetch and test coverage
+# 2026-05-05 | Phase 10.5 | Watch party create screen implemented with form and store integration
+# 2026-05-05 | Phase 10.6 | Watch party detail+RSVP UI implemented with store-backed RSVP actions
 # 2026-04-26 | Phase 3.2 | MangaDex REST client implemented
 # 2026-04-26 | Phase 3.3 | Jikan client implemented
 # 2026-04-26 | Phase 3.4 | Seed script: download + import anime-offline-database created

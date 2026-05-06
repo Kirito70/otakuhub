@@ -9,6 +9,7 @@ from datetime import UTC, datetime
 from uuid import UUID
 
 from src.app.models import GroupMember, WatchParty, WatchPartyRsvp
+from src.app.models.enums import PartyStatus
 from src.app.services.base_service import BaseService
 
 
@@ -57,6 +58,67 @@ class WatchPartyService(BaseService):
 
         result = await self.db_session.exec(statement)
         return result.all()
+
+    async def get_upcoming_watch_parties_for_user(
+        self,
+        *,
+        user_id: UUID,
+        group_id: Optional[UUID] = None,
+        limit: int = 20,
+        offset: int = 0,
+    ) -> List[WatchParty]:
+        """Get upcoming watch parties visible to a user in their groups."""
+        if group_id is not None:
+            membership_stmt = select(GroupMember).where(
+                GroupMember.group_id == group_id,
+                GroupMember.user_id == user_id,
+            )
+            membership = (await self.db_session.exec(membership_stmt)).one_or_none()
+            if membership is None:
+                raise PermissionError("User is not a member of this group")
+
+        member_group_ids_stmt = select(GroupMember.group_id).where(GroupMember.user_id == user_id)
+
+        statement = select(WatchParty).where(
+            WatchParty.deleted_at.is_(None),
+            WatchParty.status == PartyStatus.scheduled,
+            WatchParty.group_id.in_(member_group_ids_stmt),
+        )
+        if group_id is not None:
+            statement = statement.where(WatchParty.group_id == group_id)
+
+        statement = statement.order_by(WatchParty.scheduled_at.asc()).offset(offset).limit(limit)
+        result = await self.db_session.exec(statement)
+        return result.all()
+
+    async def count_upcoming_watch_parties_for_user(
+        self,
+        *,
+        user_id: UUID,
+        group_id: Optional[UUID] = None,
+    ) -> int:
+        """Count upcoming watch parties visible to a user."""
+        if group_id is not None:
+            membership_stmt = select(GroupMember).where(
+                GroupMember.group_id == group_id,
+                GroupMember.user_id == user_id,
+            )
+            membership = (await self.db_session.exec(membership_stmt)).one_or_none()
+            if membership is None:
+                raise PermissionError("User is not a member of this group")
+
+        member_group_ids_stmt = select(GroupMember.group_id).where(GroupMember.user_id == user_id)
+
+        statement = select(func.count(WatchParty.id)).where(
+            WatchParty.deleted_at.is_(None),
+            WatchParty.status == PartyStatus.scheduled,
+            WatchParty.group_id.in_(member_group_ids_stmt),
+        )
+        if group_id is not None:
+            statement = statement.where(WatchParty.group_id == group_id)
+
+        result = await self.db_session.exec(statement)
+        return result.one_or_none() or 0
 
     async def create_watch_party(self, host_user_id: UUID, group_id: UUID, media_id: UUID,
                                 title: str, scheduled_at: datetime,
@@ -182,6 +244,28 @@ class WatchPartyService(BaseService):
             await self.db_session.commit()
             await self.db_session.refresh(rsvp)
             return rsvp
+
+    async def rsvp_to_watch_party_for_group_member(
+        self,
+        *,
+        party_id: UUID,
+        user_id: UUID,
+        status: str,
+    ) -> WatchPartyRsvp:
+        """RSVP only if user is member of the party's group."""
+        party = await self.get_watch_party(party_id)
+        if party is None:
+            raise LookupError("Watch party not found")
+
+        membership_stmt = select(GroupMember).where(
+            GroupMember.group_id == party.group_id,
+            GroupMember.user_id == user_id,
+        )
+        membership = (await self.db_session.exec(membership_stmt)).one_or_none()
+        if membership is None:
+            raise PermissionError("User is not a member of this watch party group")
+
+        return await self.rsvp_to_watch_party(party_id=party_id, user_id=user_id, status=status)
 
     async def get_party_attendee_count(self, party_id: UUID) -> int:
         """Get the count of people attending a watch party."""
