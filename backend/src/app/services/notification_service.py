@@ -9,7 +9,7 @@ from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import func, select
 
-from src.app.models import Notification
+from src.app.models import Notification, NotificationPreference
 from src.app.services.base_service import BaseService
 
 
@@ -70,3 +70,34 @@ class NotificationService(BaseService):
             await self.db_session.commit()
 
         return len(items)
+
+    async def get_notification_preferences(self, *, user_id: UUID) -> NotificationPreference:
+        """Get current user's notification preferences, creating defaults if absent."""
+        statement = select(NotificationPreference).where(NotificationPreference.user_id == user_id)
+        result = await self.db_session.exec(statement)
+        preference = result.one_or_none()
+
+        if preference is None:
+            preference = NotificationPreference(user_id=user_id)
+            self.db_session.add(preference)
+            await self.db_session.commit()
+            await self.db_session.refresh(preference)
+
+        return preference
+
+    async def update_notification_preferences(
+        self,
+        *,
+        user_id: UUID,
+        updates: dict[str, object],
+    ) -> NotificationPreference:
+        """Partially update current user's notification preferences."""
+        preference = await self.get_notification_preferences(user_id=user_id)
+
+        for key, value in updates.items():
+            setattr(preference, key, value)
+
+        preference.updated_at = datetime.utcnow()
+        await self.db_session.commit()
+        await self.db_session.refresh(preference)
+        return preference

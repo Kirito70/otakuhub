@@ -48,3 +48,37 @@ class NotificationMarkReadResponse(BaseModel):
     """Response for mark-as-read operation."""
 
     updated_count: int
+
+
+class NotificationPreferencesResponse(BaseModel):
+    """Current user's notification preference settings."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    user_id: UUID
+    new_episode: bool
+    new_chapter: bool
+    friend_activity: bool
+    recommendations: bool
+    watch_party_invite: bool
+    watch_party_reminder: bool
+    discord_webhook: str | None = None
+    telegram_chat_id: str | None = None
+    email_enabled: bool
+    push_enabled: bool
+    updated_at: datetime
+
+
+class NotificationPreferencesUpdateRequest(BaseModel):
+    """Patch payload for notification preferences."""
+
+    new_episode: bool | None = None
+    new_chapter: bool | None = None
+    friend_activity: bool | None = None
+    recommendations: bool | None = None
+    watch_party_invite: bool | None = None
+    watch_party_reminder: bool | None = None
+    discord_webhook: str | None = None
+    telegram_chat_id: str | None = None
+    email_enabled: bool | None = None
+    push_enabled: bool | None = None

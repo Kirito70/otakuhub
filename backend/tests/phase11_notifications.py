@@ -96,3 +96,60 @@ def test_phase11_notifications_mark_read_empty_selection_returns_zero() -> None:
         )
         assert res.status_code == 200, res.text
         assert res.json()["updated_count"] == 0
+
+
+def test_phase11_notification_preferences_requires_auth() -> None:
+    with TestClient(app) as client:
+        res = client.get("/api/v1/notifications/preferences")
+        assert res.status_code == 401
+
+
+def test_phase11_notification_preferences_get_returns_defaults_for_new_user() -> None:
+    with TestClient(app) as client:
+        user = _register_and_login(client, "notifprefs")
+        headers = {"Authorization": f"Bearer {user['access_token']}"}
+
+        res = client.get("/api/v1/notifications/preferences", headers=headers)
+        assert res.status_code == 200, res.text
+        body = res.json()
+        assert body["user_id"] == user["user_id"]
+        assert body["new_episode"] is True
+        assert body["new_chapter"] is True
+        assert body["friend_activity"] is True
+        assert body["recommendations"] is True
+        assert body["watch_party_invite"] is True
+        assert body["watch_party_reminder"] is True
+        assert body["email_enabled"] is False
+        assert body["push_enabled"] is False
+
+
+def test_phase11_notification_preferences_patch_updates_fields() -> None:
+    with TestClient(app) as client:
+        user = _register_and_login(client, "notifprefsupd")
+        headers = {"Authorization": f"Bearer {user['access_token']}"}
+
+        patch_res = client.patch(
+            "/api/v1/notifications/preferences",
+            headers=headers,
+            json={
+                "new_episode": False,
+                "watch_party_reminder": False,
+                "email_enabled": True,
+                "telegram_chat_id": "123456",
+            },
+        )
+        assert patch_res.status_code == 200, patch_res.text
+
+        body = patch_res.json()
+        assert body["new_episode"] is False
+        assert body["watch_party_reminder"] is False
+        assert body["email_enabled"] is True
+        assert body["telegram_chat_id"] == "123456"
+
+        get_res = client.get("/api/v1/notifications/preferences", headers=headers)
+        assert get_res.status_code == 200, get_res.text
+        persisted = get_res.json()
+        assert persisted["new_episode"] is False
+        assert persisted["watch_party_reminder"] is False
+        assert persisted["email_enabled"] is True
+        assert persisted["telegram_chat_id"] == "123456"

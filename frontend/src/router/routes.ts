@@ -24,6 +24,7 @@ const routes: RouteRecordRaw[] = [
       { path: 'discussions', name: 'discussions', component: () => import('pages/social/DiscussionPage.vue'), meta: { requiresAuth: true } },
       { path: 'watchparty', name: 'watchparty', component: () => import('pages/watchparty/WatchPartyPage.vue'), meta: { requiresAuth: true } },
       { path: 'notifications', name: 'notifications', component: () => import('pages/notifications/NotificationsPage.vue'), meta: { requiresAuth: true } },
+      { path: 'notifications/preferences', name: 'notification-preferences', component: () => import('pages/notifications/NotificationPreferencesPage.vue'), meta: { requiresAuth: true } },
       { path: 'profile', name: 'profile', component: () => import('pages/profile/ProfilePage.vue'), meta: { requiresAuth: true } },
     ],
   },

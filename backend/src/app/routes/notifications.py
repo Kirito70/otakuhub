@@ -12,6 +12,8 @@ from src.app.schemas.notification import (
     NotificationListResponse,
     NotificationMarkReadRequest,
     NotificationMarkReadResponse,
+    NotificationPreferencesResponse,
+    NotificationPreferencesUpdateRequest,
     NotificationResponse,
 )
 from src.app.services.notification_service import NotificationService
@@ -59,3 +61,27 @@ async def mark_notifications_read(
         notification_ids=payload.notification_ids,
     )
     return NotificationMarkReadResponse(updated_count=updated_count)
+
+
+@router.get("/preferences", response_model=NotificationPreferencesResponse)
+async def get_notification_preferences(
+    notification_service: NotificationService = Depends(get_notification_service),
+    user: User = Depends(get_current_user),
+) -> NotificationPreferencesResponse:
+    """Phase 11.7 — get current user's notification preferences."""
+    prefs = await notification_service.get_notification_preferences(user_id=user.id)
+    return NotificationPreferencesResponse.model_validate(prefs)
+
+
+@router.patch("/preferences", response_model=NotificationPreferencesResponse)
+async def patch_notification_preferences(
+    payload: NotificationPreferencesUpdateRequest,
+    notification_service: NotificationService = Depends(get_notification_service),
+    user: User = Depends(get_current_user),
+) -> NotificationPreferencesResponse:
+    """Phase 11.7 — patch current user's notification preferences."""
+    prefs = await notification_service.update_notification_preferences(
+        user_id=user.id,
+        updates=payload.model_dump(exclude_unset=True),
+    )
+    return NotificationPreferencesResponse.model_validate(prefs)
