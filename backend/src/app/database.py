@@ -1,6 +1,7 @@
 """Database configuration and connection management using SQLModel."""
 
 from sqlmodel import SQLModel
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncEngine
 from sqlalchemy.orm import sessionmaker
 from sqlmodel.ext.asyncio.session import AsyncSession
@@ -45,7 +46,7 @@ async def check_db_connection() -> bool:
     try:
         async with engine.begin() as conn:
             # Execute a simple query to check connection
-            await conn.execute("SELECT 1")
+            await conn.execute(text("SELECT 1"))
         return True
     except Exception as e:
         print(f"Database connection check failed: {e}")

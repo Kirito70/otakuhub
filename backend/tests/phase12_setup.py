@@ -99,3 +99,31 @@ def test_phase12_admin_can_create_user_non_admin_cannot() -> None:
             },
         )
         assert denied.status_code == 403
+
+
+def test_phase12_bootstrap_context_omits_setup_required_after_init_and_includes_logged_user() -> None:
+    with TestClient(app) as client:
+        suffix = token_hex(4)
+        admin_username = f"ctx_{suffix}"
+        admin_password = "password123"
+        boot = client.post(
+            "/api/v1/setup/bootstrap-admin",
+            json={
+                "username": admin_username,
+                "email": f"{admin_username}@example.com",
+                "password": admin_password,
+            },
+        )
+        if boot.status_code not in (201, 409):
+            assert boot.status_code == 201, boot.text
+
+        token = _login(client, admin_username, admin_password)
+        res = client.get(
+            "/api/v1/setup/bootstrap",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        assert res.status_code == 200, res.text
+        body = res.json()
+        assert body["site_status"] in ("up", "degraded")
+        assert "setup_required" not in body
+        assert body["logged_in_user"]["username"] == admin_username

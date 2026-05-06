@@ -26,23 +26,42 @@ export default route(function ({ store }) {
   Router.beforeEach((to) => {
     const auth = useAuthStore(store)
 
-    // First-run bootstrap flow: redirect to setup until first super admin exists.
-    // Kept lightweight and public (no auth headers required).
+    // Unified app bootstrap flow via backend routing context endpoint.
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     return (async () => {
       try {
-        const setupResponse = await axios.get<{ setup_required: boolean }>(
-          `${process.env.API_BASE_URL}/api/v1/setup/status`,
-          { timeout: 5000 },
+        const bootstrapResponse = await axios.get<{
+          site_status: 'up' | 'degraded'
+          setup_required?: boolean
+          logged_in_user?: { id: string; username: string; is_admin: boolean }
+        }>(
+          `${process.env.API_BASE_URL}/api/v1/setup/bootstrap`,
+          {
+            timeout: 5000,
+            headers: auth.accessToken
+              ? {
+                  Authorization: `Bearer ${auth.accessToken}`,
+                }
+              : undefined,
+          },
         )
-        const setupRequired = setupResponse.data.setup_required
+        const setupRequired = bootstrapResponse.data.setup_required === true
+        const loggedInUser = bootstrapResponse.data.logged_in_user
 
         if (setupRequired && to.name !== 'setup') {
           return { name: 'setup' }
         }
 
         if (!setupRequired && to.name === 'setup') {
-          return auth.isAuthenticated ? { name: 'discover' } : { name: 'login' }
+          return loggedInUser ? { name: 'discover' } : { name: 'login' }
+        }
+
+        if (to.meta.requiresAuth && !loggedInUser) {
+          return { name: 'login' }
+        }
+
+        if ((to.name === 'login' || to.name === 'register') && loggedInUser) {
+          return { name: 'discover' }
         }
       } catch {
         // If setup status cannot be fetched, continue with regular auth guard.

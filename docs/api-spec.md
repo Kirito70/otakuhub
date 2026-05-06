@@ -19,6 +19,7 @@
 | Method | Path | Auth | Request Schema | Response Schema | Errors |
 |--------|------|------|----------------|----------------|--------|
 | **GET** | `/api/v1/setup/status` | No | – | `SetupStatusResponse { setup_required: bool }` | – |
+| **GET** | `/api/v1/setup/bootstrap` | Optional bearer | – | `AppBootstrapResponse { site_status: "up"|"degraded", logged_in_user?: { id, username, display_name?, is_admin }, setup_required?: true }` | – |
 | **POST** | `/api/v1/setup/bootstrap-admin` | No (one-time) | `BootstrapAdminRequest { username, email, password }` | `UserProfile` | 409 Setup already completed |
 
 ### Setup/Auth Policy Notes
