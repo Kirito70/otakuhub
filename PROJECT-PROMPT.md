@@ -1082,11 +1082,133 @@ PHASE 11 COMPLETE. Update PROJECT-STATUS.md:
 
 ---
 
-# PHASE 12 — Polish, Testing & Deploy
+# PHASE 12 — First-Run Setup & Super Admin Bootstrap
 
-### Prompt 12.1–12.2 — Test coverage
+### Prompt 12.1–12.3 — Setup architecture + backend bootstrap API
 ```
-Read PROJECT-STATUS.md. Current task: 12.1–12.2.
+Read PROJECT-STATUS.md. Current task: 12.1–12.3.
+
+Perform gap analysis first:
+  - confirm whether initial super-admin creation is currently possible without direct DB access
+  - identify race/security risks for first-run bootstrap endpoint
+  - document lock-after-first-admin behavior
+
+Design and implement:
+  - GET /api/v1/setup/status  -> { setup_required: boolean }
+  - POST /api/v1/setup/bootstrap-admin (one-time only)
+
+Rules:
+  - Endpoint must be publicly callable only until first super-admin exists
+  - After bootstrap completes, endpoint must always reject
+  - Add idempotency/race-safety protection
+
+Update PROJECT-STATUS.md: mark 12.1–12.3 ✅, advance to 12.4.
+```
+
+### Prompt 12.4–12.9 — Setup frontend, guards, and tests
+```
+Read PROJECT-STATUS.md. Current task: 12.4–12.9.
+
+Frontend:
+  - Create setup screen (QForm/QInput/lazy-rules)
+  - Validate username/email/password/confirm-password client-side
+  - Disable submit until form is valid
+  - Add setup route + router guard using GET /setup/status
+
+Backend:
+  - enforce post-bootstrap admin-only user creation policies
+
+Tests:
+  - frontend: empty submit, invalid email, short password, mismatch password, successful setup
+  - backend: unauthorized after bootstrap, duplicate/concurrent bootstrap protection
+
+Update PROJECT-STATUS.md: mark 12.4–12.9 ✅, advance to 13.1.
+```
+
+---
+
+# PHASE 13 — Backend Seed/Sync Command Consolidation
+
+### Prompt 13.1–13.5 — Gap analysis + unified backend command architecture
+```
+Read PROJECT-STATUS.md. Current task: 13.1–13.5.
+
+Perform full inventory/gap analysis:
+  - root scripts seeding paths
+  - backend seeding/sync entrypoints
+  - data sources: anime-offline database, AniList, MangaDex, Jikan
+
+Design unified backend-only structure:
+  - shared ingestion core (parse/upsert/retry)
+  - per-source adapters
+  - commands: otakuhub seed anime-offline|anilist|mangadex|jikan
+  - umbrella command: otakuhub seed all
+
+Deprecation requirement:
+  - if root src/ is unused, deprecate and document migration path
+  - move root scripts seeding entrypoints into backend command layer
+
+Update PROJECT-STATUS.md: mark 13.1–13.5 ✅, advance to 13.6.
+```
+
+### Prompt 13.6–13.10 — Celery runnable seed tasks + schedules + tests
+```
+Read PROJECT-STATUS.md. Current task: 13.6–13.10.
+
+Implement each source as both:
+  1) direct backend command
+  2) celery task using same shared code path
+
+Add:
+  - daily refresh schedule(s)
+  - sync_jobs observability consistency
+  - command+task tests for idempotency and retry safety
+
+Update PROJECT-STATUS.md: mark 13.6–13.10 ✅, advance to 14.1.
+```
+
+---
+
+# PHASE 14 — Frontend Validation Hardening + Unit Test Expansion
+
+### Prompt 14.1–14.6 — Validation implementation across all forms
+```
+Read PROJECT-STATUS.md. Current task: 14.1–14.6.
+
+Perform form-by-form gap analysis first.
+Then implement Quasar validation everywhere:
+  - QForm + QInput rules + lazy-rules
+  - required, format, range, and cross-field checks
+  - inline actionable error messages
+  - disable submit when invalid
+
+No form should rely on backend validation as first line.
+Backend validation still remains mandatory as defense in depth.
+
+Update PROJECT-STATUS.md: mark 14.1–14.6 ✅, advance to 14.7.
+```
+
+### Prompt 14.7–14.9 — Unit tests for frontend validation + page states
+```
+Read PROJECT-STATUS.md. Current task: 14.7–14.9.
+
+Add/update Vitest suites to cover every major page/form:
+  - empty submit
+  - invalid format
+  - inline validation errors
+  - successful submit path
+  - loading/error/data states for pages
+
+Update PROJECT-STATUS.md: mark 14.7–14.9 ✅, advance to 15.1.
+```
+
+---
+
+# PHASE 15 — Polish, Testing & Deploy
+
+### Prompt 15.1–15.2 — Test coverage
+```
+Read PROJECT-STATUS.md. Current task: 15.1–15.2.
 
 Backend coverage:
   pytest --cov=backend --cov-report=term-missing
@@ -1098,12 +1220,12 @@ Frontend coverage:
   Write Vitest tests for any uncovered pages.
   Target: loading, error, data state covered for every page.
 
-Update PROJECT-STATUS.md: mark 12.1–12.2 ✅, advance to 12.3.
+Update PROJECT-STATUS.md: mark 15.1–15.2 ✅, advance to 15.3.
 ```
 
-### Prompt 12.3 — Security audit
+### Prompt 15.3 — Security audit
 ```
-Read PROJECT-STATUS.md. Current task: 12.3.
+Read PROJECT-STATUS.md. Current task: 15.3.
 Run .claude/commands/audit-security.md full audit.
 Add frontend-specific checks:
   grep -rn "anilist\|mangadex\|jikan" frontend/src/ --include="*.ts" --include="*.vue"
@@ -1111,12 +1233,12 @@ Add frontend-specific checks:
   grep -rn "any" frontend/src/stores/ frontend/src/pages/ --include="*.ts"
   → Review each hit — should be eliminated or commented
 
-Fix all CRITICAL and HIGH findings. Update PROJECT-STATUS.md: mark 12.3 ✅.
+Fix all CRITICAL and HIGH findings. Update PROJECT-STATUS.md: mark 15.3 ✅.
 ```
 
-### Prompt 12.4 — Performance
+### Prompt 15.4 — Performance
 ```
-Read PROJECT-STATUS.md. Current task: 12.4.
+Read PROJECT-STATUS.md. Current task: 15.4.
 
 Backend: p95 search latency < 200ms under 50 concurrent requests.
 
@@ -1128,12 +1250,12 @@ Frontend:
 Check bundle size: quasar build produces a report — ensure no single chunk > 500KB.
 Enable code splitting for heavy pages if needed (already handled by lazy route imports).
 
-Update PROJECT-STATUS.md: mark 12.4 ✅.
+Update PROJECT-STATUS.md: mark 15.4 ✅.
 ```
 
-### Prompt 12.5 — Platform builds
+### Prompt 15.5 — Platform builds
 ```
-Read PROJECT-STATUS.md. Current task: 12.5.
+Read PROJECT-STATUS.md. Current task: 15.5.
 
 Build and verify all 5 platforms:
 
@@ -1144,10 +1266,10 @@ quasar build -m capacitor -T android → confirm APK builds in Android Studio
 quasar build -m capacitor -T ios     → confirm IPA builds in Xcode (requires Mac)
 
 Fix any platform-specific issues found.
-Update PROJECT-STATUS.md: mark 12.5 ✅, advance to 12.6.
+Update PROJECT-STATUS.md: mark 15.5 ✅, advance to 15.6.
 ```
 
-### Prompts 12.6–12.9
+### Prompts 15.6–15.10
 **Unchanged from original PROJECT-PROMPT.md** — Docker prod, Nginx, README, ADRs.
 Add one extra ADR: `docs/adr/001-quasar-over-flutter.md`
   - Context: needed web + desktop (Windows/Linux) + mobile from one codebase
@@ -1158,7 +1280,7 @@ Add one extra ADR: `docs/adr/001-quasar-over-flutter.md`
 
 ---
 
-## Updated Tool Table for Phases 6–12
+## Updated Tool Table for Phases 6–15
 
 | Phase | Primary Tool | Agent/Mode |
 |-------|-------------|------------|
@@ -1168,4 +1290,7 @@ Add one extra ADR: `docs/adr/001-quasar-over-flutter.md`
 | 9 — Social pages | Antigravity | `/startcycle` workflow |
 | 10 — Watch party | Cline + Antigravity | split |
 | 11 — Notifications | Cline + Antigravity | split |
-| 12 — Polish | Claude Code | `/review-pr`, `/audit-security` |
+| 12 — Setup bootstrap | Cline + Antigravity | split |
+| 13 — Seed/sync consolidation | Cline / OpenCode | `@sync-engineer` + backend commands |
+| 14 — Frontend validation/tests | Antigravity | `/startcycle` + Vitest |
+| 15 — Polish | Claude Code | `/review-pr`, `/audit-security` |

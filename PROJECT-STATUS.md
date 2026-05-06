@@ -10,12 +10,12 @@
 ## Current State
 
 ```
-CURRENT_PHASE:     11
-CURRENT_SUB_PHASE: 11.7
+CURRENT_PHASE:     12
+CURRENT_SUB_PHASE: 12.1
 STATUS:            IN_PROGRESS
-LAST_UPDATED:      2026-05-05
+LAST_UPDATED:      2026-05-06
 BLOCKED_BY:        test-db missing seeded media rows for FK-dependent social integration tests
-NEXT_ACTION:       Notification preferences: GET + PATCH /api/v1/notifications/preferences
+NEXT_ACTION:       Bootstrap setup screen + first super-admin creation flow
 ```
 
 ---
@@ -35,9 +35,10 @@ NEXT_ACTION:       Notification preferences: GET + PATCH /api/v1/notifications/p
 | 9 | Social Features — Backend | ✅ Complete |
 | 10 | Social Features — Flutter | ✅ Complete |
 | 11 | Watch Party | ✅ Complete |
-| 12 | Notifications | ⏳ Not started |
-| 13 | Polish, Testing & Deploy | ⏳ Not started |
-| 14 | Type‑Checking Cleanup (MyPy) | ⏳ Not started |
+| 12 | First-Run Setup & Super Admin Bootstrap | ⏳ Not started |
+| 13 | Backend Seed/Sync Command Consolidation | ⏳ Not started |
+| 14 | Frontend Validation Hardening + Unit Test Expansion | ⏳ Not started |
+| 15 | Polish, Testing & Deploy | ⏳ Not started |
 
 ---
 
@@ -211,24 +212,71 @@ NEXT_ACTION:       Notification preferences: GET + PATCH /api/v1/notifications/p
 | 11.4 | Watch party reminder Celery task | ✅ | Added notifications.watch_party_reminder Celery task with Apprise fan-out + enqueue command |
 | 11.5 | GET /api/v1/notifications | ✅ | Added authenticated notifications inbox endpoint with pagination and total count |
 | 11.6 | PATCH /api/v1/notifications/read | ✅ | Added authenticated mark-read endpoint scoped to current user notifications |
-| 11.7 | Notification preferences: GET + PATCH /api/v1/notifications/preferences | ⏳ | |
-| 11.8 | Notification bell screen (Flutter) | ⏳ | |
-| 11.9 | Notification preferences screen (Flutter) | ⏳ | |
+| 11.7 | Notification preferences: GET + PATCH /api/v1/notifications/preferences | ✅ | Added authenticated GET/PATCH endpoints with default-row creation and update persistence tests |
+| 11.8 | Notification bell screen (Flutter) | ✅ | Implemented notifications inbox screen with unread count, refresh, and mark-read actions |
+| 11.9 | Notification preferences screen (Flutter) | ✅ | Implemented QForm-based preferences screen with validation rules and save/reset flow |
 
-### Phase 12 — Polish, Testing & Deploy
+### Phase 12 — First-Run Setup & Super Admin Bootstrap
+**Goal**: Add first-run setup UX/API so initial super admin can be created safely, then manage additional users.
+
+| Sub-phase | Task | Status | Notes |
+|-----------|------|--------|-------|
+| 12.1 | Gap analysis + ADR for bootstrap flow, threat model, and lock-after-first-admin rule | ⏳ | Must document race-condition handling and abuse prevention |
+| 12.2 | DB/model readiness check for super-admin bootstrap flags and one-time setup state | ⏳ | Add migration only if required by design |
+| 12.3 | Backend endpoint: POST /api/v1/setup/bootstrap-admin (one-time) | ⏳ | Must fail once bootstrap completed |
+| 12.4 | Backend endpoint: GET /api/v1/setup/status | ⏳ | Public endpoint used by frontend to decide setup vs auth route |
+| 12.5 | Authorization policy for post-bootstrap user creation (super-admin only) | ⏳ | Enforce on user-management endpoints |
+| 12.6 | Quasar setup screen with QForm validation (username/email/password + confirm) | ⏳ | Must block submit until valid |
+| 12.7 | Router/bootstrap guard (redirect to setup when no super admin exists) | ⏳ | Avoid auth route dead-ends during first run |
+| 12.8 | Frontend tests for setup form validation and success/failure states | ⏳ | Empty submit, invalid format, mismatch password, success |
+| 12.9 | Backend tests for idempotency, race-safety, and auth boundaries | ⏳ | Include concurrent bootstrap attempt scenario |
+
+### Phase 13 — Backend Seed/Sync Command Consolidation
+**Goal**: Move root-level seeding scripts into backend command/task architecture with shared code; support per-source and all-in-one runs + scheduled refresh.
+
+| Sub-phase | Task | Status | Notes |
+|-----------|------|--------|-------|
+| 13.1 | Gap analysis: inventory every existing seed/sync script in root `scripts/` and backend | ⏳ | Map current ownership, duplicates, and missing coverage |
+| 13.2 | Architecture spec for unified seed/sync module inside backend | ⏳ | Shared pipeline interfaces + per-source adapters |
+| 13.3 | Implement backend command group `otakuhub seed ...` with per-source commands | ⏳ | anime-offline, AniList, MangaDex, Jikan |
+| 13.4 | Implement umbrella command `otakuhub seed all` orchestrating ordered steps | ⏳ | Support dry-run and resume options |
+| 13.5 | Refactor shared ingestion code to eliminate duplication across commands/tasks | ⏳ | Single source of truth for parsing/upsert/retry policies |
+| 13.6 | Add Celery tasks for each seed/sync command (individually runnable) | ⏳ | Queue routing + retry + progress recording in `sync_jobs` |
+| 13.7 | Add scheduled daily/weekly refresh task composition using same shared pipeline | ⏳ | No duplicate business logic in scheduler layer |
+| 13.8 | Add observability: structured logs + sync_jobs status/error payload consistency | ⏳ | Needed for operations and troubleshooting |
+| 13.9 | Deprecate root `src/` (if unused) and root `scripts/` seed entrypoints with migration notes | ⏳ | Keep shims only if needed for backward compatibility |
+| 13.10 | Tests: command tests + task tests + idempotent upsert validation | ⏳ | Verify separate and combined execution paths |
+
+### Phase 14 — Frontend Validation Hardening + Unit Test Expansion
+**Goal**: Enforce Quasar-first client-side validation across forms and add comprehensive frontend unit/component tests.
+
+| Sub-phase | Task | Status | Notes |
+|-----------|------|--------|-------|
+| 14.1 | Gap analysis of all existing forms/pages and current validation coverage matrix | ⏳ | Produce checklist by route/component |
+| 14.2 | Shared validation utility patterns (rules, reusable validators, typed error messages) | ⏳ | Keep strict TypeScript, no `any` |
+| 14.3 | Auth forms hardening (login/register/reset/setup) with QForm + QInput rules | ⏳ | Required, format, min-length, match checks |
+| 14.4 | Tracking/list forms hardening (add/update/custom-list/import) | ⏳ | Prevent invalid progress/score payloads client-side |
+| 14.5 | Social/watch party/forms hardening (discussions/recs/watch party/preferences) | ⏳ | URL, numeric ranges, required fields |
+| 14.6 | Inline error UX standardization (actionable messages + disabled submit) | ⏳ | Must be consistent across pages |
+| 14.7 | Unit/component tests for every form flow | ⏳ | Empty submit, invalid format, inline error, success |
+| 14.8 | Broader page-level test expansion for loading/error/data states | ⏳ | Cover all major screens under `frontend/src/pages` |
+| 14.9 | Quality gate updates (CI docs/checklist) for validation + test expectations | ⏳ | Prevent regressions in future phases |
+
+### Phase 15 — Polish, Testing & Deploy
 **Goal**: Full test suite, Docker prod deploy, all platforms verified.
 
 | Sub-phase | Task | Status | Notes |
 |-----------|------|--------|-------|
-| 12.1 | Backend test coverage ≥ 80% | ⏳ | |
-| 12.2 | Flutter widget test coverage for all screens | ⏳ | |
-| 12.3 | Security audit (run /audit-security) | ⏳ | |
-| 12.4 | Performance: search < 200ms p95 | ⏳ | |
-| 12.5 | Flutter build verified: web, Windows, Android, iOS, Linux | ⏳ | |
-| 12.6 | Docker prod compose tested | ⏳ | |
-| 12.7 | Nginx config + TLS | ⏳ | |
-| 12.8 | README.md with setup instructions | ⏳ | |
-| 12.9 | All ADRs written (docs/adr/) | ⏳ | |
+| 15.1 | Backend test coverage ≥ 80% | ⏳ | |
+| 15.2 | Flutter widget test coverage for all screens | ⏳ | |
+| 15.3 | Security audit (run /audit-security) | ⏳ | |
+| 15.4 | Performance: search < 200ms p95 | ⏳ | |
+| 15.5 | Flutter build verified: web, Windows, Android, iOS, Linux | ⏳ | |
+| 15.6 | Docker prod compose tested | ⏳ | |
+| 15.7 | Nginx config + TLS | ⏳ | |
+| 15.8 | README.md with setup instructions | ⏳ | |
+| 15.9 | All ADRs written (docs/adr/) | ⏳ | |
+| 15.10 | Type-checking cleanup (MyPy strictness and residual typing debt) | ⏳ | Moved from prior standalone phase |
 
 ---
 
@@ -242,61 +290,6 @@ NEXT_ACTION:       Notification preferences: GET + PATCH /api/v1/notifications/p
 # 2026-04-20 | Phase 1.1 | Monorepo directory structure created
 # 2026-04-22 | Phase 1.2 | Docker Compose dev stack setup with postgres, redis, backend, worker
 # 2026-04-22 | Phase 1.3 | Docker Compose prod stack setup
-# 2026-04-22 | Phase 1.2 | Docker Compose dev stack setup with postgres, redis, backend, worker
-# 2026-04-24 | Phase 2.1 | PostgreSQL extensions implemented
-# 2026-04-24 | Phase 2.2 | All enums created
-# 2026-04-24 | Phase 2.3 | Media catalogue tables migrated
-# 2026-04-24 | Phase 2.4 | User & auth tables migrated
-# 2026-04-24 | Phase 2.5 | Group tables migrated
-# 2026-04-24 | Phase 2.6 | Tracking tables migrated
-# 2026-04-24 | Phase 2.7 | Social tables migrated
-# 2026-04-24 | Phase 2.8 | Watch party tables migrated
-# 2026-04-24 | Phase 2.9 | Notification tables migrated
-# 2026-04-24 | Phase 2.10 | Sync jobs table migrated
-# 2026-04-24 | Phase 2.11 | All SQLAlchemy models written
-# 2026-04-24 | Phase 2.12 | Repository base classes scaffolded
-# 2026-04-24 | Phase 2.13 | GET /health endpoint implemented
-# 2026-04-24 | Phase 2.14 | GET /api/v1/status endpoint implemented
-# 2026-04-26 | Phase 3.1 | AniList GraphQL client implemented
-# 2026-05-05 | Phase 9.2 | Recommendation create endpoint implemented with shared-group guards
-# 2026-05-05 | Phase 9.3 | Recommendation inbox endpoint implemented with pagination
-# 2026-05-05 | Phase 9.4 | Recommendation acknowledge endpoint implemented with recipient ownership checks
-# 2026-05-05 | Phase 9.5 | Discussion create endpoint implemented with group membership authorization
-# 2026-05-05 | Phase 9.6 | Discussion list endpoint implemented with visibility filtering by group membership
-# 2026-05-05 | Phase 9.7 | Discussion replies endpoint implemented with authorization and validation
-# 2026-05-05 | Phase 9.8 | Public profile endpoint implemented with safe response schema
-# 2026-05-05 | Phase 10.1 | Watch party create endpoint implemented with group membership authorization
-# 2026-05-05 | Phase 10.2 | Watch party upcoming list endpoint implemented with membership filtering
-# 2026-05-05 | Phase 10.3 | Watch party RSVP endpoint implemented with membership authorization
-# 2026-05-05 | Phase 10.4 | Watch party list screen implemented with store-backed fetch and test coverage
-# 2026-05-05 | Phase 10.5 | Watch party create screen implemented with form and store integration
-# 2026-05-05 | Phase 10.6 | Watch party detail+RSVP UI implemented with store-backed RSVP actions
-# 2026-05-06 | Phase 11.1 | Apprise client configured with multi-target URL support
-# 2026-05-06 | Phase 11.2 | New episode notification Celery task implemented with Apprise delivery wrapper
-# 2026-05-06 | Phase 11.3 | New chapter notification Celery task implemented with Apprise delivery wrapper
-# 2026-05-06 | Phase 11.4 | Watch party reminder Celery task implemented with Apprise delivery wrapper
-# 2026-05-06 | Phase 11.5 | Notifications inbox endpoint implemented with auth + pagination
-# 2026-05-06 | Phase 11.6 | Notifications mark-read endpoint implemented with user-scoped updates
-# 2026-04-26 | Phase 3.2 | MangaDex REST client implemented
-# 2026-04-26 | Phase 3.3 | Jikan client implemented
-# 2026-04-26 | Phase 3.4 | Seed script: download + import anime-offline-database created
-# 2026-04-26 | Phase 3.5 | Celery app + Redis broker configured
-# 2026-04-26 | Phase 3.6 | Backfill worker: AniList batch fetch implemented
-# 2026-04-26 | Phase 3.7 | MangaDex detail worker implemented
-# 2026-04-26 | Phase 3.8 | Weekly refresh cron task implemented
-# 2026-04-26 | Phase 3.9 | On-demand fetch mechanism implemented
-# 2026-04-26 | Phase 3.10 | Media search endpoint implemented
-# 2026-04-26 | Phase 3.11 | Media detail endpoint implemented
-# 2026-04-26 | Phase 3.12 | Airing calendar endpoint implemented
-# 2026-04-26 | Phase 3.13 | Seed script tested and functional
-```
-# Format: YYYY-MM-DD | Phase X.Y | <one-line description>
-# Example:
-# 2026-04-20 | Phase 1.1 | Monorepo directory structure created
-# 2026-04-22 | Phase 1.1 | Monorepo directory structure created
-# 2026-04-22 | Phase 1.2 | Docker Compose dev stack setup with postgres, redis, backend, worker
-# 2026-04-22 | Phase 1.3 | Docker Compose prod stack setup
-# 2026-04-22 | Phase 1.2 | Docker Compose dev stack setup with postgres, redis, backend, worker
 # 2026-04-24 | Phase 2.1 | PostgreSQL extensions implemented
 # 2026-04-24 | Phase 2.2 | All enums created
 # 2026-04-24 | Phase 2.3 | Media catalogue tables migrated
@@ -366,6 +359,28 @@ NEXT_ACTION:       Notification preferences: GET + PATCH /api/v1/notifications/p
 # 2026-05-05 | Phase 8.10 | Added and ran frontend widget tests for newly delivered tracking screens
 # 2026-05-05 | Phase 8 | Flutter Tracking Screens marked complete
 # 2026-05-05 | Phase 9.1 | Implemented GET /api/v1/social/feed using shared group-member activity history
+# 2026-05-05 | Phase 9.2 | Recommendation create endpoint implemented with shared-group guards
+# 2026-05-05 | Phase 9.3 | Recommendation inbox endpoint implemented with pagination
+# 2026-05-05 | Phase 9.4 | Recommendation acknowledge endpoint implemented with recipient ownership checks
+# 2026-05-05 | Phase 9.5 | Discussion create endpoint implemented with group membership authorization
+# 2026-05-05 | Phase 9.6 | Discussion list endpoint implemented with visibility filtering by group membership
+# 2026-05-05 | Phase 9.7 | Discussion replies endpoint implemented with authorization and validation
+# 2026-05-05 | Phase 9.8 | Public profile endpoint implemented with safe response schema
+# 2026-05-05 | Phase 10.1 | Watch party create endpoint implemented with group membership authorization
+# 2026-05-05 | Phase 10.2 | Watch party upcoming list endpoint implemented with membership filtering
+# 2026-05-05 | Phase 10.3 | Watch party RSVP endpoint implemented with membership authorization
+# 2026-05-05 | Phase 10.4 | Watch party list screen implemented with store-backed fetch and test coverage
+# 2026-05-05 | Phase 10.5 | Watch party create screen implemented with form and store integration
+# 2026-05-05 | Phase 10.6 | Watch party detail+RSVP UI implemented with store-backed RSVP actions
+# 2026-05-06 | Phase 11.1 | Apprise client configured with multi-target URL support
+# 2026-05-06 | Phase 11.2 | New episode notification Celery task implemented with Apprise delivery wrapper
+# 2026-05-06 | Phase 11.3 | New chapter notification Celery task implemented with Apprise delivery wrapper
+# 2026-05-06 | Phase 11.4 | Watch party reminder Celery task implemented with Apprise delivery wrapper
+# 2026-05-06 | Phase 11.5 | Notifications inbox endpoint implemented with auth + pagination
+# 2026-05-06 | Phase 11.6 | Notifications mark-read endpoint implemented with user-scoped updates
+# 2026-05-06 | Phase 11.7 | Notification preferences GET/PATCH endpoints implemented with defaults and persistence tests
+# 2026-05-06 | Phase 11.8 | Notification bell screen implemented with unread count and mark-read actions
+# 2026-05-06 | Phase 11.9 | Notification preferences screen implemented with QForm validation and save flow
 ```
 
 ---
