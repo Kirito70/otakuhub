@@ -5,6 +5,7 @@ import {
   createWebHashHistory,
   createWebHistory,
 } from 'vue-router'
+import axios from 'axios'
 
 import { useAuthStore } from 'src/stores/auth'
 import routes from './routes'
@@ -25,15 +26,38 @@ export default route(function ({ store }) {
   Router.beforeEach((to) => {
     const auth = useAuthStore(store)
 
-    if (to.meta.requiresAuth && !auth.isAuthenticated) {
-      return { name: 'login' }
-    }
+    // First-run bootstrap flow: redirect to setup until first super admin exists.
+    // Kept lightweight and public (no auth headers required).
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    return (async () => {
+      try {
+        const setupResponse = await axios.get<{ setup_required: boolean }>(
+          `${process.env.API_BASE_URL}/api/v1/setup/status`,
+          { timeout: 5000 },
+        )
+        const setupRequired = setupResponse.data.setup_required
 
-    if ((to.name === 'login' || to.name === 'register') && auth.isAuthenticated) {
-      return { name: 'discover' }
-    }
+        if (setupRequired && to.name !== 'setup') {
+          return { name: 'setup' }
+        }
 
-    return true
+        if (!setupRequired && to.name === 'setup') {
+          return auth.isAuthenticated ? { name: 'discover' } : { name: 'login' }
+        }
+      } catch {
+        // If setup status cannot be fetched, continue with regular auth guard.
+      }
+
+      if (to.meta.requiresAuth && !auth.isAuthenticated) {
+        return { name: 'login' }
+      }
+
+      if ((to.name === 'login' || to.name === 'register') && auth.isAuthenticated) {
+        return { name: 'discover' }
+      }
+
+      return true
+    })()
   })
 
   return Router

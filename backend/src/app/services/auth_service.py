@@ -7,6 +7,7 @@ from hashlib import sha256
 from secrets import token_urlsafe
 
 from fastapi import HTTPException, status
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
@@ -20,7 +21,60 @@ from src.app.schemas.auth import LoginRequest, RefreshRequest, RegisterRequest, 
 class AuthService:
     """Auth business logic: register, login, refresh, logout."""
 
+    async def is_setup_required(self, db: AsyncSession) -> bool:
+        """Returns True when there are no active users yet."""
+        user_stmt = select(User.id).where(User.deleted_at.is_(None)).limit(1)
+        existing_user_id = (await db.execute(user_stmt)).scalar_one_or_none()
+        return existing_user_id is None
+
+    async def bootstrap_super_admin(self, db: AsyncSession, username: str, email: str, password: str) -> User:
+        """Create first super admin exactly once."""
+        setup_required = await self.is_setup_required(db)
+        if not setup_required:
+            raise HTTPException(status_code=409, detail="Setup already completed")
+
+        user = User(
+            username=username,
+            display_name=username,
+            email=email,
+            password_hash=get_password_hash(password),
+            is_active=True,
+            is_admin=True,
+        )
+        db.add(user)
+        try:
+            await db.commit()
+        except IntegrityError:
+            await db.rollback()
+            raise HTTPException(status_code=409, detail="Setup already completed")
+        await db.refresh(user)
+        return user
+
+    async def create_user_by_admin(self, db: AsyncSession, payload: RegisterRequest) -> User:
+        """Create user from admin-only endpoint once setup is complete."""
+        existing_stmt = select(User).where((User.username == payload.username) | (User.email == payload.email))
+        existing = (await db.execute(existing_stmt)).scalar_one_or_none()
+        if existing:
+            raise HTTPException(status_code=400, detail="Username or email already exists")
+
+        user = User(
+            username=payload.username,
+            display_name=payload.username,
+            email=payload.email,
+            password_hash=get_password_hash(payload.password),
+            is_active=True,
+            is_admin=False,
+        )
+        db.add(user)
+        await db.commit()
+        await db.refresh(user)
+        return user
+
     async def register(self, db: AsyncSession, payload: RegisterRequest) -> User:
+        setup_required = await self.is_setup_required(db)
+        if not setup_required:
+            raise HTTPException(status_code=403, detail="Public registration disabled after setup")
+
         existing_stmt = select(User).where((User.username == payload.username) | (User.email == payload.email))
         existing = (await db.execute(existing_stmt)).scalar_one_or_none()
         if existing:

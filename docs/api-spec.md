@@ -13,6 +13,17 @@
 |--------|------|------|----------------|----------------|--------|
 | **GET** | `/api/v1/users/me` | Yes | – | `UserProfile` | 401 |
 | **PATCH** | `/api/v1/users/me` | Yes | `UserUpdate { display_name?, avatar_url?, bio?, timezone? }` | `UserProfile` | 400 / 401 |
+| **POST** | `/api/v1/users` | Yes (admin) | `RegisterRequest { username, email, password }` | `UserProfile` | 400 / 401 / 403 |
+
+## Setup Endpoints (Phase 12)
+| Method | Path | Auth | Request Schema | Response Schema | Errors |
+|--------|------|------|----------------|----------------|--------|
+| **GET** | `/api/v1/setup/status` | No | – | `SetupStatusResponse { setup_required: bool }` | – |
+| **POST** | `/api/v1/setup/bootstrap-admin` | No (one-time) | `BootstrapAdminRequest { username, email, password }` | `UserProfile` | 409 Setup already completed |
+
+### Setup/Auth Policy Notes
+- `POST /api/v1/auth/register` is allowed only before bootstrap is completed.
+- After bootstrap, public register returns `403` and admin-managed user creation uses `POST /api/v1/users`.
 
 ## Group Management Endpoints
 | Method | Path | Auth | Request Schema | Response Schema | Errors |

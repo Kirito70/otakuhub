@@ -10,6 +10,11 @@ const routes: RouteRecordRaw[] = [
     ],
   },
   {
+    path: '/setup',
+    name: 'setup',
+    component: () => import('pages/setup/SetupPage.vue'),
+  },
+  {
     path: '/',
     component: () => import('layouts/MainLayout.vue'),
     children: [

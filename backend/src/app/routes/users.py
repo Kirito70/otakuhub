@@ -11,9 +11,18 @@ from src.app.core.auth import get_current_user
 from src.app.database import get_db_session
 from src.app.models.user import User
 from src.app.schemas.user import PublicUserProfile, UserProfile, UserUpdate
+from src.app.schemas.auth import RegisterRequest
+from src.app.services.auth_service import auth_service
 from src.app.services.user_service import UserService
 
 router = APIRouter(prefix="/users", tags=["users"])
+
+
+def require_admin(current_user: User = Depends(get_current_user)) -> User:
+    """Ensure current user has admin privileges."""
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    return current_user
 
 
 @router.get("/me", response_model=UserProfile)
@@ -49,3 +58,14 @@ async def get_public_profile(
         raise HTTPException(status_code=404, detail="User not found")
 
     return PublicUserProfile.model_validate(user)
+
+
+@router.post("", response_model=UserProfile, status_code=201)
+async def create_user_by_admin(
+    payload: RegisterRequest,
+    db: AsyncSession = Depends(get_db_session),
+    _: User = Depends(require_admin),
+) -> UserProfile:
+    """Phase 12.5 — create a user after setup (super-admin only)."""
+    user = await auth_service.create_user_by_admin(db, payload)
+    return UserProfile.model_validate(user)

@@ -10,12 +10,12 @@
 ## Current State
 
 ```
-CURRENT_PHASE:     12
-CURRENT_SUB_PHASE: 12.1
+CURRENT_PHASE:     13
+CURRENT_SUB_PHASE: 13.1
 STATUS:            IN_PROGRESS
 LAST_UPDATED:      2026-05-06
 BLOCKED_BY:        test-db missing seeded media rows for FK-dependent social integration tests
-NEXT_ACTION:       Bootstrap setup screen + first super-admin creation flow
+NEXT_ACTION:       Gap analysis: inventory existing seed/sync scripts and backend entrypoints
 ```
 
 ---
@@ -35,7 +35,7 @@ NEXT_ACTION:       Bootstrap setup screen + first super-admin creation flow
 | 9 | Social Features — Backend | ✅ Complete |
 | 10 | Social Features — Flutter | ✅ Complete |
 | 11 | Watch Party | ✅ Complete |
-| 12 | First-Run Setup & Super Admin Bootstrap | ⏳ Not started |
+| 12 | First-Run Setup & Super Admin Bootstrap | ✅ Complete |
 | 13 | Backend Seed/Sync Command Consolidation | ⏳ Not started |
 | 14 | Frontend Validation Hardening + Unit Test Expansion | ⏳ Not started |
 | 15 | Polish, Testing & Deploy | ⏳ Not started |
@@ -221,15 +221,15 @@ NEXT_ACTION:       Bootstrap setup screen + first super-admin creation flow
 
 | Sub-phase | Task | Status | Notes |
 |-----------|------|--------|-------|
-| 12.1 | Gap analysis + ADR for bootstrap flow, threat model, and lock-after-first-admin rule | ⏳ | Must document race-condition handling and abuse prevention |
-| 12.2 | DB/model readiness check for super-admin bootstrap flags and one-time setup state | ⏳ | Add migration only if required by design |
-| 12.3 | Backend endpoint: POST /api/v1/setup/bootstrap-admin (one-time) | ⏳ | Must fail once bootstrap completed |
-| 12.4 | Backend endpoint: GET /api/v1/setup/status | ⏳ | Public endpoint used by frontend to decide setup vs auth route |
-| 12.5 | Authorization policy for post-bootstrap user creation (super-admin only) | ⏳ | Enforce on user-management endpoints |
-| 12.6 | Quasar setup screen with QForm validation (username/email/password + confirm) | ⏳ | Must block submit until valid |
-| 12.7 | Router/bootstrap guard (redirect to setup when no super admin exists) | ⏳ | Avoid auth route dead-ends during first run |
-| 12.8 | Frontend tests for setup form validation and success/failure states | ⏳ | Empty submit, invalid format, mismatch password, success |
-| 12.9 | Backend tests for idempotency, race-safety, and auth boundaries | ⏳ | Include concurrent bootstrap attempt scenario |
+| 12.1 | Gap analysis + ADR for bootstrap flow, threat model, and lock-after-first-admin rule | ✅ | Added ADR 032 with lock-after-bootstrap policy and race-handling approach |
+| 12.2 | DB/model readiness check for super-admin bootstrap flags and one-time setup state | ✅ | Reused existing `users.is_admin`; no migration required |
+| 12.3 | Backend endpoint: POST /api/v1/setup/bootstrap-admin (one-time) | ✅ | Added one-time bootstrap endpoint returning 409 after completion |
+| 12.4 | Backend endpoint: GET /api/v1/setup/status | ✅ | Added public setup status endpoint for router decision |
+| 12.5 | Authorization policy for post-bootstrap user creation (super-admin only) | ✅ | Disabled public register post-bootstrap and added admin-only `POST /users` |
+| 12.6 | Quasar setup screen with QForm validation (username/email/password + confirm) | ✅ | Added SetupPage with QForm rules, inline errors, and blocked invalid submit |
+| 12.7 | Router/bootstrap guard (redirect to setup when no super admin exists) | ✅ | Added setup-status-aware guard and setup route handling |
+| 12.8 | Frontend tests for setup form validation and success/failure states | ✅ | Added SetupPage component tests for invalid + success flow |
+| 12.9 | Backend tests for idempotency, race-safety, and auth boundaries | ✅ | Added bootstrap/status/register-lock/admin-create tests |
 
 ### Phase 13 — Backend Seed/Sync Command Consolidation
 **Goal**: Move root-level seeding scripts into backend command/task architecture with shared code; support per-source and all-in-one runs + scheduled refresh.
@@ -381,6 +381,16 @@ NEXT_ACTION:       Bootstrap setup screen + first super-admin creation flow
 # 2026-05-06 | Phase 11.7 | Notification preferences GET/PATCH endpoints implemented with defaults and persistence tests
 # 2026-05-06 | Phase 11.8 | Notification bell screen implemented with unread count and mark-read actions
 # 2026-05-06 | Phase 11.9 | Notification preferences screen implemented with QForm validation and save flow
+# 2026-05-06 | Phase 12.1 | Added ADR 032 documenting bootstrap setup lock and security boundaries
+# 2026-05-06 | Phase 12.2 | Completed setup data-model review; existing users.is_admin supports flow (no migration)
+# 2026-05-06 | Phase 12.3 | Added one-time POST /api/v1/setup/bootstrap-admin endpoint
+# 2026-05-06 | Phase 12.4 | Added public GET /api/v1/setup/status endpoint for first-run detection
+# 2026-05-06 | Phase 12.5 | Enforced post-bootstrap user creation via admin-only POST /api/v1/users
+# 2026-05-06 | Phase 12.6 | Added frontend SetupPage with QForm validation and inline errors
+# 2026-05-06 | Phase 12.7 | Added setup-aware router guard redirecting to /setup when required
+# 2026-05-06 | Phase 12.8 | Added SetupPage Vitest coverage for invalid and successful submit flows
+# 2026-05-06 | Phase 12.9 | Added backend setup tests for status/bootstrap/register lock/admin authorization
+# 2026-05-06 | Phase 12 | First-run setup and super-admin bootstrap phase completed
 ```
 
 ---
