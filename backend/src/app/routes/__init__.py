@@ -1,7 +1,7 @@
 """API routes package."""
 
 from fastapi import APIRouter
-from . import auth, media, lists, users, groups, sync, social, watchparty
+from . import auth, media, lists, users, groups, sync, social, watchparty, notifications
 
 api_router = APIRouter()
 
@@ -20,3 +20,5 @@ api_router.include_router(sync.router)
 api_router.include_router(social.router)
 # watchparty router uses prefix=/watchparty
 api_router.include_router(watchparty.router)
+# notifications router uses prefix=/notifications
+api_router.include_router(notifications.router)

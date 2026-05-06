@@ -10,12 +10,12 @@
 ## Current State
 
 ```
-CURRENT_PHASE:     10
-CURRENT_SUB_PHASE: 11.1
+CURRENT_PHASE:     11
+CURRENT_SUB_PHASE: 11.7
 STATUS:            IN_PROGRESS
 LAST_UPDATED:      2026-05-05
 BLOCKED_BY:        test-db missing seeded media rows for FK-dependent social integration tests
-NEXT_ACTION:       Apprise client configured
+NEXT_ACTION:       Notification preferences: GET + PATCH /api/v1/notifications/preferences
 ```
 
 ---
@@ -205,12 +205,12 @@ NEXT_ACTION:       Apprise client configured
 
 | Sub-phase | Task | Status | Notes |
 |-----------|------|--------|-------|
-| 11.1 | Apprise client configured | ⏳ | |
-| 11.2 | New episode notification Celery task | ⏳ | |
-| 11.3 | New chapter notification Celery task | ⏳ | |
-| 11.4 | Watch party reminder Celery task | ⏳ | |
-| 11.5 | GET /api/v1/notifications | ⏳ | |
-| 11.6 | PATCH /api/v1/notifications/read | ⏳ | |
+| 11.1 | Apprise client configured | ✅ | Added Apprise client wrapper with URL parsing and delivery helper |
+| 11.2 | New episode notification Celery task | ✅ | Added notifications.new_episode Celery task with Apprise fan-out + enqueue command |
+| 11.3 | New chapter notification Celery task | ✅ | Added notifications.new_chapter Celery task with Apprise fan-out + enqueue command |
+| 11.4 | Watch party reminder Celery task | ✅ | Added notifications.watch_party_reminder Celery task with Apprise fan-out + enqueue command |
+| 11.5 | GET /api/v1/notifications | ✅ | Added authenticated notifications inbox endpoint with pagination and total count |
+| 11.6 | PATCH /api/v1/notifications/read | ✅ | Added authenticated mark-read endpoint scoped to current user notifications |
 | 11.7 | Notification preferences: GET + PATCH /api/v1/notifications/preferences | ⏳ | |
 | 11.8 | Notification bell screen (Flutter) | ⏳ | |
 | 11.9 | Notification preferences screen (Flutter) | ⏳ | |
@@ -271,6 +271,12 @@ NEXT_ACTION:       Apprise client configured
 # 2026-05-05 | Phase 10.4 | Watch party list screen implemented with store-backed fetch and test coverage
 # 2026-05-05 | Phase 10.5 | Watch party create screen implemented with form and store integration
 # 2026-05-05 | Phase 10.6 | Watch party detail+RSVP UI implemented with store-backed RSVP actions
+# 2026-05-06 | Phase 11.1 | Apprise client configured with multi-target URL support
+# 2026-05-06 | Phase 11.2 | New episode notification Celery task implemented with Apprise delivery wrapper
+# 2026-05-06 | Phase 11.3 | New chapter notification Celery task implemented with Apprise delivery wrapper
+# 2026-05-06 | Phase 11.4 | Watch party reminder Celery task implemented with Apprise delivery wrapper
+# 2026-05-06 | Phase 11.5 | Notifications inbox endpoint implemented with auth + pagination
+# 2026-05-06 | Phase 11.6 | Notifications mark-read endpoint implemented with user-scoped updates
 # 2026-04-26 | Phase 3.2 | MangaDex REST client implemented
 # 2026-04-26 | Phase 3.3 | Jikan client implemented
 # 2026-04-26 | Phase 3.4 | Seed script: download + import anime-offline-database created

@@ -1,13 +1,35 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "model": "anthropic/claude-sonnet-4-20250514",
-  "providers": {
-    "anthropic": { "apiKey": "env:ANTHROPIC_API_KEY" },
-    "google":    { "apiKey": "env:GOOGLE_API_KEY" },
-    "openai":    { "apiKey": "env:OPENAI_API_KEY" }
+  "provider": {
+    "ollama": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Ollama (local)",
+      "options": {
+        "baseURL": "http://192.168.1.5:11434/v1"
+      },
+      "models": {
+        "qwen3-coder:latest": {
+          "name": "Qwen 3 Coder 30B"
+        },
+        "gemma4:latest": {
+          "name": "Gemma 4 16B"
+        },
+        "llama3.1:8b": {
+          "name": "LLaMA 3.1 8B"
+        },
+        "gpt-oss:latest": {
+          "name": "GPT-OSS Latest"
+        },
+        "tarruda/neuraldaredevil-8b-abliterated:fp16": {
+          "name": "Neural Daredevil 8B Abliterated (FP16)"
+        }
+      }
+    }
   },
   "instructions": [
     "AGENTS.md",
+    "docs/agents.md",
     "docs/backend-architecture.md",
     "docs/database-schema.md",
     "docs/quasar-architecture.md"
@@ -56,6 +78,11 @@
     },
     "test-writer": {
       "description": "pytest for backend, Vitest + Vue Test Utils for frontend",
+      "model": "anthropic/claude-sonnet-4-20250514",
+      "temperature": 0.0
+    },
+    "tdd-enforcer": {
+      "description": "Enforce red-green-refactor workflow and frontend form validation test coverage",
       "model": "anthropic/claude-sonnet-4-20250514",
       "temperature": 0.0
     }

@@ -6,6 +6,13 @@
 - Keep one active task at a time; update task status in real time.
 - Do not advance phase status without verifying each sub-phase.
 
+## Mandatory TDD + Frontend Validation Policy (All Personas)
+- Follow red → green → refactor for every feature and bug fix.
+- Ensure tests are written/updated before implementation whenever practical.
+- Do not mark work complete without running and passing relevant tests.
+- For any frontend form, enforce client-side validation for required fields and format checks before API calls.
+- Test coverage for frontend forms must include: empty submit, invalid input, inline validation errors, and successful submit.
+
 ## Team Personas
 
 ### Product Manager
@@ -31,6 +38,7 @@ You are the Quasar/Vue 3 developer. You:
 - Implement the page using the `quasar-page` skill from `.antigravity/skills/quasar-page.md`
 - Follow all rules in AGENTS.md and GEMINI.md
 - Use TypeScript strict, Pinia, Vue Router, Axios boot file, Quasar components
+- Implement form validation using `QForm` + `QInput` rules + `lazy-rules` for every user input form
 - Run `vue-tsc --noEmit` and `quasar build` — zero errors before done
 Output: working Vue/Quasar code in `frontend/src/pages/<feature>/`
 
@@ -39,6 +47,7 @@ You are the test engineer. You:
 - Read the Quasar implementation
 - Write Vitest + Vue Test Utils component tests
 - Cover: loading state, error state, data state
+- For forms, cover: empty submit, invalid format, field-level errors, and successful submit path
 - Run `npx vitest run` — all tests must pass
 Output: test files in `src/pages/__tests__/` and `src/stores/__tests__/`
 
@@ -46,5 +55,6 @@ Output: test files in `src/pages/__tests__/` and `src/stores/__tests__/`
 You are the code reviewer. You:
 - Review the implementation against AGENTS.md conventions
 - Check: TypeScript strict compliance, Pinia store pattern, Quasar components used, error states, no external API calls from frontend
+- Block PRs missing frontend form validation or missing form-validation tests
 - Use the `.claude/skills/code-review/SKILL.md` checklist
 Output: review with BLOCKER/MAJOR/MINOR/NIT findings and a final verdict

@@ -12,8 +12,8 @@ interface RetryableRequestConfig extends InternalAxiosRequestConfig {
   _retry?: boolean
 }
 
-export default boot(() => {
-  const authStore = useAuthStore()
+export default boot(({ store }) => {
+  const authStore = useAuthStore(store)
 
   api.interceptors.request.use((config) => {
     if (authStore.accessToken) {

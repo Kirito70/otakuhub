@@ -31,6 +31,13 @@ otakuhub/
 
 ## Code Standards
 
+## Test-Driven Development (TDD) Policy — Mandatory
+- For **every frontend and backend feature**, follow red → green → refactor.
+- Write or update tests **before** implementation changes when feasible.
+- If legacy code prevents strict test-first order, add failing regression tests immediately after reproducing the bug, then implement fix.
+- Never mark a task complete unless relevant tests were added/updated and executed.
+- For frontend UX work, include form-level validation tests (required fields, invalid format, disabled submit, inline error states).
+
 ### TypeScript / Vue 3 / Quasar
 - `<script setup lang="ts">` on every component — no Options API
 - Strict TypeScript: `"strict": true` in tsconfig — no implicit `any`
@@ -42,6 +49,9 @@ otakuhub/
 - Responsive: use Quasar's `$q.screen` breakpoints and `col-*` grid — not raw CSS media queries
 - Never use `any` — use `unknown` and narrow, or write proper interfaces
 - All async operations in composables: expose `isLoading`, `error`, and `data` refs
+- All forms must have client-side validation for required fields and basic format constraints before API submission
+- Use Quasar form primitives (`QForm`, `QInput` rules, `lazy-rules`) and show actionable validation messages
+- Add/update Vitest tests for form validation flows (empty submit, invalid input, successful submit)
 
 ### Python / FastAPI (unchanged)
 - Type hints required on ALL function signatures

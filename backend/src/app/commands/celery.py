@@ -7,6 +7,11 @@ import subprocess
 import typer
 
 from src.app.workers.sync_tasks import seed_database_task, weekly_refresh_task
+from src.app.workers.notification_tasks import (
+    send_new_chapter_notifications_task,
+    send_new_episode_notifications_task,
+    send_watch_party_reminder_notifications_task,
+)
 
 app = typer.Typer(name="celery", help="Celery worker/beat/task commands")
 
@@ -53,3 +58,24 @@ def enqueue_weekly_refresh() -> None:
     """Enqueue weekly refresh sync task on Celery."""
     result = weekly_refresh_task.delay()
     typer.echo(f"✓ Weekly refresh task enqueued: {result.id}")
+
+
+@app.command("new-episode-notifications")
+def enqueue_new_episode_notifications() -> None:
+    """Enqueue phase 11.2 new-episode notification worker task."""
+    result = send_new_episode_notifications_task.delay()
+    typer.echo(f"✓ New episode notification task enqueued: {result.id}")
+
+
+@app.command("new-chapter-notifications")
+def enqueue_new_chapter_notifications() -> None:
+    """Enqueue phase 11.3 new-chapter notification worker task."""
+    result = send_new_chapter_notifications_task.delay()
+    typer.echo(f"✓ New chapter notification task enqueued: {result.id}")
+
+
+@app.command("watch-party-reminders")
+def enqueue_watch_party_reminders() -> None:
+    """Enqueue phase 11.4 watch-party reminder worker task."""
+    result = send_watch_party_reminder_notifications_task.delay()
+    typer.echo(f"✓ Watch party reminder task enqueued: {result.id}")

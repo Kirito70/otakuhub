@@ -10,6 +10,7 @@ celery_app = Celery(
     backend=settings.redis_url,
     include=[
         "src.app.workers.sync_tasks",
+        "src.app.workers.notification_tasks",
     ]
 )
 
@@ -30,6 +31,7 @@ celery_app.conf.update(
 # Configure task routing (optional)
 celery_app.conf.task_routes = {
     "src.app.workers.sync_tasks.*": {"queue": "sync"},
+    "src.app.workers.notification_tasks.*": {"queue": "sync"},
 }
 
 __all__ = ["celery_app"]

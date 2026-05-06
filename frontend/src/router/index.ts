@@ -9,7 +9,7 @@ import {
 import { useAuthStore } from 'src/stores/auth'
 import routes from './routes'
 
-export default route(function () {
+export default route(function ({ store }) {
   const createHistory = process.env.SERVER
     ? createMemoryHistory
     : process.env.VUE_ROUTER_MODE === 'history'
@@ -23,7 +23,7 @@ export default route(function () {
   })
 
   Router.beforeEach((to) => {
-    const auth = useAuthStore()
+    const auth = useAuthStore(store)
 
     if (to.meta.requiresAuth && !auth.isAuthenticated) {
       return { name: 'login' }

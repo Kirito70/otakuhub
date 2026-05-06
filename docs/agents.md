@@ -1,5 +1,11 @@
 # OtakuHub & VibeCoding – AI Agent Catalog
 
+## Global Quality Gate (Applies to Claude, OpenCode, Copilot)
+- TDD is mandatory: red → green → refactor for frontend and backend changes.
+- Frontend forms must include client-side validation (required fields + basic format checks) before API submission.
+- Frontend form tests are mandatory: empty submit, invalid input, inline error states, and successful submit flow.
+- No phase/sub-phase can be marked complete until relevant tests are updated and executed.
+
 ## Shared Manifest & Loader
 All agents live under the **`.claude/`** directory (the original Claude‑style implementation). The same definitions are exposed to VS Code (Open‑Code) and GitHub Copilot via the shared manifest in `agents/manifest.json` and the helper `agents/loader.py`.
 

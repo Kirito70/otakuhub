@@ -17,10 +17,18 @@
 - Never mark a phase complete unless every sub-phase has implementation + verification evidence.
 
 - Always propose a plan before writing code for tasks longer than ~30 lines
-- Write tests alongside implementation
+- Follow strict TDD: red → green → refactor
+- Write/update tests before implementation when feasible; if not feasible due to legacy coupling, add failing regression tests immediately after reproducing bug
 - After writing a new FastAPI endpoint, update `docs/api-spec.md`
 - After writing a new DB migration, update `docs/database-schema.md`
 - After a new Quasar page, update the route table in `docs/quasar-architecture.md`
+
+### Frontend Form Validation Policy (Mandatory)
+- Every frontend form must validate required fields and basic format constraints before API submission.
+- Use Quasar primitives: `QForm`, `QInput` rules, and `lazy-rules`.
+- Submit actions must be blocked when the form is invalid.
+- Show actionable inline validation messages near each invalid field.
+- Add/update Vitest tests for each form flow: empty submit, invalid format, inline errors, and successful submit.
 
 ### Custom Commands Available
 - `/design-feature <name>` — ADR + data model + API contract + Pinia store shape
@@ -41,6 +49,8 @@
 - [ ] Responsive: `$q.screen` breakpoints used, not raw CSS media queries
 - [ ] No direct AniList/MangaDex calls from frontend
 - [ ] Axios interceptor handles 401 → token refresh
+- [ ] Frontend forms enforce required/format validation before API calls
+- [ ] Frontend form tests cover empty submit, invalid input, inline errors, and successful submit
 - [ ] Backend: type hints complete, Pydantic v2 responses, repository pattern
 - [ ] Migrations: downgrade() implemented, round-trip tested
 - [ ] Tests present for new endpoints and new pages
