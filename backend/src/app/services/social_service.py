@@ -3,6 +3,7 @@
 from typing import List, Optional, Dict, Any
 from sqlmodel import select, and_, func
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import IntegrityError
 from datetime import datetime
 from uuid import UUID
 
@@ -181,19 +182,24 @@ class SocialService(BaseService):
         await self.db_session.refresh(recommendation)
         return recommendation
 
-    async def acknowledge_recommendation(self, recommendation_id: UUID, user_id: UUID) -> bool:
-        """Mark a recommendation as acknowledged."""
+    async def acknowledge_recommendation(
+        self,
+        recommendation_id: UUID,
+        user_id: UUID,
+    ) -> Recommendation | None:
+        """Mark a recommendation as acknowledged and return updated row."""
         statement = select(Recommendation).where(Recommendation.id == recommendation_id)
         result = await self.db_session.exec(statement)
         recommendation = result.one_or_none()
 
         if not recommendation or recommendation.to_user_id != user_id:
-            return False
+            return None
 
         recommendation.is_acknowledged = True
         recommendation.acknowledged_at = datetime.utcnow()
         await self.db_session.commit()
-        return True
+        await self.db_session.refresh(recommendation)
+        return recommendation
 
     # Discussions
 
@@ -209,6 +215,53 @@ class SocialService(BaseService):
 
         result = await self.db_session.exec(statement)
         return result.all()
+
+    async def get_discussions_for_user_media(
+        self,
+        *,
+        user_id: UUID,
+        media_id: UUID,
+        group_id: Optional[UUID] = None,
+        limit: int = 20,
+        offset: int = 0,
+    ) -> List[Discussion]:
+        """Return discussions visible to a user for a media item."""
+        member_group_ids_stmt = select(GroupMember.group_id).where(GroupMember.user_id == user_id)
+
+        statement = select(Discussion).where(
+            Discussion.media_id == media_id,
+            Discussion.deleted_at.is_(None),
+            Discussion.group_id.in_(member_group_ids_stmt),
+        )
+
+        if group_id is not None:
+            statement = statement.where(Discussion.group_id == group_id)
+
+        statement = statement.order_by(Discussion.created_at.desc()).offset(offset).limit(limit)
+        result = await self.db_session.exec(statement)
+        return result.all()
+
+    async def count_discussions_for_user_media(
+        self,
+        *,
+        user_id: UUID,
+        media_id: UUID,
+        group_id: Optional[UUID] = None,
+    ) -> int:
+        """Count discussions visible to user for media pagination."""
+        member_group_ids_stmt = select(GroupMember.group_id).where(GroupMember.user_id == user_id)
+
+        statement = select(func.count(Discussion.id)).where(
+            Discussion.media_id == media_id,
+            Discussion.deleted_at.is_(None),
+            Discussion.group_id.in_(member_group_ids_stmt),
+        )
+
+        if group_id is not None:
+            statement = statement.where(Discussion.group_id == group_id)
+
+        result = await self.db_session.exec(statement)
+        return result.one_or_none() or 0
 
     async def get_discussion_replies(self, discussion_id: UUID, limit: int = 20) -> List[DiscussionReply]:
         """Get replies for a discussion."""
@@ -238,6 +291,46 @@ class SocialService(BaseService):
         await self.db_session.refresh(discussion)
         return discussion
 
+    async def create_discussion_for_group_member(
+        self,
+        user_id: UUID,
+        media_id: UUID,
+        group_id: UUID,
+        title: str | None,
+        body: str,
+        has_spoilers: bool = False,
+        episode_number: Optional[int] = None,
+        chapter_number: Optional[float] = None,
+    ) -> Discussion:
+        """Create discussion only when user belongs to group."""
+        membership_stmt = select(GroupMember).where(
+            GroupMember.group_id == group_id,
+            GroupMember.user_id == user_id,
+        )
+        membership = (await self.db_session.exec(membership_stmt)).one_or_none()
+        if membership is None:
+            raise PermissionError("User is not a member of this group")
+
+        discussion = Discussion(
+            user_id=user_id,
+            media_id=media_id,
+            group_id=group_id,
+            title=title,
+            body=body,
+            has_spoilers=has_spoilers,
+            episode_number=episode_number,
+            chapter_number=chapter_number,
+        )
+        self.db_session.add(discussion)
+        try:
+            await self.db_session.commit()
+        except IntegrityError as exc:
+            await self.db_session.rollback()
+            raise ValueError("Media not found yet; sync/seed required") from exc
+
+        await self.db_session.refresh(discussion)
+        return discussion
+
     async def create_discussion_reply(self, user_id: UUID, discussion_id: UUID,
                                      parent_reply_id: Optional[UUID] = None,
                                      body: str = "", has_spoilers: bool = False) -> DiscussionReply:
@@ -248,6 +341,54 @@ class SocialService(BaseService):
             parent_reply_id=parent_reply_id,
             body=body,
             has_spoilers=has_spoilers
+        )
+        self.db_session.add(reply)
+        await self.db_session.commit()
+        await self.db_session.refresh(reply)
+        return reply
+
+    async def create_discussion_reply_for_group_member(
+        self,
+        *,
+        user_id: UUID,
+        discussion_id: UUID,
+        body: str,
+        has_spoilers: bool = False,
+        parent_reply_id: Optional[UUID] = None,
+    ) -> DiscussionReply:
+        """Create reply only if user can view the discussion's group."""
+        discussion_stmt = select(Discussion).where(
+            Discussion.id == discussion_id,
+            Discussion.deleted_at.is_(None),
+        )
+        discussion = (await self.db_session.exec(discussion_stmt)).one_or_none()
+        if discussion is None:
+            raise LookupError("Discussion not found")
+
+        membership_stmt = select(GroupMember).where(
+            GroupMember.group_id == discussion.group_id,
+            GroupMember.user_id == user_id,
+        )
+        membership = (await self.db_session.exec(membership_stmt)).one_or_none()
+        if membership is None:
+            raise PermissionError("User is not a member of this discussion group")
+
+        if parent_reply_id is not None:
+            parent_stmt = select(DiscussionReply).where(
+                DiscussionReply.id == parent_reply_id,
+                DiscussionReply.discussion_id == discussion_id,
+                DiscussionReply.deleted_at.is_(None),
+            )
+            parent = (await self.db_session.exec(parent_stmt)).one_or_none()
+            if parent is None:
+                raise LookupError("Parent reply not found")
+
+        reply = DiscussionReply(
+            user_id=user_id,
+            discussion_id=discussion_id,
+            parent_reply_id=parent_reply_id,
+            body=body,
+            has_spoilers=has_spoilers,
         )
         self.db_session.add(reply)
         await self.db_session.commit()

@@ -70,3 +70,65 @@ class RecommendationInboxResponse(BaseModel):
     total: int
     limit: int
     offset: int
+
+
+class DiscussionCreateRequest(BaseModel):
+    """Payload to create a discussion thread."""
+
+    media_id: UUID
+    group_id: UUID
+    title: str | None = None
+    body: str
+    has_spoilers: bool = False
+    episode_number: int | None = None
+    chapter_number: float | None = None
+
+
+class DiscussionResponse(BaseModel):
+    """Discussion response model."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    media_id: UUID
+    group_id: UUID
+    user_id: UUID
+    title: str | None = None
+    body: str
+    has_spoilers: bool
+    episode_number: int | None = None
+    chapter_number: float | None = None
+    created_at: datetime
+    updated_at: datetime
+
+
+class DiscussionListResponse(BaseModel):
+    """Paginated discussion list for a media entry."""
+
+    items: list[DiscussionResponse]
+    total: int
+    limit: int
+    offset: int
+
+
+class DiscussionReplyCreateRequest(BaseModel):
+    """Payload to create a reply under a discussion."""
+
+    body: str
+    has_spoilers: bool = False
+    parent_reply_id: UUID | None = None
+
+
+class DiscussionReplyResponse(BaseModel):
+    """Discussion reply response model."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    discussion_id: UUID
+    user_id: UUID
+    parent_reply_id: UUID | None = None
+    body: str
+    has_spoilers: bool
+    created_at: datetime
+    updated_at: datetime

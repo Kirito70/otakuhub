@@ -4,11 +4,17 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlmodel.ext.asyncio.session import AsyncSession
+from uuid import UUID
 
 from src.app.core.auth import get_current_user
 from src.app.database import get_db_session
 from src.app.models import User
 from src.app.schemas.social import (
+    DiscussionCreateRequest,
+    DiscussionListResponse,
+    DiscussionReplyCreateRequest,
+    DiscussionReplyResponse,
+    DiscussionResponse,
     RecommendationCreateRequest,
     RecommendationInboxResponse,
     RecommendationResponse,
@@ -96,3 +102,101 @@ async def get_recommendation_inbox(
         limit=limit,
         offset=offset,
     )
+
+
+@router.patch("/recommendations/{recommendation_id}/acknowledge", response_model=RecommendationResponse)
+async def acknowledge_recommendation(
+    recommendation_id: UUID,
+    social_service: SocialService = Depends(get_social_service),
+    user: User = Depends(get_current_user),
+) -> RecommendationResponse:
+    """Phase 9.4 — acknowledge a recommendation in current user's inbox."""
+    updated = await social_service.acknowledge_recommendation(
+        recommendation_id=recommendation_id,
+        user_id=user.id,
+    )
+    if updated is None:
+        raise HTTPException(status_code=404, detail="Recommendation not found")
+
+    return RecommendationResponse.model_validate(updated)
+
+
+@router.post("/discussions", response_model=DiscussionResponse, status_code=201)
+async def create_discussion(
+    payload: DiscussionCreateRequest,
+    social_service: SocialService = Depends(get_social_service),
+    user: User = Depends(get_current_user),
+) -> DiscussionResponse:
+    """Phase 9.5 — create discussion in a group thread."""
+    try:
+        discussion = await social_service.create_discussion_for_group_member(
+            user_id=user.id,
+            media_id=payload.media_id,
+            group_id=payload.group_id,
+            title=payload.title,
+            body=payload.body,
+            has_spoilers=payload.has_spoilers,
+            episode_number=payload.episode_number,
+            chapter_number=payload.chapter_number,
+        )
+    except PermissionError as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    return DiscussionResponse.model_validate(discussion)
+
+
+@router.get("/discussions/{media_id}", response_model=DiscussionListResponse)
+async def get_discussions_for_media(
+    media_id: UUID,
+    group_id: UUID | None = Query(default=None),
+    limit: int = Query(default=50, ge=1, le=200),
+    offset: int = Query(default=0, ge=0),
+    social_service: SocialService = Depends(get_social_service),
+    user: User = Depends(get_current_user),
+) -> DiscussionListResponse:
+    """Phase 9.6 — list discussions visible to current user for media."""
+    items = await social_service.get_discussions_for_user_media(
+        user_id=user.id,
+        media_id=media_id,
+        group_id=group_id,
+        limit=limit,
+        offset=offset,
+    )
+    total = await social_service.count_discussions_for_user_media(
+        user_id=user.id,
+        media_id=media_id,
+        group_id=group_id,
+    )
+
+    return DiscussionListResponse(
+        items=[DiscussionResponse.model_validate(item) for item in items],
+        total=total,
+        limit=limit,
+        offset=offset,
+    )
+
+
+@router.post("/discussions/{discussion_id}/replies", response_model=DiscussionReplyResponse, status_code=201)
+async def create_discussion_reply(
+    discussion_id: UUID,
+    payload: DiscussionReplyCreateRequest,
+    social_service: SocialService = Depends(get_social_service),
+    user: User = Depends(get_current_user),
+) -> DiscussionReplyResponse:
+    """Phase 9.7 — create reply under a discussion."""
+    try:
+        reply = await social_service.create_discussion_reply_for_group_member(
+            user_id=user.id,
+            discussion_id=discussion_id,
+            body=payload.body,
+            has_spoilers=payload.has_spoilers,
+            parent_reply_id=payload.parent_reply_id,
+        )
+    except LookupError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except PermissionError as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from exc
+
+    return DiscussionReplyResponse.model_validate(reply)

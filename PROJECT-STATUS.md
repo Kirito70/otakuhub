@@ -10,12 +10,12 @@
 ## Current State
 
 ```
-CURRENT_PHASE:     9
-CURRENT_SUB_PHASE: 9.2
+CURRENT_PHASE:     10
+CURRENT_SUB_PHASE: 10.2
 STATUS:            IN_PROGRESS
 LAST_UPDATED:      2026-05-05
-BLOCKED_BY:        none
-NEXT_ACTION:       POST /api/v1/social/recommend
+BLOCKED_BY:        test-db missing seeded media rows for FK-dependent social integration tests
+NEXT_ACTION:       GET /api/v1/watchparty
 ```
 
 ---
@@ -32,9 +32,9 @@ NEXT_ACTION:       POST /api/v1/social/recommend
 | 6 | Tracking & Lists | ✅ Complete |
 | 7 | Flutter App Shell | 🔄 In progress |
 | 8 | Flutter Tracking Screens | ⏳ Not started |
-| 9 | Social Features — Backend | ⏳ Not started |
+| 9 | Social Features — Backend | ✅ Complete |
 | 10 | Social Features — Flutter | ⏳ Not started |
-| 11 | Watch Party | ⏳ Not started |
+| 11 | Watch Party | 🔄 In progress |
 | 12 | Notifications | ⏳ Not started |
 | 13 | Polish, Testing & Deploy | ⏳ Not started |
 | 14 | Type‑Checking Cleanup (MyPy) | ⏳ Not started |
@@ -180,20 +180,20 @@ NEXT_ACTION:       POST /api/v1/social/recommend
 | Sub-phase | Task | Status | Notes |
 |-----------|------|--------|-------|
 | 9.1 | GET /api/v1/social/feed (group activity feed) | ✅ | Implemented authenticated shared-group activity feed endpoint with pagination metadata |
-| 9.2 | POST /api/v1/social/recommend | ⏳ | |
-| 9.3 | GET /api/v1/social/recommendations/inbox | ⏳ | |
-| 9.4 | PATCH /api/v1/social/recommendations/{id}/acknowledge | ⏳ | |
-| 9.5 | POST /api/v1/social/discussions | ⏳ | |
-| 9.6 | GET /api/v1/social/discussions/{media_id} | ⏳ | |
-| 9.7 | POST /api/v1/social/discussions/{id}/replies | ⏳ | |
-| 9.8 | GET /api/v1/users/{username}/profile (public profile) | ⏳ | |
+| 9.2 | POST /api/v1/social/recommend | ✅ | Implemented shared-group recommendation creation with validation and conflict handling |
+| 9.3 | GET /api/v1/social/recommendations/inbox | ✅ | Implemented paginated inbox endpoint with include_acknowledged filter |
+| 9.4 | PATCH /api/v1/social/recommendations/{id}/acknowledge | ✅ | Implemented ownership-checked acknowledge endpoint returning updated recommendation |
+| 9.5 | POST /api/v1/social/discussions | ✅ | Implemented group-membership-checked creation with graceful 400 when media is not yet seeded/synced |
+| 9.6 | GET /api/v1/social/discussions/{media_id} | ✅ | Implemented membership-scoped discussion listing with pagination and optional group filter |
+| 9.7 | POST /api/v1/social/discussions/{id}/replies | ✅ | Implemented reply creation with discussion existence checks and group-membership authorization |
+| 9.8 | GET /api/v1/users/{username}/profile (public profile) | ✅ | Implemented public-safe username profile endpoint without exposing email |
 
 ### Phase 10 — Watch Party
 **Goal**: Create watch party, RSVP, share stream link.
 
 | Sub-phase | Task | Status | Notes |
 |-----------|------|--------|-------|
-| 10.1 | POST /api/v1/watchparty | ⏳ | |
+| 10.1 | POST /api/v1/watchparty | ✅ | Implemented group-membership-checked creation with graceful 400 when media is not yet seeded/synced |
 | 10.2 | GET /api/v1/watchparty (upcoming in group) | ⏳ | |
 | 10.3 | POST /api/v1/watchparty/{id}/rsvp | ⏳ | |
 | 10.4 | Watch party list screen (Flutter) | ⏳ | |
@@ -258,6 +258,14 @@ NEXT_ACTION:       POST /api/v1/social/recommend
 # 2026-04-24 | Phase 2.13 | GET /health endpoint implemented
 # 2026-04-24 | Phase 2.14 | GET /api/v1/status endpoint implemented
 # 2026-04-26 | Phase 3.1 | AniList GraphQL client implemented
+# 2026-05-05 | Phase 9.2 | Recommendation create endpoint implemented with shared-group guards
+# 2026-05-05 | Phase 9.3 | Recommendation inbox endpoint implemented with pagination
+# 2026-05-05 | Phase 9.4 | Recommendation acknowledge endpoint implemented with recipient ownership checks
+# 2026-05-05 | Phase 9.5 | Discussion create endpoint implemented with group membership authorization
+# 2026-05-05 | Phase 9.6 | Discussion list endpoint implemented with visibility filtering by group membership
+# 2026-05-05 | Phase 9.7 | Discussion replies endpoint implemented with authorization and validation
+# 2026-05-05 | Phase 9.8 | Public profile endpoint implemented with safe response schema
+# 2026-05-05 | Phase 10.1 | Watch party create endpoint implemented with group membership authorization
 # 2026-04-26 | Phase 3.2 | MangaDex REST client implemented
 # 2026-04-26 | Phase 3.3 | Jikan client implemented
 # 2026-04-26 | Phase 3.4 | Seed script: download + import anime-offline-database created

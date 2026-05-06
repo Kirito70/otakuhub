@@ -42,3 +42,17 @@ class UserSettings(BaseModel):
 
     user_id: UUID
     # Add any future settings fields here as optional
+
+
+class PublicUserProfile(BaseModel):
+    """Public-safe profile payload for user directory and social screens."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    username: str
+    display_name: Optional[str] = None
+    avatar_url: Optional[str] = None
+    bio: Optional[str] = None
+    timezone: str = "UTC"
+    created_at: datetime

@@ -4,10 +4,11 @@ from typing import List, Optional, Dict, Any
 from sqlmodel import select, and_, func
 from sqlalchemy import or_
 from sqlalchemy.ext.asyncio import AsyncSession
-from datetime import datetime
+from sqlalchemy.exc import IntegrityError
+from datetime import UTC, datetime
 from uuid import UUID
 
-from src.app.models import WatchParty, WatchPartyRsvp
+from src.app.models import GroupMember, WatchParty, WatchPartyRsvp
 from src.app.services.base_service import BaseService
 
 
@@ -75,6 +76,49 @@ class WatchPartyService(BaseService):
         )
         self.db_session.add(party)
         await self.db_session.commit()
+        await self.db_session.refresh(party)
+        return party
+
+    async def create_watch_party_for_group_member(
+        self,
+        *,
+        host_user_id: UUID,
+        group_id: UUID,
+        media_id: UUID,
+        scheduled_at: datetime,
+        title: Optional[str] = None,
+        episode_number: Optional[int] = None,
+        stream_url: Optional[str] = None,
+        sync_url: Optional[str] = None,
+        notes: Optional[str] = None,
+    ) -> WatchParty:
+        """Create watch party if host belongs to group."""
+        membership_stmt = select(GroupMember).where(
+            GroupMember.group_id == group_id,
+            GroupMember.user_id == host_user_id,
+        )
+        membership = (await self.db_session.exec(membership_stmt)).one_or_none()
+        if membership is None:
+            raise PermissionError("User is not a member of this group")
+
+        party = WatchParty(
+            host_user_id=host_user_id,
+            group_id=group_id,
+            media_id=media_id,
+            scheduled_at=(scheduled_at.astimezone(UTC).replace(tzinfo=None) if scheduled_at.tzinfo else scheduled_at),
+            title=title,
+            episode_number=episode_number,
+            stream_url=stream_url,
+            sync_url=sync_url,
+            notes=notes,
+        )
+        self.db_session.add(party)
+        try:
+            await self.db_session.commit()
+        except IntegrityError as exc:
+            await self.db_session.rollback()
+            raise ValueError("Media not found yet; sync/seed required") from exc
+
         await self.db_session.refresh(party)
         return party
 

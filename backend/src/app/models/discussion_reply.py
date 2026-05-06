@@ -2,7 +2,7 @@
 
 from sqlmodel import SQLModel, Field, Relationship, Index
 from typing import Optional, TYPE_CHECKING
-from uuid import UUID
+from uuid import UUID, uuid4
 from datetime import datetime
 
 if TYPE_CHECKING:
@@ -16,7 +16,7 @@ class DiscussionReply(SQLModel, table=True):
     __tablename__ = "discussion_reply"
 
     id: UUID = Field(
-        default_factory=UUID,
+        default_factory=uuid4,
         primary_key=True,
         nullable=False
     )
