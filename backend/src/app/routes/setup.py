@@ -16,11 +16,11 @@ from src.app.services.auth_service import auth_service
 router = APIRouter(prefix="/setup", tags=["setup"])
 
 
-@router.get("/status", response_model=SetupStatusResponse)
+@router.get("/status", response_model=SetupStatusResponse, response_model_exclude_none=True)
 async def get_setup_status(db: AsyncSession = Depends(get_db_session)) -> SetupStatusResponse:
     """Phase 12.4 — returns whether initial bootstrap is required."""
     setup_required = await auth_service.is_setup_required(db)
-    return SetupStatusResponse(setup_required=setup_required)
+    return SetupStatusResponse(setup_required=True if setup_required else None)
 
 
 @router.post("/bootstrap-admin", response_model=UserProfile, status_code=201)

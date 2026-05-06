@@ -37,8 +37,16 @@ NEXT_ACTION:       Gap analysis: inventory existing seed/sync scripts and backen
 | 11 | Watch Party | ✅ Complete |
 | 12 | First-Run Setup & Super Admin Bootstrap | ✅ Complete |
 | 13 | Backend Seed/Sync Command Consolidation | ⏳ Not started |
-| 14 | Frontend Validation Hardening + Unit Test Expansion | ⏳ Not started |
-| 15 | Polish, Testing & Deploy | ⏳ Not started |
+| 14 | Frontend Foundation Stabilization | ⏳ Not started |
+| 15 | Frontend Design System (Shadcn-inspired, Quasar-native) | ⏳ Not started |
+| 16 | Auth & Setup Frontend Hardening | ⏳ Not started |
+| 17 | Discover & Media Detail Frontend | ⏳ Not started |
+| 18 | Tracking Frontend Pages | ⏳ Not started |
+| 19 | Social Frontend Pages | ⏳ Not started |
+| 20 | Watch Party Frontend Pages | ⏳ Not started |
+| 21 | Notifications Frontend Pages | ⏳ Not started |
+| 22 | Profile Frontend Pages | ⏳ Not started |
+| 23 | Polish, Testing & Deploy | ⏳ Not started |
 
 ---
 
@@ -247,36 +255,128 @@ NEXT_ACTION:       Gap analysis: inventory existing seed/sync scripts and backen
 | 13.9 | Deprecate root `src/` (if unused) and root `scripts/` seed entrypoints with migration notes | ⏳ | Keep shims only if needed for backward compatibility |
 | 13.10 | Tests: command tests + task tests + idempotent upsert validation | ⏳ | Verify separate and combined execution paths |
 
-### Phase 14 — Frontend Validation Hardening + Unit Test Expansion
-**Goal**: Enforce Quasar-first client-side validation across forms and add comprehensive frontend unit/component tests.
+### Phase 14 — Frontend Foundation Stabilization
+**Goal**: Restore reliable navigation and shared page/form behavior before feature polish.
 
 | Sub-phase | Task | Status | Notes |
 |-----------|------|--------|-------|
-| 14.1 | Gap analysis of all existing forms/pages and current validation coverage matrix | ⏳ | Produce checklist by route/component |
-| 14.2 | Shared validation utility patterns (rules, reusable validators, typed error messages) | ⏳ | Keep strict TypeScript, no `any` |
-| 14.3 | Auth forms hardening (login/register/reset/setup) with QForm + QInput rules | ⏳ | Required, format, min-length, match checks |
-| 14.4 | Tracking/list forms hardening (add/update/custom-list/import) | ⏳ | Prevent invalid progress/score payloads client-side |
-| 14.5 | Social/watch party/forms hardening (discussions/recs/watch party/preferences) | ⏳ | URL, numeric ranges, required fields |
-| 14.6 | Inline error UX standardization (actionable messages + disabled submit) | ⏳ | Must be consistent across pages |
-| 14.7 | Unit/component tests for every form flow | ⏳ | Empty submit, invalid format, inline error, success |
-| 14.8 | Broader page-level test expansion for loading/error/data states | ⏳ | Cover all major screens under `frontend/src/pages` |
-| 14.9 | Quality gate updates (CI docs/checklist) for validation + test expectations | ⏳ | Prevent regressions in future phases |
+| 14.1 | Navigation shell reliability (drawer open/close + breakpoint behavior) | ⏳ | Fix hidden sidebar and ensure always-available open trigger |
+| 14.2 | Global page scaffolding standards (loading/empty/error/content states) | ⏳ | Standard wrapper patterns for all page shells |
+| 14.3 | Form framework baseline (shared validation rules + typed errors) | ⏳ | QForm-first; no `any`; reusable validator utilities |
+| 14.4 | Inline feedback standardization (disabled submit, actionable messages) | ⏳ | Prevent silent failures and confusing UX |
+| 14.5 | Route/access smoke pass for auth/setup/navigation paths | ⏳ | Verify guard redirects and deep-link resilience |
 
-### Phase 15 — Polish, Testing & Deploy
-**Goal**: Full test suite, Docker prod deploy, all platforms verified.
+### Phase 15 — Frontend Design System (Shadcn-inspired, Quasar-native)
+**Goal**: Deliver a cleaner dashboard-quality UI language using Quasar primitives across desktop/mobile.
 
 | Sub-phase | Task | Status | Notes |
 |-----------|------|--------|-------|
-| 15.1 | Backend test coverage ≥ 80% | ⏳ | |
-| 15.2 | Flutter widget test coverage for all screens | ⏳ | |
-| 15.3 | Security audit (run /audit-security) | ⏳ | |
-| 15.4 | Performance: search < 200ms p95 | ⏳ | |
-| 15.5 | Flutter build verified: web, Windows, Android, iOS, Linux | ⏳ | |
-| 15.6 | Docker prod compose tested | ⏳ | |
-| 15.7 | Nginx config + TLS | ⏳ | |
-| 15.8 | README.md with setup instructions | ⏳ | |
-| 15.9 | All ADRs written (docs/adr/) | ⏳ | |
-| 15.10 | Type-checking cleanup (MyPy strictness and residual typing debt) | ⏳ | Moved from prior standalone phase |
+| 15.1 | Design tokens + theme semantics (light/dark) | ⏳ | Card/border/muted/primary/destructive token alignment |
+| 15.2 | Typography + spacing scale definition | ⏳ | Consistent hierarchy and rhythm across pages |
+| 15.3 | Shared UI primitives (AppCard, AppBadge, AppToolbar, AppEmptyState) | ⏳ | Reusable building blocks for all screens |
+| 15.4 | Dashboard template (desktop-first, mobile-adaptive) | ⏳ | Inspired by shadcn dashboard examples but Quasar-native |
+| 15.5 | Responsive behavior validation for mobile/web/electron shells | ⏳ | Ensure no desktop-only assumptions leak into mobile |
+
+### Phase 16 — Auth & Setup Frontend Hardening
+**Goal**: Make auth/setup flows stable, validated, and user-friendly end-to-end.
+
+| Sub-phase | Task | Status | Notes |
+|-----------|------|--------|-------|
+| 16.1 | Login page hardening | ⏳ | Validation, loading state, backend error mapping |
+| 16.2 | Register page hardening | ⏳ | Strong password + confirm + conflict handling |
+| 16.3 | Setup bootstrap page hardening | ⏳ | One-time flow, 409 handling, retry-safe UX |
+| 16.4 | Auth/setup component tests expansion | ⏳ | Empty submit, invalid input, success, backend failure |
+
+### Phase 17 — Discover & Media Detail Frontend
+**Goal**: Complete discover and media experience with robust tab-level flows.
+
+| Sub-phase | Task | Status | Notes |
+|-----------|------|--------|-------|
+| 17.1 | Discover — Search tab | ⏳ | Debounced query, loading skeletons, retry UX |
+| 17.2 | Discover — Trending tab | ⏳ | Seasonal/trending surfaces with fallback states |
+| 17.3 | Discover — New Releases tab | ⏳ | Recent episodes/chapters list with pagination |
+| 17.4 | Media Detail — Overview tab | ⏳ | Hero metadata, synopsis, add-to-list CTA |
+| 17.5 | Media Detail — Episodes/Chapters tab | ⏳ | Sort, progress actions, empty/error handling |
+| 17.6 | Media Detail — Relations tab | ⏳ | Relation cards + traversal navigation |
+| 17.7 | Discover/media tests (page + tab states) | ⏳ | Loading/error/data assertions across tabs |
+
+### Phase 18 — Tracking Frontend Pages
+**Goal**: Ensure list management workflows are complete and usable per list state/tab.
+
+| Sub-phase | Task | Status | Notes |
+|-----------|------|--------|-------|
+| 18.1 | My List — Watching/Reading tab | ⏳ | Fast progress-first updates |
+| 18.2 | My List — Completed tab | ⏳ | Score/completion context + rewatch/reread actions |
+| 18.3 | My List — Paused tab | ⏳ | Resume-focused UX |
+| 18.4 | My List — Dropped tab | ⏳ | Recovery actions and notes visibility |
+| 18.5 | My List — Plan to Watch/Read tab | ⏳ | Backlog prioritization and sort controls |
+| 18.6 | My List — Custom Lists tab | ⏳ | Create/edit/delete/reorder entries |
+| 18.7 | Airing Calendar page | ⏳ | Day/week UX and timezone-safe labels |
+| 18.8 | Import List — AniList tab | ⏳ | Import trigger, job status, user feedback |
+| 18.9 | Import List — MAL tab | ⏳ | Provider-specific validation and feedback |
+| 18.10 | Tracking page tests | ⏳ | Core interaction and validation coverage |
+
+### Phase 19 — Social Frontend Pages
+**Goal**: Deliver complete social experience with clear tab boundaries and spoiler-safe UX.
+
+| Sub-phase | Task | Status | Notes |
+|-----------|------|--------|-------|
+| 19.1 | Feed — Group Activity tab | ⏳ | Group event cards and filters |
+| 19.2 | Feed — My Activity tab | ⏳ | Personal timeline focus |
+| 19.3 | Recommendations — Inbox tab | ⏳ | Acknowledge and triage interactions |
+| 19.4 | Recommendations — Sent tab | ⏳ | Sent-state tracking and recall context |
+| 19.5 | Discussions — Threads tab | ⏳ | Thread list with spoiler signaling |
+| 19.6 | Discussions — Thread Detail tab | ⏳ | Replies, nested handling, spoiler reveal UX |
+| 19.7 | Discussions — Create tab | ⏳ | Validated creation with media context |
+| 19.8 | Social page tests | ⏳ | Tab-level flow and error-state coverage |
+
+### Phase 20 — Watch Party Frontend Pages
+**Goal**: Make watch party workflows reliable from scheduling to RSVP.
+
+| Sub-phase | Task | Status | Notes |
+|-----------|------|--------|-------|
+| 20.1 | Watch Party — Upcoming tab | ⏳ | Schedule visibility and countdown clarity |
+| 20.2 | Watch Party — Create tab | ⏳ | Validated scheduling + URL checks |
+| 20.3 | Watch Party — Detail tab | ⏳ | RSVP state transitions and host controls |
+| 20.4 | Watch Party — Past tab | ⏳ | Completed sessions and history context |
+| 20.5 | Watch party tests | ⏳ | Create/RSVP/detail flow coverage |
+
+### Phase 21 — Notifications Frontend Pages
+**Goal**: Provide dependable notifications UX across inbox and preferences tabs.
+
+| Sub-phase | Task | Status | Notes |
+|-----------|------|--------|-------|
+| 21.1 | Notifications Inbox — All tab | ⏳ | Grouped list and read/unread clarity |
+| 21.2 | Notifications Inbox — Unread tab | ⏳ | Focused unread workflow and mark-all behavior |
+| 21.3 | Notification Preferences — Content tab | ⏳ | Type toggles with safe defaults |
+| 21.4 | Notification Preferences — Channels tab | ⏳ | Channel validators (discord/telegram/email/push) |
+| 21.5 | Notifications tests | ⏳ | Inbox + preferences tab validation coverage |
+
+### Phase 22 — Profile Frontend Pages
+**Goal**: Complete account/profile management pages with secure and validated forms.
+
+| Sub-phase | Task | Status | Notes |
+|-----------|------|--------|-------|
+| 22.1 | Profile — Overview tab | ⏳ | Avatar/bio/stats/recent activity layout |
+| 22.2 | Profile — Edit Profile tab | ⏳ | Display name/avatar/bio/timezone validation |
+| 22.3 | Profile — Account & Security tab | ⏳ | Password/session controls and safety messaging |
+| 22.4 | Profile tests | ⏳ | Validation and state-flow coverage |
+
+### Phase 23 — Polish, Testing & Deploy
+**Goal**: Full quality gates, cross-platform verification, and production deployment readiness.
+
+| Sub-phase | Task | Status | Notes |
+|-----------|------|--------|-------|
+| 23.1 | Backend test coverage ≥ 80% | ⏳ | |
+| 23.2 | Frontend component/page coverage expansion and stabilization | ⏳ | Replace legacy Flutter wording with Quasar coverage target |
+| 23.3 | Security audit (run /audit-security) | ⏳ | |
+| 23.4 | Performance target: search < 200ms p95 | ⏳ | |
+| 23.5 | Build verification: web, Windows, Android, iOS, Linux | ⏳ | Quasar modes + platform toolchains |
+| 23.6 | Docker prod compose tested | ⏳ | |
+| 23.7 | Nginx config + TLS | ⏳ | |
+| 23.8 | README.md with setup instructions | ⏳ | |
+| 23.9 | All ADRs written (docs/adr/) | ⏳ | |
+| 23.10 | Type-checking cleanup (MyPy strictness and residual typing debt) | ⏳ | |
 
 ---
 

@@ -30,7 +30,7 @@ const usernameOrEmail = ref('')
 const password = ref('')
 
 async function onLogin(): Promise<void> {
-  await auth.login({ username_or_email: usernameOrEmail.value, password: password.value })
+  await auth.login({ username: usernameOrEmail.value, password: password.value })
   await router.push({ name: 'discover' })
 }
 

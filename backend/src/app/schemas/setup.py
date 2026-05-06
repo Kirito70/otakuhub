@@ -11,7 +11,7 @@ class SetupStatusResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-    setup_required: bool
+    setup_required: bool | None = None
 
 
 class BootstrapAdminRequest(BaseModel):
