@@ -76,8 +76,9 @@ uv run otakuhub celery beat --loglevel info
 uv run otakuhub celery seed --batch-size 50
 uv run otakuhub celery weekly-refresh
 
-# direct seed script path (non-celery)
-uv run otakuhub seed run
+# direct seed command paths (non-celery)
+uv run otakuhub seed anime-offline
+uv run otakuhub seed all
 ```
 
 ### Workers
@@ -98,27 +99,20 @@ celery -A backend.workers.celery_app worker \
 ### Beat Schedule
 ```python
 beat_schedule = {
-    # Every Sunday at 02:00 UTC
-    "weekly-refresh": {
-        "task": "workers.sync_tasks.weekly_refresh",
+    # Every day at 01:00 UTC: AniList unsynced + MangaDex incremental
+    "sync-daily-refresh-compose": {
+        "task": "sync.daily_refresh_compose",
+        "schedule": crontab(hour=1, minute=0),
+    },
+    # Every Sunday at 02:00 UTC: full canonical refresh composition
+    "sync-weekly-refresh-compose": {
+        "task": "sync.weekly_refresh_compose",
         "schedule": crontab(hour=2, minute=0, day_of_week=0),
     },
-    # Every 6 hours — keep airing schedule current
-    "refresh-airing": {
-        "task": "workers.sync_tasks.refresh_airing_schedule",
-        "schedule": crontab(minute=0, hour="*/6"),
-    },
-    # Daily at 03:00 — clean old read notifications
-    "cleanup-notifications": {
-        "task": "workers.cleanup_tasks.purge_old_notifications",
-        "schedule": crontab(hour=3, minute=0),
-    },
-    # Daily at 03:30 — revoke expired refresh tokens
-    "cleanup-tokens": {
-        "task": "workers.cleanup_tasks.purge_expired_tokens",
-        "schedule": crontab(hour=3, minute=30),
-    },
 }
+
+# Notification/cleanup schedules remain under their own task namespace.
+
 ```
 
 ## Sync Service Implementation Contract (must-follow)

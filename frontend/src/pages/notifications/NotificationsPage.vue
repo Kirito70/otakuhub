@@ -11,13 +11,14 @@
       </div>
     </div>
 
-    <q-banner v-if="notificationsStore.error" class="bg-negative text-white q-mb-md" dense>
-      {{ notificationsStore.error }}
-    </q-banner>
-
-    <div v-if="notificationsStore.isLoading" class="text-grey-7">Loading notifications...</div>
-
-    <template v-else>
+    <app-page-state
+      :is-loading="notificationsStore.isLoading"
+      :error="notificationsStore.error"
+      :is-empty="notificationsStore.items.length === 0"
+      empty-label="No notifications yet."
+      loading-label="Loading notifications..."
+      @retry="refresh"
+    >
       <div class="row items-center q-gutter-sm q-mb-md">
         <q-btn
           color="primary"
@@ -36,7 +37,7 @@
         />
       </div>
 
-      <q-list v-if="notificationsStore.items.length > 0" bordered separator>
+      <q-list bordered separator>
         <q-item v-for="item in notificationsStore.items" :key="item.id">
           <q-item-section avatar>
             <q-checkbox v-model="selectedIds" :val="item.id" :disable="item.is_read" />
@@ -52,8 +53,7 @@
         </q-item>
       </q-list>
 
-      <div v-else class="text-grey-7">No notifications yet.</div>
-    </template>
+    </app-page-state>
   </q-page>
 </template>
 
@@ -61,6 +61,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
+import AppPageState from 'src/components/AppPageState.vue'
 import { useNotificationsStore } from 'src/stores/notifications'
 
 const router = useRouter()

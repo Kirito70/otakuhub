@@ -1,6 +1,5 @@
 ---
 description: Flutter UI developer. Builds screens, Riverpod providers, responsive widgets for web/Windows/Android/iOS/Linux from one codebase.
-model: google/gemini-2.5-pro
 temperature: 0.2
 ---
 

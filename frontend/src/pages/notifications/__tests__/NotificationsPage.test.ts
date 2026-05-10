@@ -40,6 +40,7 @@ describe('NotificationsPage', () => {
           'q-item-label': { template: '<div><slot /></div>' },
           'q-checkbox': true,
           'q-badge': true,
+          'app-page-state': { template: '<div><slot /></div>' },
         },
       },
     })

@@ -78,8 +78,9 @@ uv run uvicorn src.app.main:app --reload --host 0.0.0.0 --port 8000
 uv run otakuhub db connect
 uv run otakuhub db init
 
-# Data seed (direct script)
-uv run otakuhub seed run
+# Data seed (canonical backend entrypoint)
+uv run otakuhub seed anime-offline
+uv run otakuhub seed all
 
 # Enqueue seed on Celery
 uv run otakuhub celery seed --batch-size 50

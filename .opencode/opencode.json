@@ -1,6 +1,5 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "model": "anthropic/claude-sonnet-4-20250514",
   "provider": {
     "ollama": {
       "npm": "@ai-sdk/openai-compatible",
@@ -38,52 +37,42 @@
   "agent": {
     "architect": {
       "description": "System architecture, ADRs, schema decisions, API contract design",
-      "model": "anthropic/claude-sonnet-4-20250514",
       "temperature": 0.2
     },
     "backend-dev": {
       "description": "FastAPI routes, services, repositories, Celery workers",
-      "model": "anthropic/claude-sonnet-4-20250514",
       "temperature": 0.1
     },
     "quasar-dev": {
       "description": "Quasar/Vue 3 pages, Pinia stores, composables, responsive layout",
-      "model": "google/gemini-2.5-pro",
       "temperature": 0.2
     },
     "db-designer": {
       "description": "Database schema, Alembic migrations, index strategy",
-      "model": "anthropic/claude-sonnet-4-20250514",
       "temperature": 0.0
     },
     "code-reviewer": {
       "description": "Code review: correctness, types, tests, security, performance",
-      "model": "anthropic/claude-sonnet-4-20250514",
       "temperature": 0.1
     },
     "security-auditor": {
       "description": "Security review: auth, SQL injection, data exposure, prompt injection",
-      "model": "anthropic/claude-sonnet-4-20250514",
       "temperature": 0.0
     },
     "sync-engineer": {
       "description": "AniList/MangaDex sync pipeline, rate limiting, Celery workers",
-      "model": "anthropic/claude-sonnet-4-20250514",
       "temperature": 0.1
     },
     "api-designer": {
       "description": "OpenAPI spec, endpoint contracts, request/response schema design",
-      "model": "anthropic/claude-sonnet-4-20250514",
       "temperature": 0.1
     },
     "test-writer": {
       "description": "pytest for backend, Vitest + Vue Test Utils for frontend",
-      "model": "anthropic/claude-sonnet-4-20250514",
       "temperature": 0.0
     },
     "tdd-enforcer": {
       "description": "Enforce red-green-refactor workflow and frontend form validation test coverage",
-      "model": "anthropic/claude-sonnet-4-20250514",
       "temperature": 0.0
     }
   },

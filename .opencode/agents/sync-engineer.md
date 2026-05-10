@@ -1,6 +1,5 @@
 ---
 description: Sync pipeline engineer. Builds and maintains the AniList/MangaDex data ingestion workers, rate-limited fetchers, and weekly refresh jobs.
-model: anthropic/claude-sonnet-4-20250514
 temperature: 0.1
 ---
 

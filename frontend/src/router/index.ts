@@ -8,6 +8,7 @@ import {
 import axios from 'axios'
 
 import { useAuthStore } from 'src/stores/auth'
+import { resolveAccessGuard } from './guard'
 import routes from './routes'
 
 export default route(function ({ store }) {
@@ -48,34 +49,25 @@ export default route(function ({ store }) {
         const setupRequired = bootstrapResponse.data.setup_required === true
         const loggedInUser = bootstrapResponse.data.logged_in_user
 
-        if (setupRequired && to.name !== 'setup') {
-          return { name: 'setup' }
-        }
-
-        if (!setupRequired && to.name === 'setup') {
-          return loggedInUser ? { name: 'discover' } : { name: 'login' }
-        }
-
-        if (to.meta.requiresAuth && !loggedInUser) {
-          return { name: 'login' }
-        }
-
-        if ((to.name === 'login' || to.name === 'register') && loggedInUser) {
-          return { name: 'discover' }
+        const guardDecision = resolveAccessGuard({
+          toName: typeof to.name === 'string' ? to.name : null,
+          requiresAuth: to.meta.requiresAuth === true,
+          setupRequired,
+          loggedInUser: Boolean(loggedInUser),
+        })
+        if (guardDecision !== true) {
+          return guardDecision
         }
       } catch {
         // If setup status cannot be fetched, continue with regular auth guard.
       }
 
-      if (to.meta.requiresAuth && !auth.isAuthenticated) {
-        return { name: 'login' }
-      }
-
-      if ((to.name === 'login' || to.name === 'register') && auth.isAuthenticated) {
-        return { name: 'discover' }
-      }
-
-      return true
+      return resolveAccessGuard({
+        toName: typeof to.name === 'string' ? to.name : null,
+        requiresAuth: to.meta.requiresAuth === true,
+        setupRequired: false,
+        loggedInUser: auth.isAuthenticated,
+      })
     })()
   })
 

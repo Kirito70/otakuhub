@@ -1,6 +1,13 @@
 """Celery application for OtakuHub."""
 
 from celery import Celery
+
+try:
+    from celery.schedules import crontab
+except Exception:  # pragma: no cover - fallback for local test Celery stub
+    def crontab(**kwargs):  # type: ignore[no-redef]
+        return kwargs
+
 from src.app.config import settings
 
 # Create Celery app
@@ -26,12 +33,24 @@ celery_app.conf.update(
     # Rate limit configuration for external APIs
     redis_max_connections=20,
     redis_retry_on_timeout=True,
+    beat_schedule={
+        # Daily at 02:00 UTC: keep frequently-changing metadata fresh.
+        "sync-daily-refresh-compose": {
+            "task": "sync.daily_refresh_compose",
+            "schedule": crontab(hour=2, minute=0),
+        },
+        # Weekly Sunday at 01:00 UTC: run full refresh composition.
+        "sync-weekly-refresh-compose": {
+            "task": "sync.weekly_refresh_compose",
+            "schedule": crontab(hour=1, minute=0, day_of_week=0),
+        },
+    },
 )
 
-# Configure task routing (optional)
+# Configure task routing
 celery_app.conf.task_routes = {
-    "src.app.workers.sync_tasks.*": {"queue": "sync"},
-    "src.app.workers.notification_tasks.*": {"queue": "sync"},
+    "sync.*": {"queue": "sync"},
+    "notifications.*": {"queue": "notifications"},
 }
 
 __all__ = ["celery_app"]

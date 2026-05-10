@@ -10,12 +10,12 @@
 ## Current State
 
 ```
-CURRENT_PHASE:     13
-CURRENT_SUB_PHASE: 13.1
+CURRENT_PHASE:     15
+CURRENT_SUB_PHASE: 15.1
 STATUS:            IN_PROGRESS
-LAST_UPDATED:      2026-05-06
-BLOCKED_BY:        test-db missing seeded media rows for FK-dependent social integration tests
-NEXT_ACTION:       Gap analysis: inventory existing seed/sync scripts and backend entrypoints
+LAST_UPDATED:      2026-05-11
+BLOCKED_BY:        none
+NEXT_ACTION:       Design tokens + theme semantics (light/dark) (Phase 15.1)
 ```
 
 ---
@@ -36,9 +36,9 @@ NEXT_ACTION:       Gap analysis: inventory existing seed/sync scripts and backen
 | 10 | Social Features — Flutter | ✅ Complete |
 | 11 | Watch Party | ✅ Complete |
 | 12 | First-Run Setup & Super Admin Bootstrap | ✅ Complete |
-| 13 | Backend Seed/Sync Command Consolidation | ⏳ Not started |
-| 14 | Frontend Foundation Stabilization | ⏳ Not started |
-| 15 | Frontend Design System (Shadcn-inspired, Quasar-native) | ⏳ Not started |
+| 13 | Backend Seed/Sync Command Consolidation | ✅ Complete |
+| 14 | Frontend Foundation Stabilization | ✅ Complete |
+| 15 | Frontend Design System (Shadcn-inspired, Quasar-native) | 🔄 In progress |
 | 16 | Auth & Setup Frontend Hardening | ⏳ Not started |
 | 17 | Discover & Media Detail Frontend | ⏳ Not started |
 | 18 | Tracking Frontend Pages | ⏳ Not started |
@@ -244,27 +244,27 @@ NEXT_ACTION:       Gap analysis: inventory existing seed/sync scripts and backen
 
 | Sub-phase | Task | Status | Notes |
 |-----------|------|--------|-------|
-| 13.1 | Gap analysis: inventory every existing seed/sync script in root `scripts/` and backend | ⏳ | Map current ownership, duplicates, and missing coverage |
-| 13.2 | Architecture spec for unified seed/sync module inside backend | ⏳ | Shared pipeline interfaces + per-source adapters |
-| 13.3 | Implement backend command group `otakuhub seed ...` with per-source commands | ⏳ | anime-offline, AniList, MangaDex, Jikan |
-| 13.4 | Implement umbrella command `otakuhub seed all` orchestrating ordered steps | ⏳ | Support dry-run and resume options |
-| 13.5 | Refactor shared ingestion code to eliminate duplication across commands/tasks | ⏳ | Single source of truth for parsing/upsert/retry policies |
-| 13.6 | Add Celery tasks for each seed/sync command (individually runnable) | ⏳ | Queue routing + retry + progress recording in `sync_jobs` |
-| 13.7 | Add scheduled daily/weekly refresh task composition using same shared pipeline | ⏳ | No duplicate business logic in scheduler layer |
-| 13.8 | Add observability: structured logs + sync_jobs status/error payload consistency | ⏳ | Needed for operations and troubleshooting |
-| 13.9 | Deprecate root `src/` (if unused) and root `scripts/` seed entrypoints with migration notes | ⏳ | Keep shims only if needed for backward compatibility |
-| 13.10 | Tests: command tests + task tests + idempotent upsert validation | ⏳ | Verify separate and combined execution paths |
+| 13.1 | Gap analysis: inventory every existing seed/sync script in root `scripts/` and backend | ✅ | Completed inventory in `docs/seed-sync-inventory-phase13.md` |
+| 13.2 | Architecture spec for unified seed/sync module inside backend | ✅ | Added `docs/seed-sync-architecture-phase13.md` with unified CLI/Celery orchestration contract |
+| 13.3 | Implement backend command group `otakuhub seed ...` with per-source commands | ✅ | Implemented and verified by passing backend pytest suite |
+| 13.4 | Implement umbrella command `otakuhub seed all` orchestrating ordered steps | ✅ | Implemented ordered umbrella orchestration with dry-run/resume + umbrella/sub-step sync_jobs tracking |
+| 13.5 | Refactor shared ingestion code to eliminate duplication across commands/tasks | ✅ | Shared ingestion/execution path consolidated; verified by passing Phase 13 regression tests |
+| 13.6 | Add Celery tasks for each seed/sync command (individually runnable) | ✅ | Implemented per-source + umbrella Celery tasks reusing shared orchestrator, with sync queue routing and retry behavior |
+| 13.7 | Add scheduled daily/weekly refresh task composition using same shared pipeline | ✅ | Added beat schedule composition tasks delegating only to shared sync task entrypoints |
+| 13.8 | Add observability: structured logs + sync_jobs status/error payload consistency | ✅ | Standardized structured payload fields across command/task/orchestrator and unified sync_jobs error_log envelope |
+| 13.9 | Deprecate root `src/` (if unused) and root `scripts/` seed entrypoints with migration notes | ✅ | Added deprecation shims + warnings; documented canonical `otakuhub seed ...` migration path |
+| 13.10 | Tests: command tests + task tests + idempotent upsert validation | ✅ | Added final docs/command consistency regression tests and re-ran Phase 13 targeted suite (docs + orchestrator/unit paths) |
 
 ### Phase 14 — Frontend Foundation Stabilization
 **Goal**: Restore reliable navigation and shared page/form behavior before feature polish.
 
 | Sub-phase | Task | Status | Notes |
 |-----------|------|--------|-------|
-| 14.1 | Navigation shell reliability (drawer open/close + breakpoint behavior) | ⏳ | Fix hidden sidebar and ensure always-available open trigger |
-| 14.2 | Global page scaffolding standards (loading/empty/error/content states) | ⏳ | Standard wrapper patterns for all page shells |
-| 14.3 | Form framework baseline (shared validation rules + typed errors) | ⏳ | QForm-first; no `any`; reusable validator utilities |
-| 14.4 | Inline feedback standardization (disabled submit, actionable messages) | ⏳ | Prevent silent failures and confusing UX |
-| 14.5 | Route/access smoke pass for auth/setup/navigation paths | ⏳ | Verify guard redirects and deep-link resilience |
+| 14.1 | Navigation shell reliability (drawer open/close + breakpoint behavior) | ✅ | Fixed drawer trigger visibility and breakpoint-driven open/close sync in MainLayout |
+| 14.2 | Global page scaffolding standards (loading/empty/error/content states) | ✅ | Added shared AppPageState wrapper and applied to core page shells |
+| 14.3 | Form framework baseline (shared validation rules + typed errors) | ✅ | Added shared useValidationRules composable and refactored auth/setup forms |
+| 14.4 | Inline feedback standardization (disabled submit, actionable messages) | ✅ | Standardized actionable validation feedback and disabled-submit behavior |
+| 14.5 | Route/access smoke pass for auth/setup/navigation paths | ✅ | Extracted and validated route guard logic with setup/auth deep-link smoke coverage |
 
 ### Phase 15 — Frontend Design System (Shadcn-inspired, Quasar-native)
 **Goal**: Deliver a cleaner dashboard-quality UI language using Quasar primitives across desktop/mobile.
@@ -491,6 +491,23 @@ NEXT_ACTION:       Gap analysis: inventory existing seed/sync scripts and backen
 # 2026-05-06 | Phase 12.8 | Added SetupPage Vitest coverage for invalid and successful submit flows
 # 2026-05-06 | Phase 12.9 | Added backend setup tests for status/bootstrap/register lock/admin authorization
 # 2026-05-06 | Phase 12 | First-run setup and super-admin bootstrap phase completed
+# 2026-05-08 | Phase 13.1 | Completed seed/sync inventory and gap analysis with consolidation targets
+# 2026-05-08 | Phase 13.2 | Defined unified backend seed/sync architecture spec and execution contracts
+# 2026-05-10 | Phase 13.3 | Implementation delivered; completion reverted pending required passing pytest verification
+# 2026-05-10 | Phase 13.3 | Verification completed: backend Phase 13.3 pytest suite passed; advanced to 13.4
+# 2026-05-10 | Phase 13.4 | Implemented `otakuhub seed all` umbrella orchestration with ordered execution, dry-run/resume, and failure handling tests
+# 2026-05-10 | Phase 13.5 | Refactored shared ingestion/execution path and verified with passing Phase 13 test suite
+# 2026-05-10 | Phase 13.6 | Added per-source + umbrella Celery sync tasks reusing shared orchestration with queue routing and retry coverage
+# 2026-05-10 | Phase 13.7 | Added daily/weekly Celery beat compositions that orchestrate existing shared sync tasks without scheduler business logic
+# 2026-05-10 | Phase 13.8 | Standardized observability fields for command/task/orchestrator logs and unified sync_jobs error_log payload envelope
+# 2026-05-10 | Phase 13.9 | Deprecated root seed entrypoints with compatibility shims and migration notes to canonical `otakuhub seed ...` commands
+# 2026-05-11 | Phase 13.10 | Added final command/docs consistency regression tests, aligned runtime docs to canonical `otakuhub ...` paths, and completed Phase 13 verification
+# 2026-05-11 | Phase 14.1 | Stabilized navigation shell drawer behavior and ensured always-available open trigger
+# 2026-05-11 | Phase 14.2 | Added shared AppPageState wrapper and standardized page loading/empty/error/content scaffolds
+# 2026-05-11 | Phase 14.3 | Added shared useValidationRules composable and applied typed validation baseline to auth/setup forms
+# 2026-05-11 | Phase 14.4 | Standardized inline validation feedback and disabled-submit UX to prevent silent form failures
+# 2026-05-11 | Phase 14.5 | Added route/auth/setup guard smoke coverage and extracted guard resolver for deep-link resilience
+# 2026-05-11 | Phase 14 | Frontend foundation stabilization completed; advanced to Phase 15.1
 ```
 
 ---
@@ -501,6 +518,7 @@ NEXT_ACTION:       Gap analysis: inventory existing seed/sync scripts and backen
 
 ```
 # Format: [OPEN/RESOLVED] Phase X.Y — description
+[RESOLVED] Phase 13.3 — Backend pytest runtime verified via backend .venv and tests passed
 [RESOLVED] Phase 7.10 — Android SDK configured; Capacitor Android release build succeeds
 ```
 

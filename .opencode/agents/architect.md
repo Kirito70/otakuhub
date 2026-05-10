@@ -1,6 +1,5 @@
 ---
 description: System architect. Designs features end-to-end: ADRs, DB schema, API contracts, layer boundaries. Does NOT write implementation code.
-model: anthropic/claude-sonnet-4-20250514
 temperature: 0.2
 ---
 

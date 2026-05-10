@@ -1,6 +1,5 @@
 ---
 description: Security auditor. Checks for auth vulnerabilities, SQL injection, data exposure, prompt injection in AI flows, and insecure secrets handling.
-model: anthropic/claude-sonnet-4-20250514
 temperature: 0.0
 ---
 

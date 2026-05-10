@@ -3,7 +3,6 @@
     <q-header bordered>
       <q-toolbar>
         <q-btn
-          v-if="$q.screen.lt.md"
           flat
           dense
           round
@@ -46,7 +45,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
+import { useQuasar } from 'quasar'
 import { useRoute, useRouter } from 'vue-router'
 
 import { useTheme } from 'src/composables/useTheme'
@@ -65,6 +65,7 @@ interface NavItem {
   icon: string
 }
 
+const $q = useQuasar()
 const route = useRoute()
 const router = useRouter()
 const leftDrawerOpen = ref(false)
@@ -85,6 +86,14 @@ const mobileTabs: NavItem[] = [
   { name: 'feed', label: 'Feed', icon: 'groups' },
   { name: 'notifications', label: 'Alerts', icon: 'notifications' },
 ]
+
+watch(
+  () => $q.screen.lt.md,
+  (isMobile) => {
+    leftDrawerOpen.value = !isMobile
+  },
+  { immediate: true },
+)
 
 const activeTab = computed<RouteName>(() => {
   const name = route.name

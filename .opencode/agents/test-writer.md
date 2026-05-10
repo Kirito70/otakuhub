@@ -1,6 +1,5 @@
 ---
 description: Test writer. Writes pytest tests for FastAPI backend and widget/integration tests for Flutter. Covers happy path, error cases, and edge cases.
-model: anthropic/claude-sonnet-4-20250514
 temperature: 0.0
 ---
 

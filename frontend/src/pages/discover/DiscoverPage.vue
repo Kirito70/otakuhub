@@ -25,42 +25,43 @@
       </div>
     </div>
 
-    <q-banner v-if="error" class="q-mt-md bg-red-1 text-red-9" rounded>
-      {{ error }}
-    </q-banner>
-
     <div class="q-mt-md text-caption text-grey-7" v-if="!isLoading && !error">
       {{ total }} result(s)
     </div>
 
-    <div class="row q-col-gutter-md q-mt-sm">
-      <div v-for="item in items" :key="item.id" class="col-12 col-sm-6 col-md-4 col-lg-3">
-        <q-card bordered flat class="cursor-pointer" @click="goToMedia(item.id)">
-          <q-img
-            :src="item.cover_image_medium ?? undefined"
-            :ratio="2 / 3"
-            spinner-color="primary"
-            no-transition
-          >
-            <template #error>
-              <div class="absolute-full flex flex-center bg-grey-3 text-grey-7">No Cover</div>
-            </template>
-          </q-img>
-          <q-card-section>
-            <div class="text-subtitle2 ellipsis-2-lines">{{ item.title_english || item.title_romaji }}</div>
-            <div class="text-caption text-grey-7">
-              {{ item.media_type || 'Unknown' }} • {{ item.format || 'N/A' }}
-            </div>
-            <div class="text-caption text-grey-8">Score: {{ item.average_score ?? 'N/A' }}</div>
-          </q-card-section>
-        </q-card>
+    <app-page-state
+      class="q-mt-sm"
+      :is-loading="isLoading"
+      :error="error"
+      :is-empty="items.length === 0"
+      empty-label="No results to display yet."
+      loading-label="Searching media..."
+      @retry="onSearch"
+    >
+      <div class="row q-col-gutter-md">
+        <div v-for="item in items" :key="item.id" class="col-12 col-sm-6 col-md-4 col-lg-3">
+          <q-card bordered flat class="cursor-pointer" @click="goToMedia(item.id)">
+            <q-img
+              :src="item.cover_image_medium ?? undefined"
+              :ratio="2 / 3"
+              spinner-color="primary"
+              no-transition
+            >
+              <template #error>
+                <div class="absolute-full flex flex-center bg-grey-3 text-grey-7">No Cover</div>
+              </template>
+            </q-img>
+            <q-card-section>
+              <div class="text-subtitle2 ellipsis-2-lines">{{ item.title_english || item.title_romaji }}</div>
+              <div class="text-caption text-grey-7">
+                {{ item.media_type || 'Unknown' }} • {{ item.format || 'N/A' }}
+              </div>
+              <div class="text-caption text-grey-8">Score: {{ item.average_score ?? 'N/A' }}</div>
+            </q-card-section>
+          </q-card>
+        </div>
       </div>
-    </div>
-
-    <div class="q-mt-lg text-center" v-if="!isLoading && !error && items.length === 0">
-      <q-icon name="search_off" size="32px" class="text-grey-6" />
-      <div class="text-grey-7 q-mt-sm">No media found yet. Try a different search.</div>
-    </div>
+    </app-page-state>
   </q-page>
 </template>
 
@@ -68,6 +69,7 @@
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
+import AppPageState from 'src/components/AppPageState.vue'
 import { useMediaSearch } from 'src/composables/useMediaSearch'
 
 const router = useRouter()

@@ -1,7 +1,13 @@
+import { ref } from 'vue'
 import { mount } from '@vue/test-utils'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import DiscoverPage from '../DiscoverPage.vue'
+
+const itemsRef = ref<Array<{ id: string }>>([])
+const totalRef = ref(0)
+const isLoadingRef = ref(false)
+const errorRef = ref<string | null>(null)
 
 vi.mock('vue-router', () => ({
   useRouter: () => ({ push: vi.fn().mockResolvedValue(undefined) }),
@@ -9,16 +15,23 @@ vi.mock('vue-router', () => ({
 
 vi.mock('src/composables/useMediaSearch', () => ({
   useMediaSearch: () => ({
-    data: { value: [] },
-    total: { value: 0 },
-    isLoading: { value: false },
-    error: { value: null },
+    data: itemsRef,
+    total: totalRef,
+    isLoading: isLoadingRef,
+    error: errorRef,
     search: vi.fn(),
   }),
 }))
 
 describe('DiscoverPage', () => {
-  it('renders search screen shell', () => {
+  beforeEach(() => {
+    itemsRef.value = []
+    totalRef.value = 0
+    isLoadingRef.value = false
+    errorRef.value = null
+  })
+
+  it('renders standardized empty state when no results exist', () => {
     const wrapper = mount(DiscoverPage, {
       global: {
         stubs: {
@@ -31,10 +44,11 @@ describe('DiscoverPage', () => {
           'q-card': true,
           'q-img': true,
           'q-card-section': true,
+          'app-page-state': { template: '<div><slot /></div>' },
         },
       },
     })
 
-    expect(wrapper.exists()).toBe(true)
+    expect(wrapper.text()).toContain('No results to display yet.')
   })
 })

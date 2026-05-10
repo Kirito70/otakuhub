@@ -1,6 +1,5 @@
 ---
 description: Quasar/Vue 3 frontend developer. Builds pages, Pinia stores, and composables for web, Electron, and Capacitor targets.
-model: google/gemini-2.5-pro
 temperature: 0.2
 ---
 

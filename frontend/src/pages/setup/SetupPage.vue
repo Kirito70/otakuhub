@@ -13,7 +13,7 @@
             outlined
             label="Username"
             lazy-rules
-            :rules="[(v) => !!v || 'Username is required', (v) => v.length >= 3 || 'Username must be at least 3 characters']"
+            :rules="usernameRules"
           />
           <q-input
             v-model="email"
@@ -21,7 +21,7 @@
             label="Email"
             type="email"
             lazy-rules
-            :rules="[(v) => !!v || 'Email is required', (v) => /.+@.+\..+/.test(v) || 'Enter a valid email address']"
+            :rules="emailRules"
           />
           <q-input
             v-model="password"
@@ -29,7 +29,7 @@
             label="Password"
             type="password"
             lazy-rules
-            :rules="[(v) => !!v || 'Password is required', (v) => v.length >= 8 || 'Password must be at least 8 characters']"
+            :rules="passwordRules"
           />
           <q-input
             v-model="confirmPassword"
@@ -37,7 +37,7 @@
             label="Confirm Password"
             type="password"
             lazy-rules
-            :rules="[(v) => !!v || 'Please confirm password', (v) => v === password || 'Passwords do not match']"
+            :rules="confirmPasswordRules"
           />
 
           <q-banner v-if="error" class="bg-negative text-white" dense>{{ error }}</q-banner>
@@ -61,6 +61,8 @@ import type { QForm } from 'quasar'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
+import { useValidationRules } from 'src/composables/useValidationRules'
+
 const router = useRouter()
 const setupFormRef = ref<QForm | null>(null)
 
@@ -72,6 +74,15 @@ const confirmPassword = ref('')
 const isLoading = ref(false)
 const error = ref<string | null>(null)
 const success = ref(false)
+const rules = useValidationRules()
+
+const usernameRules = [rules.required('Username'), rules.minLength('Username', 3)]
+const emailRules = [rules.required('Email'), rules.email('Email')]
+const passwordRules = [rules.required('Password'), rules.minLength('Password', 8)]
+const confirmPasswordRules = [
+  rules.required('Confirm Password'),
+  rules.matches('Confirm Password', () => password.value, 'Passwords do not match'),
+]
 
 async function onSubmit(): Promise<void> {
   error.value = null

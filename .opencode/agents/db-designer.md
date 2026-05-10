@@ -1,6 +1,5 @@
 ---
 description: Database designer. Creates and reviews schema changes, writes Alembic migrations, designs indexes, and maintains docs/database-schema.md.
-model: anthropic/claude-sonnet-4-20250514
 temperature: 0.0
 ---
 

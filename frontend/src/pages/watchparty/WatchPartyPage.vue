@@ -7,23 +7,28 @@
 
       <q-separator />
 
-      <q-card-section class="q-gutter-md">
-        <q-input v-model="createForm.groupId" outlined label="Group ID" />
-        <q-input v-model="createForm.mediaId" outlined label="Media ID" />
-        <q-input v-model="createForm.scheduledAt" outlined type="datetime-local" label="Scheduled At" />
-        <q-input v-model="createForm.title" outlined label="Title (optional)" />
-        <q-input v-model.number="createForm.episodeNumber" outlined type="number" label="Episode # (optional)" />
-        <q-input v-model="createForm.streamUrl" outlined label="Stream URL (optional)" />
-        <q-input v-model="createForm.notes" outlined type="textarea" label="Notes (optional)" autogrow />
+      <q-form ref="createFormRef" @submit="onCreate">
+        <q-card-section class="q-gutter-md">
+          <q-input v-model="createForm.groupId" outlined label="Group ID" lazy-rules :rules="groupIdRules" />
+          <q-input v-model="createForm.mediaId" outlined label="Media ID" lazy-rules :rules="mediaIdRules" />
+          <q-input v-model="createForm.scheduledAt" outlined type="datetime-local" label="Scheduled At" lazy-rules :rules="scheduledAtRules" />
+          <q-input v-model="createForm.title" outlined label="Title (optional)" />
+          <q-input v-model.number="createForm.episodeNumber" outlined type="number" label="Episode # (optional)" />
+          <q-input v-model="createForm.streamUrl" outlined label="Stream URL (optional)" lazy-rules :rules="streamUrlRules" />
+          <q-input v-model="createForm.notes" outlined type="textarea" label="Notes (optional)" autogrow />
 
-        <q-banner v-if="createSuccess" class="bg-green-1 text-green-9" rounded>
-          Watch party created successfully.
-        </q-banner>
-      </q-card-section>
+          <q-banner v-if="createError" class="bg-negative text-white" rounded>
+            {{ createError }}
+          </q-banner>
+          <q-banner v-if="createSuccess" class="bg-green-1 text-green-9" rounded>
+            Watch party created successfully.
+          </q-banner>
+        </q-card-section>
 
-      <q-card-actions align="right">
-        <q-btn color="primary" :loading="watchPartyStore.isLoading" label="Create" @click="onCreate" />
-      </q-card-actions>
+        <q-card-actions align="right">
+          <q-btn color="primary" :loading="watchPartyStore.isLoading" :disable="isCreateDisabled" label="Create" type="submit" />
+        </q-card-actions>
+      </q-form>
     </q-card>
 
     <div class="row items-center justify-between q-mb-md">
@@ -37,13 +42,15 @@
       />
     </div>
 
-    <q-banner v-if="watchPartyStore.error" dense inline-actions class="bg-negative text-white q-mb-md">
-      {{ watchPartyStore.error }}
-    </q-banner>
-
-    <div v-if="watchPartyStore.isLoading" class="text-grey-7">Loading upcoming watch parties...</div>
-
-    <q-list v-else-if="watchPartyStore.parties.length > 0" bordered separator>
+    <app-page-state
+      :is-loading="watchPartyStore.isLoading"
+      :error="watchPartyStore.error"
+      :is-empty="watchPartyStore.parties.length === 0"
+      empty-label="No upcoming watch parties in your groups yet."
+      loading-label="Loading upcoming watch parties..."
+      @retry="watchPartyStore.fetchUpcoming"
+    >
+      <q-list bordered separator>
       <q-item v-for="party in watchPartyStore.parties" :key="party.id">
         <q-item-section>
           <q-item-label>{{ party.title || 'Untitled watch party' }}</q-item-label>
@@ -63,20 +70,29 @@
           </div>
         </q-item-section>
       </q-item>
-    </q-list>
-
-    <div v-else class="text-grey-7">No upcoming watch parties in your groups yet.</div>
+      </q-list>
+    </app-page-state>
   </q-page>
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
-import { ref } from 'vue'
+import type { QForm } from 'quasar'
+import { computed, onMounted, ref } from 'vue'
 
+import AppPageState from 'src/components/AppPageState.vue'
+import { useValidationRules } from 'src/composables/useValidationRules'
 import { useWatchPartyStore } from 'src/stores/watchparty'
 
 const watchPartyStore = useWatchPartyStore()
+const createFormRef = ref<QForm | null>(null)
 const createSuccess = ref(false)
+const createError = ref<string | null>(null)
+const rules = useValidationRules()
+
+const groupIdRules = [rules.required('Group ID')]
+const mediaIdRules = [rules.required('Media ID')]
+const scheduledAtRules = [rules.required('Scheduled At')]
+const streamUrlRules = [rules.isHttpUrl('Stream URL')]
 
 const createForm = ref({
   groupId: '',
@@ -88,11 +104,20 @@ const createForm = ref({
   notes: '',
 })
 
+const isCreateDisabled = computed(() =>
+  watchPartyStore.isLoading
+  || !createForm.value.groupId.trim()
+  || !createForm.value.mediaId.trim()
+  || !createForm.value.scheduledAt.trim(),
+)
+
 async function onCreate(): Promise<void> {
   createSuccess.value = false
+  createError.value = null
 
-  if (!createForm.value.groupId || !createForm.value.mediaId || !createForm.value.scheduledAt) {
-    watchPartyStore.error = 'Group ID, Media ID, and Scheduled At are required.'
+  const isValid = await createFormRef.value?.validate()
+  if (!isValid) {
+    createError.value = 'Please fix validation errors before submitting.'
     return
   }
 

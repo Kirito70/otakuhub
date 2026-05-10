@@ -1,6 +1,5 @@
 ---
 description: API designer. Writes OpenAPI specs, defines endpoint contracts, designs request/response schemas before implementation begins.
-model: anthropic/claude-sonnet-4-20250514
 temperature: 0.1
 ---
 

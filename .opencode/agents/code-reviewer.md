@@ -1,6 +1,5 @@
 ---
 description: Code reviewer. Reviews PRs and diffs for correctness, type safety, test coverage, security, performance, and adherence to OtakuHub conventions.
-model: anthropic/claude-sonnet-4-20250514
 temperature: 0.1
 ---
 

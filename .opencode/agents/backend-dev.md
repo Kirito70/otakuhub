@@ -1,6 +1,5 @@
 ---
 description: FastAPI backend developer. Writes routes, services, repositories, Celery workers. Uses async SQLAlchemy, Pydantic v2, repository pattern.
-model: anthropic/claude-sonnet-4-20250514
 temperature: 0.1
 ---
 

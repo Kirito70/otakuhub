@@ -1,6 +1,12 @@
 {
   "agents": [
     {
+      "name": "orchestrator",
+      "description": "Entry point router for domain classification and architect handoff",
+      "entry_point": ".claude/agents/orchestrator.py",
+      "tools": ["read","glob"]
+    },
+    {
       "name": "architect",
       "description": "System design, ADRs, schema, API contracts",
       "entry_point": ".claude/agents/architect.py",
