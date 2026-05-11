@@ -31,6 +31,19 @@
 - **2026-05-11 (Phase 19.6)**: No new endpoints. Discussions Thread Detail tab standardizes frontend behavior over existing discussion detail/replies contracts.
 - **2026-05-11 (Phase 19.7)**: No new endpoints. Discussions Create tab standardizes frontend behavior over existing discussion-create contract(s).
 - **2026-05-11 (Phase 19.8)**: No new endpoints. Social page test expansion standardizes validation coverage for existing feed/recommendations/discussions contracts.
+- **2026-05-11 (Phase 20.1)**: No new endpoints. Watch Party Upcoming tab standardizes frontend behavior over existing watch-party listing contract(s).
+- **2026-05-11 (Phase 20.2)**: No new endpoints. Watch Party Create tab standardizes frontend behavior over existing watch-party create contract(s).
+- **2026-05-11 (Phase 20.3)**: No new endpoints. Watch Party Detail tab standardizes frontend behavior over existing watch-party detail/RSVP contracts.
+- **2026-05-11 (Phase 20.4)**: No new endpoints. Watch Party Past tab standardizes frontend behavior over existing watch-party listing contracts for completed/cancelled sessions.
+- **2026-05-11 (Phase 20.5)**: No new endpoints. Watch Party page test expansion standardizes validation coverage for existing upcoming/create/detail/past contracts.
+- **2026-05-11 (Phase 21.1)**: No new endpoints. Notifications Inbox All tab standardizes frontend behavior over existing notifications listing contract(s).
+- **2026-05-11 (Phase 21.2)**: No new endpoints. Notifications Inbox Unread tab standardizes frontend behavior over existing unread-filter and mark-read workflows.
+- **2026-05-11 (Phase 21.3)**: No new endpoints. Notification Preferences Content tab standardizes frontend behavior over existing notification-preferences GET/PATCH contract(s).
+- **2026-05-11 (Phase 21.4)**: No new endpoints. Notification Preferences Channels tab standardizes frontend behavior over existing notification-preferences GET/PATCH contract(s) for channel settings.
+- **2026-05-11 (Phase 22.1)**: No new endpoints. Profile Overview tab standardizes frontend behavior over existing profile/me and summary surfaces.
+- **2026-05-11 (Phase 22.2)**: No new endpoints. Profile Edit tab standardizes frontend behavior over existing profile update contract(s).
+- **2026-05-11 (Phase 22.3)**: No new endpoints. Profile Account & Security tab standardizes frontend behavior over existing account-security/password-session contracts.
+- **2026-05-11 (Phase 22.4)**: No new endpoints. Profile test expansion standardizes validation coverage for existing overview/edit/security contracts.
 
 ## Authentication Endpoints
 | Method | Path | Auth | Request Schema | Response Schema | Errors |

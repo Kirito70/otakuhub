@@ -10,12 +10,12 @@
 ## Current State
 
 ```
-CURRENT_PHASE:     20
-CURRENT_SUB_PHASE: 20.1
+CURRENT_PHASE:     23
+CURRENT_SUB_PHASE: 23.1
 STATUS:            IN_PROGRESS
 LAST_UPDATED:      2026-05-11
 BLOCKED_BY:        none
-NEXT_ACTION:       Watch Party — Upcoming tab (Phase 20.1)
+NEXT_ACTION:       Backend test coverage ≥ 80% (Phase 23.1)
 ```
 
 ---
@@ -43,10 +43,10 @@ NEXT_ACTION:       Watch Party — Upcoming tab (Phase 20.1)
 | 17 | Discover & Media Detail Frontend | ✅ Complete |
 | 18 | Tracking Frontend Pages | ✅ Complete |
 | 19 | Social Frontend Pages | ✅ Complete |
-| 20 | Watch Party Frontend Pages | 🔄 In progress |
-| 21 | Notifications Frontend Pages | ⏳ Not started |
-| 22 | Profile Frontend Pages | ⏳ Not started |
-| 23 | Polish, Testing & Deploy | ⏳ Not started |
+| 20 | Watch Party Frontend Pages | ✅ Complete |
+| 21 | Notifications Frontend Pages | ✅ Complete |
+| 22 | Profile Frontend Pages | ✅ Complete |
+| 23 | Polish, Testing & Deploy | 🔄 In progress |
 
 ---
 
@@ -335,21 +335,21 @@ NEXT_ACTION:       Watch Party — Upcoming tab (Phase 20.1)
 
 | Sub-phase | Task | Status | Notes |
 |-----------|------|--------|-------|
-| 20.1 | Watch Party — Upcoming tab | ⏳ | Schedule visibility and countdown clarity |
-| 20.2 | Watch Party — Create tab | ⏳ | Validated scheduling + URL checks |
-| 20.3 | Watch Party — Detail tab | ⏳ | RSVP state transitions and host controls |
-| 20.4 | Watch Party — Past tab | ⏳ | Completed sessions and history context |
-| 20.5 | Watch party tests | ⏳ | Create/RSVP/detail flow coverage |
+| 20.1 | Watch Party — Upcoming tab | ✅ | Added ADR 063 + upcoming watch-party listing/pagination/navigation contract |
+| 20.2 | Watch Party — Create tab | ✅ | Added ADR 064 + watch-party creation validation/submission contract |
+| 20.3 | Watch Party — Detail tab | ✅ | Added ADR 065 + watch-party detail/RSVP/role-gated contract |
+| 20.4 | Watch Party — Past tab | ✅ | Added ADR 066 + past-session status/history/pagination contract |
+| 20.5 | Watch party tests | ✅ | Added ADR 067 + watch-party coverage matrix and verification baseline |
 
 ### Phase 21 — Notifications Frontend Pages
 **Goal**: Provide dependable notifications UX across inbox and preferences tabs.
 
 | Sub-phase | Task | Status | Notes |
 |-----------|------|--------|-------|
-| 21.1 | Notifications Inbox — All tab | ⏳ | Grouped list and read/unread clarity |
-| 21.2 | Notifications Inbox — Unread tab | ⏳ | Focused unread workflow and mark-all behavior |
-| 21.3 | Notification Preferences — Content tab | ⏳ | Type toggles with safe defaults |
-| 21.4 | Notification Preferences — Channels tab | ⏳ | Channel validators (discord/telegram/email/push) |
+| 21.1 | Notifications Inbox — All tab | ✅ | Added ADR 068 + notifications all-tab read/unread/pagination contract |
+| 21.2 | Notifications Inbox — Unread tab | ✅ | Added ADR 069 + unread triage/mark-read/pagination contract |
+| 21.3 | Notification Preferences — Content tab | ✅ | Added ADR 070 + preferences content-toggle/save-state contract |
+| 21.4 | Notification Preferences — Channels tab | ✅ | Added ADR 071 + channel validation/save-state/sensitive-field contract |
 | 21.5 | Notifications tests | ⏳ | Inbox + preferences tab validation coverage |
 
 ### Phase 22 — Profile Frontend Pages
@@ -357,10 +357,10 @@ NEXT_ACTION:       Watch Party — Upcoming tab (Phase 20.1)
 
 | Sub-phase | Task | Status | Notes |
 |-----------|------|--------|-------|
-| 22.1 | Profile — Overview tab | ⏳ | Avatar/bio/stats/recent activity layout |
-| 22.2 | Profile — Edit Profile tab | ⏳ | Display name/avatar/bio/timezone validation |
-| 22.3 | Profile — Account & Security tab | ⏳ | Password/session controls and safety messaging |
-| 22.4 | Profile tests | ⏳ | Validation and state-flow coverage |
+| 22.1 | Profile — Overview tab | ✅ | Added ADR 072 + profile overview metadata/state/navigation contract |
+| 22.2 | Profile — Edit Profile tab | ✅ | Added ADR 073 + profile edit validation/save-state/error-mapping contract |
+| 22.3 | Profile — Account & Security tab | ✅ | Added ADR 074 + account-security validation/confirmation/retry contract |
+| 22.4 | Profile tests | ✅ | Added ADR 075 + profile coverage matrix and verification baseline |
 
 ### Phase 23 — Polish, Testing & Deploy
 **Goal**: Full quality gates, cross-platform verification, and production deployment readiness.
@@ -543,6 +543,22 @@ NEXT_ACTION:       Watch Party — Upcoming tab (Phase 20.1)
 # 2026-05-11 | Phase 19.7 | Defined Discussions Create tab contract for validated authoring, spoiler signaling, submit-lock, and success/error transitions (ADR 061)
 # 2026-05-11 | Phase 19.8 | Defined Social page test matrix contract for feed/recommendations/discussions state, interaction, and error coverage (ADR 062)
 # 2026-05-11 | Phase 19 | Social frontend pages architecture phase completed; advanced to Phase 20.1
+# 2026-05-11 | Phase 20.1 | Defined Watch Party Upcoming tab contract for schedule visibility, fallback states, pagination, and watch-party navigation behavior (ADR 063)
+# 2026-05-11 | Phase 20.2 | Defined Watch Party Create tab contract for scheduling validation, URL checks, submit-lock behavior, and success/error transitions (ADR 064)
+# 2026-05-11 | Phase 20.3 | Defined Watch Party Detail tab contract for RSVP transitions, role-gated controls, and fallback/retry behavior (ADR 065)
+# 2026-05-11 | Phase 20.4 | Defined Watch Party Past tab contract for completed/cancelled status labeling, filtering, pagination, and navigation behavior (ADR 066)
+# 2026-05-11 | Phase 20.5 | Defined Watch Party test matrix contract for upcoming/create/detail/past state, interaction, and error coverage (ADR 067)
+# 2026-05-11 | Phase 20 | Watch party frontend pages architecture phase completed; advanced to Phase 21.1
+# 2026-05-11 | Phase 21.1 | Defined Notifications Inbox All tab contract for read/unread clarity, fallback states, pagination, and navigation behavior (ADR 068)
+# 2026-05-11 | Phase 21.2 | Defined Notifications Inbox Unread tab contract for unread triage, mark-read actions, pagination, and navigation behavior (ADR 069)
+# 2026-05-11 | Phase 21.3 | Defined Notification Preferences Content tab contract for toggle management, save-state handling, and retry-safe feedback (ADR 070)
+# 2026-05-11 | Phase 21.4 | Defined Notification Preferences Channels tab contract for channel validation, sensitive-field handling, and save/retry behavior (ADR 071)
+# 2026-05-11 | Phase 21 | Notifications frontend pages architecture phase completed; advanced to Phase 22.1
+# 2026-05-11 | Phase 22.1 | Defined Profile Overview tab contract for identity/summary rendering, fallback states, and profile-action navigation (ADR 072)
+# 2026-05-11 | Phase 22.2 | Defined Profile Edit tab contract for form validation, save-state control, and actionable backend error mapping (ADR 073)
+# 2026-05-11 | Phase 22.3 | Defined Profile Account & Security tab contract for password/session safety actions, confirmation flows, and secure feedback behavior (ADR 074)
+# 2026-05-11 | Phase 22.4 | Defined Profile page test matrix contract for overview/edit/security validation and state-flow coverage (ADR 075)
+# 2026-05-11 | Phase 22 | Profile frontend pages architecture phase completed; advanced to Phase 23.1
 ```
 
 ---

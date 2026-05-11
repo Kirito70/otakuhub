@@ -1028,6 +1028,329 @@ Standardize top-level page composition with a desktop-first, mobile-adaptive das
 - Run `npx vitest run` for social suites before marking completion.
 - Keep route/auth smoke checks passing for social deep-link flows.
 
+## Phase 20.1 Watch Party — Upcoming Tab (Architecture Contract)
+
+### Data contract
+- Uses authenticated watch-party listing endpoint(s) for upcoming sessions.
+- No direct external API calls from frontend.
+
+### State contract
+- `items: WatchPartyItem[]`
+- `isLoading: boolean`
+- `error: string | null`
+- `page/cursor` and `hasMore`
+- optional `filters` (group/time window)
+
+### Behavior contract
+- Initial tab load fetches upcoming watch parties.
+- Empty -> `AppEmptyState(mode='empty')`.
+- Failure -> `AppEmptyState(mode='error')` with retry.
+
+### Interaction contract
+- Cards expose media/host/schedule/RSVP context.
+- Card actions navigate to watch-party detail and RSVP interactions where applicable.
+- Responsive readability and CTA visibility preserved across xs/sm/md+.
+
+### Testing contract
+- Include tests for loading/empty/error/success states, pagination, retry, schedule-label behavior, and navigation.
+
+## Phase 20.2 Watch Party — Create Tab (Architecture Contract)
+
+### Data contract
+- Uses authenticated watch-party create endpoint(s).
+- No direct external API calls from frontend.
+
+### State contract
+- `form: { mediaId, title, scheduledAt, streamUrl?, syncUrl?, notes? }`
+- `isLoading: boolean`
+- `error: string | null`
+
+### Behavior contract
+- Form validates required fields and URL formats before submit.
+- Submit disabled while invalid or in-flight.
+- Success transitions to upcoming/detail context with feedback.
+- Failure maps backend errors to actionable form-level messages.
+
+### Interaction contract
+- Scheduling context remains visible while editing.
+- Critical actions stay accessible across xs/sm/md+.
+- No hover-only dependency for form completion.
+
+### Testing contract
+- Include tests for empty/invalid submit, URL validation, in-flight disable, success transition, and backend error mapping.
+
+## Phase 20.3 Watch Party — Detail Tab (Architecture Contract)
+
+### Data contract
+- Uses authenticated watch-party detail and RSVP endpoint(s).
+- No direct external API calls from frontend.
+
+### State contract
+- `party: WatchPartyDetail | null`
+- `isLoading: boolean`
+- `error: string | null`
+- `rsvpActionState` (idle/loading/error/success)
+
+### Behavior contract
+- Initial tab/page load fetches watch-party detail.
+- Displays schedule, host, media context, and RSVP summary.
+- Empty/missing -> `AppEmptyState(mode='empty')` where applicable.
+- Failure -> `AppEmptyState(mode='error')` with retry.
+
+### Interaction contract
+- RSVP actions use existing RSVP contract with inline success/error feedback.
+- Stream/sync links are visible and safe to open.
+- Host-only actions remain role-gated.
+- Responsive readability and CTA access preserved across xs/sm/md+.
+
+### Testing contract
+- Include tests for loading/empty/error/success states, RSVP transition flow, role-gated controls, retry, and navigation stability.
+
+## Phase 20.4 Watch Party — Past Tab (Architecture Contract)
+
+### Data contract
+- Uses authenticated watch-party listing endpoint(s) scoped to past/completed sessions.
+- No direct external API calls from frontend.
+
+### State contract
+- `items: WatchPartyItem[]`
+- `isLoading: boolean`
+- `error: string | null`
+- `page/cursor` and `hasMore`
+- optional `filters` (group/time range/status)
+
+### Behavior contract
+- Initial tab load fetches past watch parties.
+- Empty -> `AppEmptyState(mode='empty')`.
+- Failure -> `AppEmptyState(mode='error')` with retry.
+
+### Interaction contract
+- Cards expose completion/cancellation status and schedule history context.
+- Card actions navigate to watch-party detail/history view where applicable.
+- Responsive readability preserved across xs/sm/md+.
+
+### Testing contract
+- Include tests for loading/empty/error/success states, status labeling, filter behavior, pagination, retry, and navigation.
+
+## Phase 20.5 Watch Party Tests (Architecture Contract)
+
+### Coverage matrix
+- **Upcoming**: loading/empty/error/success, pagination, retry, schedule labels, navigation.
+- **Create**: empty/invalid submit, URL validation, in-flight disable, success transition, backend error mapping.
+- **Detail**: loading/empty/error/success, RSVP transitions, role-gated controls, retry, navigation stability.
+- **Past**: loading/empty/error/success, status labeling, filter behavior, pagination, retry, navigation.
+
+### Test design rules
+- Prefer user-visible behavior assertions over implementation details.
+- Keep error-state checks at actionable message/CTA level.
+- Preserve responsive behavior expectations for critical controls.
+
+### Verification baseline
+- Run `npx vitest run` for watch-party suites before marking completion.
+- Keep route/auth smoke checks passing for watch-party deep links.
+
+## Phase 21.1 Notifications Inbox — All Tab (Architecture Contract)
+
+### Data contract
+- Uses authenticated notifications listing endpoint(s).
+- No direct external API calls from frontend.
+
+### State contract
+- `items: NotificationItem[]`
+- `isLoading: boolean`
+- `error: string | null`
+- `page/cursor` and `hasMore`
+- optional derived `unreadCount`
+
+### Behavior contract
+- Initial tab load fetches notifications.
+- Read/unread distinction remains visible and accessible.
+- Empty -> `AppEmptyState(mode='empty')`.
+- Failure -> `AppEmptyState(mode='error')` with retry.
+
+### Interaction contract
+- Notification cards/rows navigate via `action_url`/mapped route where applicable.
+- Responsive readability and touch targets preserved across xs/sm/md+.
+
+### Testing contract
+- Include tests for loading/empty/error/success states, read/unread rendering, pagination, retry, and navigation.
+
+## Phase 21.2 Notifications Inbox — Unread Tab (Architecture Contract)
+
+### Data contract
+- Uses authenticated notifications listing/filter endpoint(s) for unread items.
+- No direct external API calls from frontend.
+
+### State contract
+- `items: NotificationItem[]`
+- `isLoading: boolean`
+- `error: string | null`
+- `page/cursor` and `hasMore`
+- optional `bulkActionState` for mark-all-read flow
+
+### Behavior contract
+- Initial tab load fetches unread notifications.
+- Empty -> `AppEmptyState(mode='empty')`.
+- Failure -> `AppEmptyState(mode='error')` with retry.
+
+### Interaction contract
+- Supports unread-focused workflows including mark-read/mark-all-read where available.
+- Notification rows navigate via mapped action route where applicable.
+- Responsive readability and CTA access preserved across xs/sm/md+.
+
+### Testing contract
+- Include tests for loading/empty/error/success states, unread action flow, pagination, retry, and navigation.
+
+## Phase 21.3 Notification Preferences — Content Tab (Architecture Contract)
+
+### Data contract
+- Uses authenticated notification-preferences GET/PATCH endpoint(s).
+- No direct external API calls from frontend.
+
+### State contract
+- `preferences: NotificationPreferences | null`
+- `isLoading: boolean`
+- `isSaving: boolean`
+- `error: string | null`
+- `saveStatus: 'idle' | 'success' | 'error'`
+
+### Behavior contract
+- Initial tab load fetches current preferences.
+- Toggle controls map to content-type preference fields.
+- Save disabled while invalid or in-flight.
+- Save success updates local state and exposes confirmation feedback.
+- Failure exposes actionable form-level retry guidance.
+
+### Interaction contract
+- Toggle groups remain readable and actionable across xs/sm/md+.
+- Critical save/reset actions remain visible without hover dependency.
+
+### Testing contract
+- Include tests for initial load, toggle behavior, save success/failure, in-flight disable, and retry.
+
+## Phase 21.4 Notification Preferences — Channels Tab (Architecture Contract)
+
+### Data contract
+- Uses authenticated notification-preferences GET/PATCH endpoint(s).
+- No direct external API calls from frontend.
+
+### State contract
+- `channels: NotificationChannelsPreferences | null`
+- `isLoading: boolean`
+- `isSaving: boolean`
+- `error: string | null`
+- `saveStatus: 'idle' | 'success' | 'error'`
+
+### Behavior contract
+- Initial tab load fetches current channel preferences.
+- Channel inputs validate expected formats (discord/telegram/email/push fields as applicable).
+- Save disabled while invalid or in-flight.
+- Save success updates local state and shows confirmation feedback.
+- Save failure exposes actionable retry guidance.
+
+### Interaction contract
+- Channel forms remain readable and actionable across xs/sm/md+.
+- Sensitive channel fields use cautious display/edit behavior consistent with app policy.
+- Critical save/reset actions remain visible without hover dependency.
+
+### Testing contract
+- Include tests for initial load, channel validation, save success/failure, in-flight disable, and retry.
+
+## Phase 22.1 Profile — Overview Tab (Architecture Contract)
+
+### Data contract
+- Uses authenticated profile/me endpoint(s) and existing summary/activity surfaces where available.
+- No direct external API calls from frontend.
+
+### State contract
+- `profile: UserProfile | null`
+- `isLoading: boolean`
+- `error: string | null`
+- optional `summaryStats` / `recentActivity`
+
+### Behavior contract
+- Initial tab load fetches profile overview data.
+- Overview displays avatar, display name/username, bio, timezone, and summary context.
+- Empty/missing -> `AppEmptyState(mode='empty')` where applicable.
+- Failure -> `AppEmptyState(mode='error')` with retry.
+
+### Interaction contract
+- Edit/account actions route to profile management tabs.
+- Responsive profile readability preserved across xs/sm/md+.
+
+### Testing contract
+- Include tests for loading/empty/error/success states, metadata visibility, and profile-action navigation.
+
+## Phase 22.2 Profile — Edit Profile Tab (Architecture Contract)
+
+### Data contract
+- Uses authenticated profile update endpoint(s).
+- No direct external API calls from frontend.
+
+### State contract
+- `form: { displayName, avatarUrl, bio, timezone }`
+- `isLoading: boolean`
+- `isSaving: boolean`
+- `error: string | null`
+- `saveStatus: 'idle' | 'success' | 'error'`
+
+### Behavior contract
+- Initial tab load hydrates editable profile fields.
+- Form validates supported field constraints before submit.
+- Submit disabled while invalid or in-flight.
+- Save success updates profile state and shows confirmation feedback.
+- Save failure maps backend errors to actionable field/form feedback.
+
+### Interaction contract
+- Editable fields remain readable/actionable across xs/sm/md+.
+- Primary save action remains visible without hover dependency.
+
+### Testing contract
+- Include tests for initial load, validation behavior, save success/failure, in-flight disable, and retry.
+
+## Phase 22.3 Profile — Account & Security Tab (Architecture Contract)
+
+### Data contract
+- Uses authenticated account/security endpoint(s) for password/session controls where available.
+- No direct external API calls from frontend.
+
+### State contract
+- `passwordForm` / `sessionControls`
+- `isLoading: boolean`
+- `isSaving: boolean`
+- `error: string | null`
+- `actionStatus: 'idle' | 'success' | 'error'`
+
+### Behavior contract
+- Initial tab load hydrates security context as needed.
+- Password update validates required fields, strength baseline, and confirm-match before submit.
+- Destructive/session-wide actions require explicit confirmation.
+- Actions disabled while in-flight.
+- Success/failure feedback is actionable without exposing sensitive internals.
+
+### Interaction contract
+- Critical security actions remain visible and accessible across xs/sm/md+.
+- Confirmation prompts are explicit and non-ambiguous.
+
+### Testing contract
+- Include tests for validation behavior, successful/failed security actions, in-flight disable, confirmation flows, and retry.
+
+## Phase 22.4 Profile Tests (Architecture Contract)
+
+### Coverage matrix
+- **Overview**: loading/empty/error/success states, metadata visibility, profile-action navigation.
+- **Edit Profile**: initial load, validation, save success/failure, in-flight disable, retry.
+- **Account & Security**: password/session validation, confirmation flows, in-flight disable, success/failure feedback.
+
+### Test design rules
+- Prefer user-visible behavior assertions over implementation internals.
+- Keep security error messaging assertions at actionable but non-sensitive UI level.
+- Preserve responsive expectations for critical actions.
+
+### Verification baseline
+- Run `npx vitest run` for profile suites before marking completion.
+- Keep route/auth smoke checks passing for profile deep links.
+
 ## Phase 19.3 Recommendations — Inbox Tab (Architecture Contract)
 
 ### Data contract

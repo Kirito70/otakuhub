@@ -31,6 +31,19 @@
 - **2026-05-11 (Phase 19.6)**: No database schema changes required for Discussions thread detail tab behavior contract.
 - **2026-05-11 (Phase 19.7)**: No database schema changes required for Discussions create tab behavior contract.
 - **2026-05-11 (Phase 19.8)**: No database schema changes required for social page test coverage contract.
+- **2026-05-11 (Phase 20.1)**: No database schema changes required for Watch Party upcoming tab behavior contract.
+- **2026-05-11 (Phase 20.2)**: No database schema changes required for Watch Party create tab behavior contract.
+- **2026-05-11 (Phase 20.3)**: No database schema changes required for Watch Party detail tab behavior contract.
+- **2026-05-11 (Phase 20.4)**: No database schema changes required for Watch Party past tab behavior contract.
+- **2026-05-11 (Phase 20.5)**: No database schema changes required for Watch party test coverage contract.
+- **2026-05-11 (Phase 21.1)**: No database schema changes required for Notifications inbox all tab behavior contract.
+- **2026-05-11 (Phase 21.2)**: No database schema changes required for Notifications inbox unread tab behavior contract.
+- **2026-05-11 (Phase 21.3)**: No database schema changes required for Notification preferences content tab behavior contract.
+- **2026-05-11 (Phase 21.4)**: No database schema changes required for Notification preferences channels tab behavior contract.
+- **2026-05-11 (Phase 22.1)**: No database schema changes required for Profile overview tab behavior contract.
+- **2026-05-11 (Phase 22.2)**: No database schema changes required for Profile edit profile tab behavior contract.
+- **2026-05-11 (Phase 22.3)**: No database schema changes required for Profile account & security tab behavior contract.
+- **2026-05-11 (Phase 22.4)**: No database schema changes required for Profile tests contract.
 
 ## PostgreSQL Extensions Required
 ```sql
