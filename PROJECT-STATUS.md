@@ -10,12 +10,12 @@
 ## Current State
 
 ```
-CURRENT_PHASE:     15
-CURRENT_SUB_PHASE: 15.1
+CURRENT_PHASE:     20
+CURRENT_SUB_PHASE: 20.1
 STATUS:            IN_PROGRESS
 LAST_UPDATED:      2026-05-11
 BLOCKED_BY:        none
-NEXT_ACTION:       Design tokens + theme semantics (light/dark) (Phase 15.1)
+NEXT_ACTION:       Watch Party — Upcoming tab (Phase 20.1)
 ```
 
 ---
@@ -38,12 +38,12 @@ NEXT_ACTION:       Design tokens + theme semantics (light/dark) (Phase 15.1)
 | 12 | First-Run Setup & Super Admin Bootstrap | ✅ Complete |
 | 13 | Backend Seed/Sync Command Consolidation | ✅ Complete |
 | 14 | Frontend Foundation Stabilization | ✅ Complete |
-| 15 | Frontend Design System (Shadcn-inspired, Quasar-native) | 🔄 In progress |
-| 16 | Auth & Setup Frontend Hardening | ⏳ Not started |
-| 17 | Discover & Media Detail Frontend | ⏳ Not started |
-| 18 | Tracking Frontend Pages | ⏳ Not started |
-| 19 | Social Frontend Pages | ⏳ Not started |
-| 20 | Watch Party Frontend Pages | ⏳ Not started |
+| 15 | Frontend Design System (Shadcn-inspired, Quasar-native) | ✅ Complete |
+| 16 | Auth & Setup Frontend Hardening | ✅ Complete |
+| 17 | Discover & Media Detail Frontend | ✅ Complete |
+| 18 | Tracking Frontend Pages | ✅ Complete |
+| 19 | Social Frontend Pages | ✅ Complete |
+| 20 | Watch Party Frontend Pages | 🔄 In progress |
 | 21 | Notifications Frontend Pages | ⏳ Not started |
 | 22 | Profile Frontend Pages | ⏳ Not started |
 | 23 | Polish, Testing & Deploy | ⏳ Not started |
@@ -271,33 +271,33 @@ NEXT_ACTION:       Design tokens + theme semantics (light/dark) (Phase 15.1)
 
 | Sub-phase | Task | Status | Notes |
 |-----------|------|--------|-------|
-| 15.1 | Design tokens + theme semantics (light/dark) | ⏳ | Card/border/muted/primary/destructive token alignment |
-| 15.2 | Typography + spacing scale definition | ⏳ | Consistent hierarchy and rhythm across pages |
-| 15.3 | Shared UI primitives (AppCard, AppBadge, AppToolbar, AppEmptyState) | ⏳ | Reusable building blocks for all screens |
-| 15.4 | Dashboard template (desktop-first, mobile-adaptive) | ⏳ | Inspired by shadcn dashboard examples but Quasar-native |
-| 15.5 | Responsive behavior validation for mobile/web/electron shells | ⏳ | Ensure no desktop-only assumptions leak into mobile |
+| 15.1 | Design tokens + theme semantics (light/dark) | ✅ | Added ADR 033 + frontend semantic token contract (no API/DB change) |
+| 15.2 | Typography + spacing scale definition | ✅ | Added ADR 034 + semantic typography/spacing architecture contract |
+| 15.3 | Shared UI primitives (AppCard, AppBadge, AppToolbar, AppEmptyState) | ✅ | Added ADR 035 + shared primitive contracts and layer boundaries |
+| 15.4 | Dashboard template (desktop-first, mobile-adaptive) | ✅ | Added ADR 036 + standardized dashboard layout/zone contract |
+| 15.5 | Responsive behavior validation for mobile/web/electron shells | ✅ | Added ADR 037 + breakpoint interaction/state validation contract |
 
 ### Phase 16 — Auth & Setup Frontend Hardening
 **Goal**: Make auth/setup flows stable, validated, and user-friendly end-to-end.
 
 | Sub-phase | Task | Status | Notes |
 |-----------|------|--------|-------|
-| 16.1 | Login page hardening | ⏳ | Validation, loading state, backend error mapping |
-| 16.2 | Register page hardening | ⏳ | Strong password + confirm + conflict handling |
-| 16.3 | Setup bootstrap page hardening | ⏳ | One-time flow, 409 handling, retry-safe UX |
-| 16.4 | Auth/setup component tests expansion | ⏳ | Empty submit, invalid input, success, backend failure |
+| 16.1 | Login page hardening | ✅ | Added ADR 038 + login validation/loading/error-mapping architecture contract |
+| 16.2 | Register page hardening | ✅ | Added ADR 039 + register validation/loading/error-mapping architecture contract |
+| 16.3 | Setup bootstrap page hardening | ✅ | Added ADR 040 + setup one-time flow/error-mapping architecture contract |
+| 16.4 | Auth/setup component tests expansion | ✅ | Added ADR 041 + auth/setup coverage matrix and verification baseline |
 
 ### Phase 17 — Discover & Media Detail Frontend
 **Goal**: Complete discover and media experience with robust tab-level flows.
 
 | Sub-phase | Task | Status | Notes |
 |-----------|------|--------|-------|
-| 17.1 | Discover — Search tab | ⏳ | Debounced query, loading skeletons, retry UX |
-| 17.2 | Discover — Trending tab | ⏳ | Seasonal/trending surfaces with fallback states |
-| 17.3 | Discover — New Releases tab | ⏳ | Recent episodes/chapters list with pagination |
-| 17.4 | Media Detail — Overview tab | ⏳ | Hero metadata, synopsis, add-to-list CTA |
-| 17.5 | Media Detail — Episodes/Chapters tab | ⏳ | Sort, progress actions, empty/error handling |
-| 17.6 | Media Detail — Relations tab | ⏳ | Relation cards + traversal navigation |
+| 17.1 | Discover — Search tab | ✅ | Added ADR 042 + debounced search/state/retry/navigation architecture contract |
+| 17.2 | Discover — Trending tab | ✅ | Added ADR 043 + trending tab loading/empty/error/retry/navigation contract |
+| 17.3 | Discover — New Releases tab | ✅ | Added ADR 044 + new releases pagination/state/retry/navigation contract |
+| 17.4 | Media Detail — Overview tab | ✅ | Added ADR 045 + overview hero/synopsis/list-action contract |
+| 17.5 | Media Detail — Episodes/Chapters tab | ✅ | Added ADR 046 + installment sort/progress/retry behavior contract |
+| 17.6 | Media Detail — Relations tab | ✅ | Added ADR 047 + relation labeling/traversal/fallback contract |
 | 17.7 | Discover/media tests (page + tab states) | ⏳ | Loading/error/data assertions across tabs |
 
 ### Phase 18 — Tracking Frontend Pages
@@ -305,13 +305,13 @@ NEXT_ACTION:       Design tokens + theme semantics (light/dark) (Phase 15.1)
 
 | Sub-phase | Task | Status | Notes |
 |-----------|------|--------|-------|
-| 18.1 | My List — Watching/Reading tab | ⏳ | Fast progress-first updates |
-| 18.2 | My List — Completed tab | ⏳ | Score/completion context + rewatch/reread actions |
-| 18.3 | My List — Paused tab | ⏳ | Resume-focused UX |
-| 18.4 | My List — Dropped tab | ⏳ | Recovery actions and notes visibility |
-| 18.5 | My List — Plan to Watch/Read tab | ⏳ | Backlog prioritization and sort controls |
-| 18.6 | My List — Custom Lists tab | ⏳ | Create/edit/delete/reorder entries |
-| 18.7 | Airing Calendar page | ⏳ | Day/week UX and timezone-safe labels |
+| 18.1 | My List — Watching/Reading tab | ✅ | Added ADR 048 + active list quick-update/fallback contract |
+| 18.2 | My List — Completed tab | ✅ | Added ADR 049 + completed-list score/rewatch behavior contract |
+| 18.3 | My List — Paused tab | ✅ | Added ADR 050 + paused-list resume/progress/fallback contract |
+| 18.4 | My List — Dropped tab | ✅ | Added ADR 051 + dropped-list recovery/notes/fallback contract |
+| 18.5 | My List — Plan to Watch/Read tab | ✅ | Added ADR 052 + plan-list transition/prioritization/fallback contract |
+| 18.6 | My List — Custom Lists tab | ✅ | Added ADR 053 + custom-list CRUD/reorder/fallback contract |
+| 18.7 | Airing Calendar page | ✅ | Added ADR 054 + airing timezone/pagination/navigation contract |
 | 18.8 | Import List — AniList tab | ⏳ | Import trigger, job status, user feedback |
 | 18.9 | Import List — MAL tab | ⏳ | Provider-specific validation and feedback |
 | 18.10 | Tracking page tests | ⏳ | Core interaction and validation coverage |
@@ -321,14 +321,14 @@ NEXT_ACTION:       Design tokens + theme semantics (light/dark) (Phase 15.1)
 
 | Sub-phase | Task | Status | Notes |
 |-----------|------|--------|-------|
-| 19.1 | Feed — Group Activity tab | ⏳ | Group event cards and filters |
-| 19.2 | Feed — My Activity tab | ⏳ | Personal timeline focus |
-| 19.3 | Recommendations — Inbox tab | ⏳ | Acknowledge and triage interactions |
-| 19.4 | Recommendations — Sent tab | ⏳ | Sent-state tracking and recall context |
-| 19.5 | Discussions — Threads tab | ⏳ | Thread list with spoiler signaling |
-| 19.6 | Discussions — Thread Detail tab | ⏳ | Replies, nested handling, spoiler reveal UX |
-| 19.7 | Discussions — Create tab | ⏳ | Validated creation with media context |
-| 19.8 | Social page tests | ⏳ | Tab-level flow and error-state coverage |
+| 19.1 | Feed — Group Activity tab | ✅ | Added ADR 055 + group feed filtering/pagination/navigation contract |
+| 19.2 | Feed — My Activity tab | ✅ | Added ADR 056 + my-activity filtering/pagination/navigation contract |
+| 19.3 | Recommendations — Inbox tab | ✅ | Added ADR 057 + inbox acknowledge/triage/pagination contract |
+| 19.4 | Recommendations — Sent tab | ✅ | Added ADR 058 + sent-tab filter/pagination/navigation contract |
+| 19.5 | Discussions — Threads tab | ✅ | Added ADR 059 + threads listing/spoiler/pagination contract |
+| 19.6 | Discussions — Thread Detail tab | ✅ | Added ADR 060 + thread detail/replies/spoiler reveal contract |
+| 19.7 | Discussions — Create tab | ✅ | Added ADR 061 + discussions-create validation/spoiler/submit-lock contract |
+| 19.8 | Social page tests | ✅ | Added ADR 062 + social coverage matrix and verification baseline |
 
 ### Phase 20 — Watch Party Frontend Pages
 **Goal**: Make watch party workflows reliable from scheduling to RSVP.
@@ -508,6 +508,41 @@ NEXT_ACTION:       Design tokens + theme semantics (light/dark) (Phase 15.1)
 # 2026-05-11 | Phase 14.4 | Standardized inline validation feedback and disabled-submit UX to prevent silent form failures
 # 2026-05-11 | Phase 14.5 | Added route/auth/setup guard smoke coverage and extracted guard resolver for deep-link resilience
 # 2026-05-11 | Phase 14 | Frontend foundation stabilization completed; advanced to Phase 15.1
+# 2026-05-11 | Phase 15.1 | Defined semantic design-token architecture (ADR 033) and frontend layer boundaries for light/dark theming
+# 2026-05-11 | Phase 15.2 | Defined semantic typography hierarchy and 4px-based spacing scale contract (ADR 034)
+# 2026-05-11 | Phase 15.3 | Defined shared UI primitive contracts (AppCard/AppBadge/AppToolbar/AppEmptyState) with semantic token-only mapping (ADR 035)
+# 2026-05-11 | Phase 15.4 | Defined dashboard page template and zone composition contract for desktop-first/mobile-adaptive layouts (ADR 036)
+# 2026-05-11 | Phase 15.5 | Defined responsive validation contract and breakpoint acceptance criteria for web/electron/mobile shells (ADR 037)
+# 2026-05-11 | Phase 15 | Frontend design system architecture phase completed; advanced to Phase 16.1
+# 2026-05-11 | Phase 16.1 | Defined login hardening contract for validation, submit locking, and backend error mapping (ADR 038)
+# 2026-05-11 | Phase 16.2 | Defined register hardening contract for validation, confirm-password matching, and conflict/policy error mapping (ADR 039)
+# 2026-05-11 | Phase 16.3 | Defined setup bootstrap hardening contract for one-time flow handling, 409 redirect policy, and retry-safe UX (ADR 040)
+# 2026-05-11 | Phase 16.4 | Defined auth/setup test expansion contract covering login/register/setup validation and backend error mapping cases (ADR 041)
+# 2026-05-11 | Phase 16 | Auth & setup frontend hardening architecture phase completed; advanced to Phase 17.1
+# 2026-05-11 | Phase 17.1 | Defined Discover Search tab contract for debounced query handling, resilient state management, and retry/navigation behavior (ADR 042)
+# 2026-05-11 | Phase 17.2 | Defined Discover Trending tab contract for tab-load fetching, fallback states, and media-detail navigation (ADR 043)
+# 2026-05-11 | Phase 17.3 | Defined Discover New Releases tab contract for release-context pagination, fallback states, and navigation behavior (ADR 044)
+# 2026-05-11 | Phase 17.4 | Defined Media Detail Overview tab contract for hero metadata, synopsis interaction, and add/update list CTA behavior (ADR 045)
+# 2026-05-11 | Phase 17.5 | Defined Media Detail Episodes/Chapters tab contract for installment sorting, progress actions, and fallback/retry states (ADR 046)
+# 2026-05-11 | Phase 17.6 | Defined Media Detail Relations tab contract for relation labeling, fallback states, and related-title navigation (ADR 047)
+# 2026-05-11 | Phase 17 | Discover & Media Detail frontend architecture phase completed; advanced to Phase 18.1
+# 2026-05-11 | Phase 18.1 | Defined My List Watching/Reading tab contract for active-entry quick progress updates, fallback states, and retry behavior (ADR 048)
+# 2026-05-11 | Phase 18.2 | Defined My List Completed tab contract for score adjustments, rewatch/reread actions, and fallback/retry behavior (ADR 049)
+# 2026-05-11 | Phase 18.3 | Defined My List Paused tab contract for resume-focused actions, paused-context visibility, and retry behavior (ADR 050)
+# 2026-05-11 | Phase 18.4 | Defined My List Dropped tab contract for recovery transitions, dropped-context visibility, and retry behavior (ADR 051)
+# 2026-05-11 | Phase 18.5 | Defined My List Plan tab contract for backlog prioritization, active-state transitions, and retry behavior (ADR 052)
+# 2026-05-11 | Phase 18.6 | Defined My List Custom Lists tab contract for list CRUD, entry reorder persistence, and fallback/retry behavior (ADR 053)
+# 2026-05-11 | Phase 18.7 | Defined Airing Calendar page contract for timezone-safe schedule grouping, pagination, and navigation behavior (ADR 054)
+# 2026-05-11 | Phase 18 | Tracking frontend pages architecture phase completed; advanced to Phase 19.1
+# 2026-05-11 | Phase 19.1 | Defined Feed Group Activity tab contract for social event rendering, filtering, pagination, and route navigation behavior (ADR 055)
+# 2026-05-11 | Phase 19.2 | Defined Feed My Activity tab contract for personal event timelines, filtering, pagination, and navigation behavior (ADR 056)
+# 2026-05-11 | Phase 19.3 | Defined Recommendations Inbox tab contract for acknowledge actions, triage visibility, pagination, and navigation behavior (ADR 057)
+# 2026-05-11 | Phase 19.4 | Defined Recommendations Sent tab contract for outbound-state visibility, filtering, pagination, and navigation behavior (ADR 058)
+# 2026-05-11 | Phase 19.5 | Defined Discussions Threads tab contract for spoiler-safe thread discovery, filtering, pagination, and navigation behavior (ADR 059)
+# 2026-05-11 | Phase 19.6 | Defined Discussions Thread Detail tab contract for replies, spoiler reveal controls, pagination, and navigation stability (ADR 060)
+# 2026-05-11 | Phase 19.7 | Defined Discussions Create tab contract for validated authoring, spoiler signaling, submit-lock, and success/error transitions (ADR 061)
+# 2026-05-11 | Phase 19.8 | Defined Social page test matrix contract for feed/recommendations/discussions state, interaction, and error coverage (ADR 062)
+# 2026-05-11 | Phase 19 | Social frontend pages architecture phase completed; advanced to Phase 20.1
 ```
 
 ---

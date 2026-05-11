@@ -1,5 +1,37 @@
 # OtakuHub — Complete Database Schema
 
+## Phase Notes
+- **2026-05-11 (Phase 15.1)**: No database schema changes required for frontend design tokens/theme semantics.
+- **2026-05-11 (Phase 15.2)**: No database schema changes required for typography/spacing scale standardization.
+- **2026-05-11 (Phase 15.3)**: No database schema changes required for shared UI primitive contracts.
+- **2026-05-11 (Phase 15.4)**: No database schema changes required for dashboard template/layout contracts.
+- **2026-05-11 (Phase 15.5)**: No database schema changes required for responsive behavior validation contracts.
+- **2026-05-11 (Phase 16.1)**: No database schema changes required for login hardening behavior contract.
+- **2026-05-11 (Phase 16.2)**: No database schema changes required for register hardening behavior contract.
+- **2026-05-11 (Phase 16.3)**: No database schema changes required for setup bootstrap hardening behavior contract.
+- **2026-05-11 (Phase 16.4)**: No database schema changes required for auth/setup test expansion contract.
+- **2026-05-11 (Phase 17.1)**: No database schema changes required for Discover search tab behavior contract.
+- **2026-05-11 (Phase 17.2)**: No database schema changes required for Discover trending tab behavior contract.
+- **2026-05-11 (Phase 17.3)**: No database schema changes required for Discover new releases tab behavior contract.
+- **2026-05-11 (Phase 17.4)**: No database schema changes required for Media Detail overview tab behavior contract.
+- **2026-05-11 (Phase 17.5)**: No database schema changes required for Media Detail episodes/chapters tab behavior contract.
+- **2026-05-11 (Phase 17.6)**: No database schema changes required for Media Detail relations tab behavior contract.
+- **2026-05-11 (Phase 18.1)**: No database schema changes required for My List watching/reading tab behavior contract.
+- **2026-05-11 (Phase 18.2)**: No database schema changes required for My List completed tab behavior contract.
+- **2026-05-11 (Phase 18.3)**: No database schema changes required for My List paused tab behavior contract.
+- **2026-05-11 (Phase 18.4)**: No database schema changes required for My List dropped tab behavior contract.
+- **2026-05-11 (Phase 18.5)**: No database schema changes required for My List plan-to-watch/read tab behavior contract.
+- **2026-05-11 (Phase 18.6)**: No database schema changes required for My List custom lists tab behavior contract.
+- **2026-05-11 (Phase 18.7)**: No database schema changes required for Airing Calendar page behavior contract.
+- **2026-05-11 (Phase 19.1)**: No database schema changes required for Feed group activity tab behavior contract.
+- **2026-05-11 (Phase 19.2)**: No database schema changes required for Feed my activity tab behavior contract.
+- **2026-05-11 (Phase 19.3)**: No database schema changes required for Recommendations inbox tab behavior contract.
+- **2026-05-11 (Phase 19.4)**: No database schema changes required for Recommendations sent tab behavior contract.
+- **2026-05-11 (Phase 19.5)**: No database schema changes required for Discussions threads tab behavior contract.
+- **2026-05-11 (Phase 19.6)**: No database schema changes required for Discussions thread detail tab behavior contract.
+- **2026-05-11 (Phase 19.7)**: No database schema changes required for Discussions create tab behavior contract.
+- **2026-05-11 (Phase 19.8)**: No database schema changes required for social page test coverage contract.
+
 ## PostgreSQL Extensions Required
 ```sql
 CREATE EXTENSION IF NOT EXISTS "pg_uuidv7";      -- UUID v7 generation

@@ -1,5 +1,37 @@
 # OtakuHub API Specification (OpenAPI‑style summary)
 
+## Phase Notes
+- **2026-05-11 (Phase 15.1)**: No API contract changes. Frontend design-token/theming work is internal UI architecture only.
+- **2026-05-11 (Phase 15.2)**: No API contract changes. Typography/spacing scale work is frontend presentation architecture only.
+- **2026-05-11 (Phase 15.3)**: No API contract changes. Shared UI primitive contracts are frontend component architecture only.
+- **2026-05-11 (Phase 15.4)**: No API contract changes. Dashboard template work is frontend layout architecture only.
+- **2026-05-11 (Phase 15.5)**: No API contract changes. Responsive validation work is frontend behavior architecture only.
+- **2026-05-11 (Phase 16.1)**: No new endpoints. Clarified frontend mapping expectations for `/api/v1/auth/login` error cases (401/429/5xx).
+- **2026-05-11 (Phase 16.2)**: No new endpoints. Clarified frontend mapping expectations for `/api/v1/auth/register` error cases (400/403/429/5xx).
+- **2026-05-11 (Phase 16.3)**: No new endpoints. Clarified frontend handling expectations for `/api/v1/setup/bootstrap-admin` error cases (409/429/5xx).
+- **2026-05-11 (Phase 16.4)**: No new endpoints. Established frontend auth/setup test matrix coverage expectations for existing auth/setup contracts.
+- **2026-05-11 (Phase 17.1)**: No new endpoints. Discover Search tab standardizes frontend use of existing `GET /api/v1/media/search` contract.
+- **2026-05-11 (Phase 17.2)**: No new endpoints. Discover Trending tab standardizes frontend behavior over existing trending/popular media contract(s).
+- **2026-05-11 (Phase 17.3)**: No new endpoints. Discover New Releases tab standardizes frontend behavior over existing recent-release media contract(s).
+- **2026-05-11 (Phase 17.4)**: No new endpoints. Media Detail Overview tab standardizes frontend behavior over existing `GET /api/v1/media/{id}` and list-action contracts.
+- **2026-05-11 (Phase 17.5)**: No new endpoints. Media Detail Episodes/Chapters tab standardizes frontend behavior over existing installment/list-update contracts.
+- **2026-05-11 (Phase 17.6)**: No new endpoints. Media Detail Relations tab standardizes frontend behavior over existing media-relation contracts.
+- **2026-05-11 (Phase 18.1)**: No new endpoints. My List Watching/Reading tab standardizes frontend behavior over existing authenticated list + patch-update contracts.
+- **2026-05-11 (Phase 18.2)**: No new endpoints. My List Completed tab standardizes frontend behavior over existing completed-list + patch-update contracts.
+- **2026-05-11 (Phase 18.3)**: No new endpoints. My List Paused tab standardizes frontend behavior over existing paused-list + patch-update contracts.
+- **2026-05-11 (Phase 18.4)**: No new endpoints. My List Dropped tab standardizes frontend behavior over existing dropped-list + patch-update contracts.
+- **2026-05-11 (Phase 18.5)**: No new endpoints. My List Plan tab standardizes frontend behavior over existing plan-list + patch-update contracts.
+- **2026-05-11 (Phase 18.6)**: No new endpoints. My List Custom Lists tab standardizes frontend behavior over existing custom-list CRUD and entry-ordering contracts.
+- **2026-05-11 (Phase 18.7)**: No new endpoints. Airing Calendar page standardizes frontend behavior over existing media airing contract(s).
+- **2026-05-11 (Phase 19.1)**: No new endpoints. Feed Group Activity tab standardizes frontend behavior over existing authenticated social feed contract(s).
+- **2026-05-11 (Phase 19.2)**: No new endpoints. Feed My Activity tab standardizes frontend behavior over existing authenticated activity feed contract(s).
+- **2026-05-11 (Phase 19.3)**: No new endpoints. Recommendations Inbox tab standardizes frontend behavior over existing recommendations inbox/acknowledge contracts.
+- **2026-05-11 (Phase 19.4)**: No new endpoints. Recommendations Sent tab standardizes frontend behavior over existing sender-scoped recommendations contracts.
+- **2026-05-11 (Phase 19.5)**: No new endpoints. Discussions Threads tab standardizes frontend behavior over existing discussions listing contracts.
+- **2026-05-11 (Phase 19.6)**: No new endpoints. Discussions Thread Detail tab standardizes frontend behavior over existing discussion detail/replies contracts.
+- **2026-05-11 (Phase 19.7)**: No new endpoints. Discussions Create tab standardizes frontend behavior over existing discussion-create contract(s).
+- **2026-05-11 (Phase 19.8)**: No new endpoints. Social page test expansion standardizes validation coverage for existing feed/recommendations/discussions contracts.
+
 ## Authentication Endpoints
 | Method | Path | Auth | Request Schema | Response Schema | Errors |
 |--------|------|------|----------------|----------------|--------|
