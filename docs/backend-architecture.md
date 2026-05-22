@@ -107,8 +107,9 @@ PostgreSQL
 ## Auth Flow
 ```
 POST /api/v1/auth/login
-  → verify password (bcrypt)
-  → issue access_token (15min JWT) + refresh_token (30d, stored hashed in DB)
+  → verify password (bcrypt via passlib)
+  → if stored hash is legacy SHA-256, rehash to bcrypt on successful login
+  → issue access_token (15min JWT) + refresh_token (30d, stored SHA-256 hash in DB)
   → Flutter stores both in flutter_secure_storage
 
 Request to protected endpoint:
@@ -119,14 +120,15 @@ Request to protected endpoint:
 Access token expires:
   → Flutter calls POST /api/v1/auth/refresh with refresh_token in body
   → Validate refresh_token hash against DB
-  → Issue new access_token + rotate refresh_token (old one revoked)
+  → Rotate: revoke current token and issue a new refresh token
+  → Replay protection: if a revoked refresh token is reused, revoke all active refresh tokens for that user
 ```
 
 ## Environment Variables (all required)
 ```env
 DATABASE_URL=postgresql+asyncpg://user:pass@db:5432/otakuhub
 REDIS_URL=redis://:password@redis:6379/0
-JWT_SECRET=<32+ random bytes>
+JWT_SECRET=<64+ random bytes; required, insecure defaults rejected>
 JWT_ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=15
 REFRESH_TOKEN_EXPIRE_DAYS=30
@@ -137,7 +139,7 @@ MANGADEX_USERNAME=<optional — for authenticated MangaDex calls>
 MANGADEX_PASSWORD=<optional>
 APPRISE_URLS=discord://...  # comma-separated Apprise notification URLs
 FRONTEND_URL=https://otakuhub.local
-ALLOWED_ORIGINS=https://otakuhub.local,http://localhost:8080
+CORS_ORIGINS=https://otakuhub.local,http://localhost:8080  # wildcard '*' rejected by settings validation
 ```
 
 ## Dependency Injection Pattern
@@ -200,3 +202,11 @@ uv run otakuhub celery weekly-refresh
 ```
 
 Design note: routers should enqueue sync jobs; workers own external API calls, retries, rate limits, and progress persistence in `sync_jobs`.
+
+## Security Hardening Notes (Phase 24)
+- `Settings` performs fail-fast validation for security-critical config:
+  - rejects insecure `JWT_SECRET` values (empty/test placeholders)
+  - rejects wildcard `CORS_ORIGINS=*`
+- Password policy is bcrypt/passlib for all new hashes.
+- Legacy SHA-256 password hashes are only accepted for verification and are upgraded to bcrypt on successful login.
+- Refresh-token replay protection revokes all active user refresh tokens when a revoked token is reused.

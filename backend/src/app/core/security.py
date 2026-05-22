@@ -7,20 +7,43 @@ from datetime import datetime, timedelta, timezone
 from typing import Union, Any
 
 from jose import jwt, JWTError
+from passlib.context import CryptContext
 
 from src.app.config import settings
 
+_pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+
+def _to_str_password(password: Union[str, bytes]) -> str:
+    if isinstance(password, bytes):
+        return password.decode("utf-8")
+    return password
+
+
+def _is_legacy_sha256_hash(hashed_password: str) -> bool:
+    return len(hashed_password) == 64 and all(c in "0123456789abcdef" for c in hashed_password)
+
+
+def _legacy_sha256_hash(password: Union[str, bytes]) -> str:
+    raw = password if isinstance(password, bytes) else password.encode("utf-8")
+    return hashlib.sha256(raw).hexdigest()
+
 
 def get_password_hash(password: Union[str, bytes]) -> str:
-    """Return deterministic SHA-256 hash (project currently uses this scheme)."""
-    if isinstance(password, str):
-        password = password.encode("utf-8")
-    return hashlib.sha256(password).hexdigest()
+    """Hash a password with bcrypt/passlib policy."""
+    return _pwd_context.hash(_to_str_password(password))
 
 
 def verify_password(plain_password: Union[str, bytes], hashed_password: str) -> bool:
-    """Verify plain password against stored hash."""
-    return get_password_hash(plain_password) == hashed_password
+    """Verify plain password against stored hash (bcrypt + legacy sha256 fallback)."""
+    if _is_legacy_sha256_hash(hashed_password):
+        return _legacy_sha256_hash(plain_password) == hashed_password
+    return _pwd_context.verify(_to_str_password(plain_password), hashed_password)
+
+
+def needs_password_rehash(hashed_password: str) -> bool:
+    """Whether stored hash should be upgraded to current password policy."""
+    return _is_legacy_sha256_hash(hashed_password) or _pwd_context.needs_update(hashed_password)
 
 
 def create_access_token(subject: str) -> str:

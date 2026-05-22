@@ -39,6 +39,9 @@ otakuhub/
 ```bash
 cd backend
 cp .env.example .env
+# set required security values in .env before startup:
+# - JWT_SECRET (strong random value, 64+ chars recommended)
+# - CORS_ORIGINS (explicit CSV; wildcard '*' is rejected)
 uv sync --extra dev
 uv run alembic upgrade head
 uv run otakuhub-dev
@@ -155,3 +158,7 @@ npx quasar build
 - AniList ID is the canonical external cross-reference key.
 - Frontend must not call AniList/MangaDex directly; all calls go through FastAPI.
 - User progress/tracking data is stored only in OtakuHub DB.
+- Auth hardening in current baseline:
+  - bcrypt/passlib password hashing with legacy SHA-256 verify-and-upgrade path
+  - refresh-token replay detection revokes all active user refresh tokens
+  - startup fails fast on insecure JWT secret or wildcard CORS

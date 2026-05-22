@@ -10,10 +10,10 @@
 ## Current State
 
 ```
-CURRENT_PHASE:     23
-CURRENT_SUB_PHASE: 23.10
+CURRENT_PHASE:     24
+CURRENT_SUB_PHASE: 24.6
 STATUS:            PHASE_COMPLETE
-LAST_UPDATED:      2026-05-22
+LAST_UPDATED:      2026-05-23
 BLOCKED_BY:        none
 NEXT_ACTION:       Await user direction for next phase planning
 ```
@@ -47,6 +47,7 @@ NEXT_ACTION:       Await user direction for next phase planning
 | 21 | Notifications Frontend Pages | ✅ Complete |
 | 22 | Profile Frontend Pages | ✅ Complete |
 | 23 | Polish, Testing & Deploy | ✅ Complete |
+| 24 | Security & Production Hardening Remediation | ✅ Complete |
 
 ---
 
@@ -378,6 +379,18 @@ NEXT_ACTION:       Await user direction for next phase planning
 | 23.9 | All ADRs written (docs/adr/) | ✅ | Audited ADR set; all phase-referenced ADRs (031-075 plus prior foundational ADRs) are present in docs/adr |
 | 23.10 | Type-checking cleanup (MyPy strictness and residual typing debt) | ✅ | Added mypy configuration baseline + package-root normalization; strict mypy now passes with documented module overrides |
 
+### Phase 24 — Security & Production Hardening Remediation
+**Goal**: Remediate critical security findings and close remaining production-risk gaps before next feature expansion.
+
+| Sub-phase | Task | Status | Notes |
+|-----------|------|--------|-------|
+| 24.1 | Replace insecure password hashing with bcrypt/passlib policy and migration-safe verification path | ✅ | Implemented bcrypt/passlib hashing with legacy SHA-256 verify fallback + login-time rehash upgrade path; added regression tests |
+| 24.2 | Remove insecure default secrets/config fallbacks (JWT secret, permissive CORS) | ✅ | Enforced explicit strong JWT secret and banned wildcard CORS fallback via settings validation; added regression tests and env-example updates |
+| 24.3 | Harden auth/session security controls (token rotation/expiry/revocation edge cases) | ✅ | Added refresh-token reuse detection and user-wide active-token revocation on replay attempts; extended auth unit coverage |
+| 24.4 | Add regression tests for security remediations (auth + config boundaries) | ✅ | Added consolidated security regression tests for config and refresh-reuse edge cases; expanded auth/config suite coverage |
+| 24.5 | Re-run security audit and publish follow-up report | ✅ | Published follow-up audit in docs/security-audit-2026-05-23-followup.md (criticals resolved; one high placeholder gap remains) |
+| 24.6 | Update docs (backend architecture, runbooks, env examples) to match remediated posture | ✅ | Updated backend architecture, root README, and backend .env example to document bcrypt migration, replay protection, and strict config validation |
+
 ---
 
 ## Completion Log
@@ -569,6 +582,12 @@ NEXT_ACTION:       Await user direction for next phase planning
 # 2026-05-22 | Phase 23.8 | Added root README.md with end-to-end setup instructions for backend, frontend, docker compose, TLS, and verification commands
 # 2026-05-22 | Phase 23.9 | Audited docs/adr and confirmed all phase-referenced ADRs are present
 # 2026-05-22 | Phase 23.10 | Added backend mypy configuration cleanup and achieved passing strict mypy run (uv run mypy)
+# 2026-05-23 | Phase 24.1 | Replaced SHA-256 password hashing with bcrypt/passlib policy and added migration-safe legacy verification + login rehash tests
+# 2026-05-23 | Phase 24.2 | Removed insecure config fallbacks by enforcing explicit JWT secret and non-wildcard CORS origins with tests
+# 2026-05-23 | Phase 24.3 | Hardened refresh/session controls with token-reuse detection and active-session revocation tests
+# 2026-05-23 | Phase 24.4 | Added security regression tests for JWT/CORS config guards and refresh-token replay edge cases
+# 2026-05-23 | Phase 24.5 | Re-ran security audit and published follow-up report documenting resolved criticals and remaining high-risk placeholder
+# 2026-05-23 | Phase 24.6 | Updated architecture/runbook/env docs to reflect security hardening baseline and fail-fast config rules
 ```
 
 ---

@@ -1,5 +1,9 @@
 import sys
 import os
+
+os.environ.setdefault("JWT_SECRET", "test-suite-jwt-secret-value-change-me")
+os.environ.setdefault("CORS_ORIGINS", "http://localhost:8080")
+
 import pytest
 from httpx import AsyncClient
 from src.app.main import app

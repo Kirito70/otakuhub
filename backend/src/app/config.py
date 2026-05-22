@@ -1,8 +1,10 @@
 """Application configuration."""
 
+from typing import List
+
+from pydantic import model_validator
 from pydantic_settings import BaseSettings
 from pydantic_settings import SettingsConfigDict
-from typing import List
 
 
 class Settings(BaseSettings):
@@ -26,11 +28,11 @@ class Settings(BaseSettings):
     db_max_overflow: int = 30
 
     # CORS
-    cors_origins: str = "*"
+    cors_origins: str = "http://localhost:8080"
     cors_allow_credentials: bool = True
 
     # JWT
-    jwt_secret: str = "test-secret"
+    jwt_secret: str = ""
     jwt_algorithm: str = "HS256"
     access_token_expire_minutes: int = 15
     refresh_token_expire_days: int = 30
@@ -55,6 +57,17 @@ class Settings(BaseSettings):
     @property
     def cors_origins_list(self) -> List[str]:
         return [item.strip() for item in self.cors_origins.split(",") if item.strip()]
+
+    @model_validator(mode="after")
+    def validate_security_defaults(self) -> "Settings":
+        insecure_secrets = {"", "test-secret", "changeme", "dev-secret"}
+        if self.jwt_secret.strip() in insecure_secrets:
+            raise ValueError("JWT_SECRET must be explicitly set to a strong secret")
+
+        if self.cors_origins.strip() == "*":
+            raise ValueError("CORS_ORIGINS wildcard '*' is not allowed; set explicit origins")
+
+        return self
 
 # Create settings instance
 settings = Settings()

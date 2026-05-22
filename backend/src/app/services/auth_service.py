@@ -12,7 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
 from src.app.config import settings
-from src.app.core.security import create_access_token, get_password_hash, verify_password
+from src.app.core.security import create_access_token, get_password_hash, needs_password_rehash, verify_password
 from src.app.models.refresh_token import RefreshToken
 from src.app.models.user import User
 from src.app.schemas.auth import LoginRequest, RefreshRequest, RegisterRequest, TokenResponse
@@ -20,6 +20,15 @@ from src.app.schemas.auth import LoginRequest, RefreshRequest, RegisterRequest, 
 
 class AuthService:
     """Auth business logic: register, login, refresh, logout."""
+
+    async def _revoke_all_active_refresh_tokens(self, db: AsyncSession, user_id) -> None:
+        stmt = select(RefreshToken).where(RefreshToken.user_id == user_id, RefreshToken.revoked_at.is_(None))
+        rows = (await db.execute(stmt)).scalars().all()
+        if not rows:
+            return
+        now = datetime.utcnow()
+        for token_row in rows:
+            token_row.revoked_at = now
 
     async def is_setup_required(self, db: AsyncSession) -> bool:
         """Returns True when there are no active users yet."""
@@ -99,6 +108,9 @@ class AuthService:
         if not user or not verify_password(payload.password, user.password_hash):
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
 
+        if needs_password_rehash(user.password_hash):
+            user.password_hash = get_password_hash(payload.password)
+
         access_token = create_access_token(str(user.id))
         refresh_token = token_urlsafe(48)
         refresh_hash = sha256(refresh_token.encode("utf-8")).hexdigest()
@@ -122,7 +134,15 @@ class AuthService:
         stmt = select(RefreshToken).where(RefreshToken.token_hash == token_hash)
         row = (await db.execute(stmt)).scalar_one_or_none()
 
-        if not row or row.revoked_at is not None or row.expires_at < datetime.utcnow():
+        if not row:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired refresh token")
+
+        if row.revoked_at is not None:
+            await self._revoke_all_active_refresh_tokens(db, row.user_id)
+            await db.commit()
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Refresh token reuse detected")
+
+        if row.expires_at < datetime.utcnow():
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired refresh token")
 
         row.revoked_at = datetime.utcnow()
