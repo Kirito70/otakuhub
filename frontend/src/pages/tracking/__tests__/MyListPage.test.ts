@@ -5,6 +5,7 @@ import MyListPage from '../MyListPage.vue'
 
 vi.mock('vue-router', () => ({
   useRouter: () => ({ push: vi.fn().mockResolvedValue(undefined) }),
+  useRoute: () => ({ query: {} }),
 }))
 
 vi.mock('src/stores/tracking', () => ({
@@ -29,6 +30,7 @@ describe('MyListPage', () => {
           'q-banner': true,
           'q-tabs': true,
           'q-tab': true,
+          'q-route-tab': true,
           'q-separator': true,
           'q-spinner': true,
           'q-list': true,

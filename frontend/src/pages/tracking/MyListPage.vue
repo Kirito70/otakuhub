@@ -4,8 +4,15 @@
 
     <q-banner v-if="error" class="bg-red-1 text-red-9 q-mb-md" rounded>{{ error }}</q-banner>
 
-    <q-tabs v-model="activeStatus" align="left" dense active-color="primary" indicator-color="primary" class="text-capitalize">
-      <q-tab v-for="status in statuses" :key="status" :name="status" :label="statusLabel(status)" />
+    <q-tabs :model-value="activeStatus" align="left" dense active-color="primary" indicator-color="primary" class="text-capitalize">
+      <q-route-tab
+        v-for="status in statuses"
+        :key="status"
+        :name="status"
+        :label="statusLabel(status)"
+        :to="{ name: 'my-list', query: { ...route.query, status } }"
+        exact
+      />
     </q-tabs>
 
     <q-separator class="q-my-sm" />
@@ -90,13 +97,14 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
 import ProgressWidget from 'src/components/tracking/ProgressWidget.vue'
 import ScoreWidget from 'src/components/tracking/ScoreWidget.vue'
 import { useTrackingStore } from 'src/stores/tracking'
 import type { WatchStatus } from 'src/types/tracking'
 
+const route = useRoute()
 const router = useRouter()
 
 const trackingStore = useTrackingStore()
@@ -112,7 +120,17 @@ const statuses: WatchStatus[] = [
   'rereading',
 ]
 
-const activeStatus = ref<WatchStatus>('watching')
+const defaultStatus: WatchStatus = 'watching'
+
+const activeStatus = computed<WatchStatus>(() => {
+  const raw = route.query.status
+  const status = Array.isArray(raw) ? raw[0] : raw
+  if (typeof status === 'string' && statuses.includes(status as WatchStatus)) {
+    return status as WatchStatus
+  }
+
+  return defaultStatus
+})
 const customListName = ref('')
 const customListDescription = ref('')
 const isCreatingCustomList = ref(false)

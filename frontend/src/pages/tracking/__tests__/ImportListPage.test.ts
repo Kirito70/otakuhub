@@ -3,6 +3,10 @@ import { describe, expect, it, vi } from 'vitest'
 
 import ImportListPage from '../ImportListPage.vue'
 
+vi.mock('vue-router', () => ({
+  useRoute: () => ({ query: {} }),
+}))
+
 vi.mock('src/boot/axios', () => ({
   api: {
     post: vi.fn().mockResolvedValue({ data: { job_id: 'job-123' } }),
@@ -19,6 +23,7 @@ describe('ImportListPage', () => {
           'q-card-section': true,
           'q-tabs': true,
           'q-tab': true,
+          'q-route-tab': true,
           'q-separator': true,
           'q-input': true,
           'q-toggle': true,

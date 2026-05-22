@@ -23,7 +23,14 @@
       :width="240"
     >
       <q-list padding>
-        <q-item v-for="item in navItems" :key="item.name" clickable v-ripple @click="go(item.name)">
+        <q-item
+          v-for="item in navItems"
+          :key="item.name"
+          :data-testid="`nav-${item.name}`"
+          clickable
+          v-ripple
+          @click="go(item.name)"
+        >
           <q-item-section avatar>
             <q-icon :name="item.icon" />
           </q-item-section>
@@ -38,7 +45,15 @@
 
     <q-footer v-if="$q.screen.lt.md" bordered>
       <q-tabs :model-value="activeTab" align="justify" indicator-color="primary">
-        <q-tab v-for="item in mobileTabs" :key="item.name" :name="item.name" :icon="item.icon" :label="item.label" @click="go(item.name)" />
+        <q-route-tab
+          v-for="item in mobileTabs"
+          :key="item.name"
+          :name="item.name"
+          :icon="item.icon"
+          :label="item.label"
+          :to="{ name: item.name }"
+          exact
+        />
       </q-tabs>
     </q-footer>
   </q-layout>
@@ -109,6 +124,10 @@ const activeTab = computed<RouteName>(() => {
 
 function go(name: RouteName): void {
   router.push({ name }).catch(() => undefined)
-  leftDrawerOpen.value = false
+
+  // Keep drawer open on desktop; close after navigation on mobile.
+  if ($q.screen.lt.md) {
+    leftDrawerOpen.value = false
+  }
 }
 </script>

@@ -5,9 +5,9 @@
 
     <q-card bordered flat>
       <q-card-section>
-        <q-tabs v-model="provider" dense align="left" active-color="primary" indicator-color="primary">
-          <q-tab name="anilist" label="AniList" />
-          <q-tab name="mal" label="MyAnimeList" />
+        <q-tabs :model-value="provider" dense align="left" active-color="primary" indicator-color="primary">
+          <q-route-tab name="anilist" label="AniList" :to="{ name: 'import-list', query: { ...route.query, provider: 'anilist' } }" exact />
+          <q-route-tab name="mal" label="MyAnimeList" :to="{ name: 'import-list', query: { ...route.query, provider: 'mal' } }" exact />
         </q-tabs>
       </q-card-section>
 
@@ -29,13 +29,25 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
+import { useRoute } from 'vue-router'
 
 import { api } from 'src/boot/axios'
 
 type Provider = 'anilist' | 'mal'
 
-const provider = ref<Provider>('anilist')
+const route = useRoute()
+const defaultProvider: Provider = 'anilist'
+
+const provider = computed<Provider>(() => {
+  const raw = route.query.provider
+  const value = Array.isArray(raw) ? raw[0] : raw
+  if (value === 'anilist' || value === 'mal') {
+    return value
+  }
+
+  return defaultProvider
+})
 const username = ref('')
 const overwriteExisting = ref(false)
 const isLoading = ref(false)

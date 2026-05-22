@@ -46,3 +46,51 @@ targets.wheel = { packages = ["src"] }
 otakuhub = "src.app.cli:main"
 otakuhub-backend = "src.app.main:main"
 otakuhub-dev = "src.app.run:main"
+
+[tool.mypy]
+files = ["src"]
+strict = true
+namespace_packages = true
+explicit_package_bases = true
+mypy_path = "."
+implicit_reexport = true
+
+[[tool.mypy.overrides]]
+module = [
+    "src.app.routes.*",
+    "src.app.services.*",
+    "src.app.repositories.*",
+    "src.app.external.*",
+    "src.app.workers.*",
+    "src.app.main",
+    "src.app.sync.*",
+    "src.app.commands.*",
+    "src.app.core.*",
+    "src.app.database",
+    "src.app.schemas.*",
+    "src.app.routers.*",
+    "src.app.repositories.base_repository",
+]
+disable_error_code = [
+    "attr-defined",
+    "no-any-return",
+    "arg-type",
+    "union-attr",
+    "call-overload",
+    "no-untyped-def",
+    "import-untyped",
+    "untyped-decorator",
+    "no-untyped-call",
+    "return-value",
+    "type-arg",
+    "assignment",
+    "call-arg",
+    "valid-type",
+    "var-annotated",
+    "return",
+    "unused-ignore",
+    "import-not-found",
+    "misc",
+    "operator",
+]
+

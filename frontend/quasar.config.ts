@@ -1,6 +1,8 @@
 import { configure } from 'quasar/wrappers'
 
-export default configure(() => {
+export default configure((ctx) => {
+  const isWebLikeTarget = !(ctx.mode.electron || ctx.mode.capacitor)
+
   return {
     css: ['app.scss'],
     boot: ['axios', 'theme'],
@@ -10,7 +12,9 @@ export default configure(() => {
         browser: ['esnext'],
         node: 'node20',
       },
-      vueRouterMode: 'hash',
+      // Use history mode for web targets, hash mode for file-based shells
+      // (Electron/Capacitor) to avoid blank-page deep-link issues.
+      vueRouterMode: isWebLikeTarget ? 'history' : 'hash',
     },
     framework: {
       plugins: ['Notify', 'Dialog', 'Loading', 'Dark'],
@@ -21,6 +25,11 @@ export default configure(() => {
     },
     electron: {
       bundler: 'builder',
+      builder: {
+        linux: {
+          icon: 'src-electron/icons/icon.png',
+        },
+      },
     },
   }
 })

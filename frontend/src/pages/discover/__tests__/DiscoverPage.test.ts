@@ -44,7 +44,10 @@ describe('DiscoverPage', () => {
           'q-card': true,
           'q-img': true,
           'q-card-section': true,
-          'app-page-state': { template: '<div><slot /></div>' },
+          'app-page-state': {
+            props: ['isEmpty', 'emptyLabel'],
+            template: '<div><div v-if="isEmpty">{{ emptyLabel }}</div><slot /></div>',
+          },
         },
       },
     })
