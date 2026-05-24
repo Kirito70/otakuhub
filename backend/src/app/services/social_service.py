@@ -9,7 +9,8 @@ from uuid import UUID
 
 from src.app.models import (
     Recommendation, Discussion, DiscussionReply,
-    Notification, NotificationPreference, ListEntryHistory, GroupMember, User
+    Notification, NotificationPreference, ListEntryHistory, GroupMember, User,
+    WatchParty, MediaEntry,
 )
 from src.app.services.base_service import BaseService
 
@@ -479,16 +480,39 @@ class SocialService(BaseService):
     # Watch Parties
 
     async def get_user_watch_parties(self, user_id: UUID, limit: int = 20) -> List[Dict[str, Any]]:
-        """Get user's upcoming watch parties."""
-        # This is a simplified version - in practice you'd want more details
-        statement = select(
-            "host_user_id", "media_id", "group_id", "title",
-            "scheduled_at", "status", "stream_url"
-        ).where(
-            and_(
-                NotificationPreference.user_id == user_id  # This is just an example path
+        """Get user's upcoming watch parties visible through shared group membership."""
+        member_group_ids_stmt = select(GroupMember.group_id).where(GroupMember.user_id == user_id)
+
+        statement = (
+            select(WatchParty, MediaEntry.title_romaji, MediaEntry.title_english)
+            .join(MediaEntry, MediaEntry.id == WatchParty.media_id)
+            .where(
+                WatchParty.group_id.in_(member_group_ids_stmt),
+                WatchParty.deleted_at.is_(None),
+                WatchParty.scheduled_at >= datetime.utcnow(),
             )
+            .order_by(WatchParty.scheduled_at.asc())
+            .limit(limit)
         )
 
-        # This needs to be implemented based on your actual database relationships
-        return []
+        result = await self.db_session.exec(statement)
+        rows = result.all()
+
+        parties: List[Dict[str, Any]] = []
+        for party, title_romaji, title_english in rows:
+            parties.append(
+                {
+                    "id": str(party.id),
+                    "host_user_id": str(party.host_user_id),
+                    "media_id": str(party.media_id),
+                    "group_id": str(party.group_id),
+                    "title": party.title,
+                    "media_title": title_english or title_romaji,
+                    "scheduled_at": party.scheduled_at,
+                    "status": str(party.status),
+                    "stream_url": party.stream_url,
+                    "sync_url": party.sync_url,
+                }
+            )
+
+        return parties
