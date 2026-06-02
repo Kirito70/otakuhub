@@ -21,10 +21,11 @@
       :mini="$q.screen.md"
       bordered
       :width="240"
+      class="overflow-hidden"
     >
-      <div class="column full-height">
+      <div class="column full-height overflow-hidden">
         <!-- Navigation items -->
-        <q-list padding class="col">
+        <q-list padding class="col overflow-auto">
           <q-item
             v-for="item in navItems"
             :key="item.name"
@@ -42,8 +43,8 @@
 
         <!-- User section at bottom -->
         <q-separator />
-        <q-list v-if="auth.isAuthenticated" padding>
-          <q-item clickable v-ripple @click="userMenuShown = !userMenuShown">
+        <q-list v-if="auth.isAuthenticated" padding class="overflow-hidden">
+          <q-item clickable v-ripple>
             <q-item-section avatar>
               <q-avatar
                 v-if="auth.user?.avatar_url"
@@ -57,11 +58,35 @@
             </q-item-section>
             <q-item-section>
               <q-item-label>{{ auth.displayName }}</q-item-label>
-              <q-item-label caption>{{ auth.user?.email }}</q-item-label>
             </q-item-section>
             <q-item-section side>
               <q-icon name="arrow_drop_down" />
             </q-item-section>
+
+            <!-- Dropdown menu anchored to this q-item -->
+            <q-menu anchor="top end" self="top start" :offset="[8, 0]">
+              <q-list style="min-width: 200px">
+                <q-item clickable v-close-popup @click="go('profile')" data-testid="menu-profile">
+                  <q-item-section avatar>
+                    <q-icon name="person" />
+                  </q-item-section>
+                  <q-item-section>Profile</q-item-section>
+                </q-item>
+                <q-item clickable v-close-popup @click="userDetailsDialog = true" data-testid="menu-details">
+                  <q-item-section avatar>
+                    <q-icon name="info" />
+                  </q-item-section>
+                  <q-item-section>Account Details</q-item-section>
+                </q-item>
+                <q-separator />
+                <q-item clickable v-close-popup @click="onLogout" data-testid="menu-logout">
+                  <q-item-section avatar>
+                    <q-icon name="logout" />
+                  </q-item-section>
+                  <q-item-section>Logout</q-item-section>
+                </q-item>
+              </q-list>
+            </q-menu>
           </q-item>
         </q-list>
         <q-list v-else padding>
@@ -73,31 +98,58 @@
           </q-item>
         </q-list>
       </div>
-
-      <!-- User dropdown menu -->
-      <q-menu
-        v-model="userMenuShown"
-        anchor="top left"
-        self="bottom left"
-        :offset="[12, 0]"
-      >
-        <q-list style="min-width: 200px">
-          <q-item clickable v-close-popup @click="go('profile')" data-testid="menu-profile">
-            <q-item-section avatar>
-              <q-icon name="person" />
-            </q-item-section>
-            <q-item-section>Profile</q-item-section>
-          </q-item>
-          <q-separator />
-          <q-item clickable v-close-popup @click="onLogout" data-testid="menu-logout">
-            <q-item-section avatar>
-              <q-icon name="logout" />
-            </q-item-section>
-            <q-item-section>Logout</q-item-section>
-          </q-item>
-        </q-list>
-      </q-menu>
     </q-drawer>
+
+    <!-- Account Details dialog -->
+    <q-dialog v-model="userDetailsDialog">
+      <q-card style="min-width: 340px; max-width: 420px">
+        <q-card-section class="text-center">
+          <q-avatar
+            v-if="auth.user?.avatar_url"
+            size="64px"
+            class="q-mb-sm"
+          >
+            <img :src="auth.user.avatar_url" alt="avatar" />
+          </q-avatar>
+          <q-avatar v-else color="primary" size="64px" text-color="white" class="q-mb-sm">
+            {{ auth.avatarInitial }}
+          </q-avatar>
+          <div class="text-h6">{{ auth.displayName }}</div>
+          <div class="text-caption text-grey-7">@{{ auth.user?.username }}</div>
+        </q-card-section>
+        <q-card-section class="q-pt-none">
+          <q-list dense>
+            <q-item>
+              <q-item-section>
+                <q-item-label caption>Email</q-item-label>
+                <q-item-label>{{ auth.user?.email }}</q-item-label>
+              </q-item-section>
+            </q-item>
+            <q-item v-if="auth.user?.bio">
+              <q-item-section>
+                <q-item-label caption>Bio</q-item-label>
+                <q-item-label>{{ auth.user.bio }}</q-item-label>
+              </q-item-section>
+            </q-item>
+            <q-item>
+              <q-item-section>
+                <q-item-label caption>Timezone</q-item-label>
+                <q-item-label>{{ auth.user?.timezone ?? 'UTC' }}</q-item-label>
+              </q-item-section>
+            </q-item>
+            <q-item>
+              <q-item-section>
+                <q-item-label caption>Member since</q-item-label>
+                <q-item-label>{{ memberSince }}</q-item-label>
+              </q-item-section>
+            </q-item>
+          </q-list>
+        </q-card-section>
+        <q-card-actions align="right">
+          <q-btn flat label="Close" color="primary" v-close-popup />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
 
     <q-page-container>
       <router-view />
@@ -150,8 +202,20 @@ const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
 const leftDrawerOpen = ref(false)
-const userMenuShown = ref(false)
+const userDetailsDialog = ref(false)
 const { isDark, toggleDarkMode } = useTheme()
+
+function formatDate(iso: string | undefined): string {
+  if (!iso) return 'Unknown'
+  try {
+    const d = new Date(iso)
+    return d.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
+  } catch {
+    return 'Unknown'
+  }
+}
+
+const memberSince = computed(() => formatDate(auth.user?.created_at))
 
 const navItems: NavItem[] = [
   { name: 'discover', label: 'Discover', icon: 'search' },
@@ -209,7 +273,6 @@ function go(name: NavRouteName): void {
 
 async function onLogout(): Promise<void> {
   await auth.logout()
-  userMenuShown.value = false
   router.push({ name: 'login' }).catch(() => undefined)
 }
 </script>
