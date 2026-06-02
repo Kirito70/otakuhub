@@ -2,6 +2,7 @@
 
 from fastapi import APIRouter, Depends
 from sqlmodel.ext.asyncio.session import AsyncSession
+from typing import Annotated
 
 from src.app.database import get_db_session
 from src.app.schemas.auth import LoginRequest, RefreshRequest, RegisterRequest, TokenResponse, LogoutResponse
@@ -11,6 +12,14 @@ from src.app.core.auth import get_current_user
 from src.app.models.user import User
 
 router = APIRouter(prefix="/auth", tags=["auth"])
+
+
+@router.get("/me", response_model=UserProfile)
+async def get_current_user_profile(
+    current_user: Annotated[User, Depends(get_current_user)],
+):
+    """Return the authenticated user's profile."""
+    return UserProfile.model_validate(current_user)
 
 
 @router.post("/register", response_model=UserProfile, status_code=201)

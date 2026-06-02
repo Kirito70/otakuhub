@@ -17,5 +17,6 @@ export default boot(async ({ store }) => {
   const bootstrap = useBootstrapStore(store)
 
   await auth.hydrateFromStorage()
+  await auth.fetchProfile()
   await bootstrap.hydrate()
 })

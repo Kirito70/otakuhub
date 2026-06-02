@@ -22,21 +22,81 @@
       bordered
       :width="240"
     >
-      <q-list padding>
-        <q-item
-          v-for="item in navItems"
-          :key="item.name"
-          :data-testid="`nav-${item.name}`"
-          clickable
-          v-ripple
-          @click="go(item.name)"
-        >
-          <q-item-section avatar>
-            <q-icon :name="item.icon" />
-          </q-item-section>
-          <q-item-section>{{ item.label }}</q-item-section>
-        </q-item>
-      </q-list>
+      <div class="column full-height">
+        <!-- Navigation items -->
+        <q-list padding class="col">
+          <q-item
+            v-for="item in navItems"
+            :key="item.name"
+            :data-testid="`nav-${item.name}`"
+            clickable
+            v-ripple
+            @click="go(item.name)"
+          >
+            <q-item-section avatar>
+              <q-icon :name="item.icon" />
+            </q-item-section>
+            <q-item-section>{{ item.label }}</q-item-section>
+          </q-item>
+        </q-list>
+
+        <!-- User section at bottom -->
+        <q-separator />
+        <q-list v-if="auth.isAuthenticated" padding>
+          <q-item clickable v-ripple @click="userMenuShown = !userMenuShown">
+            <q-item-section avatar>
+              <q-avatar
+                v-if="auth.user?.avatar_url"
+                size="32px"
+              >
+                <img :src="auth.user.avatar_url" alt="avatar" />
+              </q-avatar>
+              <q-avatar v-else color="primary" size="32px" text-color="white">
+                {{ auth.avatarInitial }}
+              </q-avatar>
+            </q-item-section>
+            <q-item-section>
+              <q-item-label>{{ auth.displayName }}</q-item-label>
+              <q-item-label caption>{{ auth.user?.email }}</q-item-label>
+            </q-item-section>
+            <q-item-section side>
+              <q-icon name="arrow_drop_down" />
+            </q-item-section>
+          </q-item>
+        </q-list>
+        <q-list v-else padding>
+          <q-item clickable v-ripple @click="go('login')" data-testid="nav-login">
+            <q-item-section avatar>
+              <q-icon name="login" />
+            </q-item-section>
+            <q-item-section>Log In</q-item-section>
+          </q-item>
+        </q-list>
+      </div>
+
+      <!-- User dropdown menu -->
+      <q-menu
+        v-model="userMenuShown"
+        anchor="top left"
+        self="bottom left"
+        :offset="[12, 0]"
+      >
+        <q-list style="min-width: 200px">
+          <q-item clickable v-close-popup @click="go('profile')" data-testid="menu-profile">
+            <q-item-section avatar>
+              <q-icon name="person" />
+            </q-item-section>
+            <q-item-section>Profile</q-item-section>
+          </q-item>
+          <q-separator />
+          <q-item clickable v-close-popup @click="onLogout" data-testid="menu-logout">
+            <q-item-section avatar>
+              <q-icon name="logout" />
+            </q-item-section>
+            <q-item-section>Logout</q-item-section>
+          </q-item>
+        </q-list>
+      </q-menu>
     </q-drawer>
 
     <q-page-container>
@@ -51,7 +111,7 @@
           :name="item.name"
           :icon="item.icon"
           :label="item.label"
-          :to="{ name: item.name }"
+          :to="tabRoute(item)"
           exact
         />
       </q-tabs>
@@ -63,32 +123,39 @@
 import { computed, ref, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { useRoute, useRouter } from 'vue-router'
+import type { RouteLocationRaw } from 'vue-router'
 
 import { useTheme } from 'src/composables/useTheme'
+import { useAuthStore } from 'src/stores/auth'
 
-type RouteName =
+type NavRouteName =
   | 'discover'
-  | 'my-list'
+  | 'my-list-status'
   | 'feed'
   | 'notifications'
   | 'watchparty'
   | 'profile'
+  | 'login'
 
 interface NavItem {
-  name: RouteName
+  name: NavRouteName
   label: string
   icon: string
+  /** Override route location for items that need params. */
+  route?: RouteLocationRaw
 }
 
 const $q = useQuasar()
 const route = useRoute()
 const router = useRouter()
+const auth = useAuthStore()
 const leftDrawerOpen = ref(false)
+const userMenuShown = ref(false)
 const { isDark, toggleDarkMode } = useTheme()
 
 const navItems: NavItem[] = [
   { name: 'discover', label: 'Discover', icon: 'search' },
-  { name: 'my-list', label: 'My List', icon: 'list' },
+  { name: 'my-list-status', label: 'My List', icon: 'list', route: { name: 'my-list-status', params: { status: 'watching' } } },
   { name: 'feed', label: 'Feed', icon: 'groups' },
   { name: 'watchparty', label: 'Watch Party', icon: 'live_tv' },
   { name: 'notifications', label: 'Notifications', icon: 'notifications' },
@@ -97,7 +164,7 @@ const navItems: NavItem[] = [
 
 const mobileTabs: NavItem[] = [
   { name: 'discover', label: 'Discover', icon: 'search' },
-  { name: 'my-list', label: 'My List', icon: 'list' },
+  { name: 'my-list-status', label: 'My List', icon: 'list', route: { name: 'my-list-status', params: { status: 'watching' } } },
   { name: 'feed', label: 'Feed', icon: 'groups' },
   { name: 'notifications', label: 'Alerts', icon: 'notifications' },
 ]
@@ -110,10 +177,12 @@ watch(
   { immediate: true },
 )
 
-const activeTab = computed<RouteName>(() => {
+const activeTab = computed<string>(() => {
   const name = route.name
   if (typeof name === 'string') {
-    const matched = mobileTabs.find((tab) => tab.name === name)
+    const matched = mobileTabs.find(
+      (tab) => name === tab.name || (tab.name === 'my-list-status' && name === 'my-list-status'),
+    )
     if (matched) {
       return matched.name
     }
@@ -122,12 +191,25 @@ const activeTab = computed<RouteName>(() => {
   return 'discover'
 })
 
-function go(name: RouteName): void {
-  router.push({ name }).catch(() => undefined)
+function tabRoute(item: NavItem): RouteLocationRaw {
+  return item.route ?? { name: item.name }
+}
 
-  // Keep drawer open on desktop; close after navigation on mobile.
+function go(name: NavRouteName): void {
+  if (name === 'my-list-status') {
+    router.push({ name: 'my-list-status', params: { status: 'watching' } }).catch(() => undefined)
+  } else {
+    router.push({ name }).catch(() => undefined)
+  }
+
   if ($q.screen.lt.md) {
     leftDrawerOpen.value = false
   }
+}
+
+async function onLogout(): Promise<void> {
+  await auth.logout()
+  userMenuShown.value = false
+  router.push({ name: 'login' }).catch(() => undefined)
 }
 </script>
