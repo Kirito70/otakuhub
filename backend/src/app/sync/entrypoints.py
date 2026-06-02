@@ -11,6 +11,7 @@ async def run_seed_source(
     limit: int | None = None,
     dry_run: bool = False,
     only_unsynced: bool = False,
+    user_id: str | None = None,
 ) -> dict[str, object]:
     async with AsyncSessionLocal() as session:
         orchestrator = build_seed_orchestrator(session)
@@ -20,6 +21,7 @@ async def run_seed_source(
             limit=limit,
             dry_run=dry_run,
             only_unsynced=only_unsynced,
+            user_id=user_id,
         )
 
 
@@ -29,6 +31,7 @@ async def run_seed_all(
     resume_job_id: str | None = None,
     batch_size: int = 50,
     limit: int = 100,
+    user_id: str | None = None,
 ) -> dict[str, object]:
     async with AsyncSessionLocal() as session:
         orchestrator = build_seed_orchestrator(session)
@@ -37,4 +40,5 @@ async def run_seed_all(
             resume_job_id=resume_job_id,
             batch_size=batch_size,
             limit=limit,
+            user_id=user_id,
         )

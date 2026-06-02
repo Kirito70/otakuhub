@@ -43,12 +43,16 @@ export const useTrackingStore = defineStore('tracking', () => {
     return grouped
   })
 
-  async function fetchMyList(): Promise<void> {
+  async function fetchMyList(status?: WatchStatus): Promise<void> {
     isLoading.value = true
     error.value = null
 
     try {
-      const response = await api.get<UserListResponse>('/api/v1/lists/me')
+      const params: Record<string, string> = {}
+      if (status) {
+        params.status = status
+      }
+      const response = await api.get<UserListResponse>('/api/v1/lists/me', { params })
       entries.value = response.data.items ?? []
     } catch {
       error.value = 'Failed to load your list.'

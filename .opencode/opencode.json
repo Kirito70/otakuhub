@@ -5,14 +5,20 @@
       "npm": "@ai-sdk/openai-compatible",
       "name": "Ollama (local)",
       "options": {
-        "baseURL": "http://192.168.1.5:11434/v1"
+        "baseURL": "http://172.28.16.1:11434/v1"
       },
       "models": {
-        "qwen3-coder:latest": {
+        "qwen3-coder:30b": {
           "name": "Qwen 3 Coder 30B"
         },
+        "qwen3-coder:latest": {
+          "name": "Qwen 3 Coder Latest"
+        },
         "gemma4:latest": {
-          "name": "Gemma 4 16B"
+          "name": "Gemma 4 e4B (Latest)"
+        },
+        "gemma4:31b": {
+          "name": "Gemma 4 31b"
         },
         "llama3.1:8b": {
           "name": "LLaMA 3.1 8B"

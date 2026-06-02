@@ -28,7 +28,7 @@ class SyncJobRunner:
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    async def start_job(self, *, source: str, total_items: int | None = None) -> str:
+    async def start_job(self, *, source: str, total_items: int | None = None, user_id: str | None = None) -> str:
         job_type_map = {
             "all": "seed",
             "anime-offline": "seed",
@@ -37,7 +37,12 @@ class SyncJobRunner:
             "jikan": "weekly_refresh",
         }
         job_type = job_type_map.get(source, "seed")
-        job = SyncJob(job_type=job_type, status="running", total_items=total_items)
+        job = SyncJob(
+            job_type=job_type,
+            status="running",
+            total_items=total_items,
+            user_id=user_id,
+        )
         self.db.add(job)
         await self.db.commit()
         await self.db.refresh(job)

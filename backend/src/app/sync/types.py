@@ -15,6 +15,7 @@ class SeedExecutionContext:
     limit: int | None = None
     batch_size: int | None = None
     only_unsynced: bool = False
+    user_id: str | None = None
 
 
 @dataclass(slots=True)

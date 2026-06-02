@@ -15,8 +15,13 @@ class SeedOrchestrator:
         self.adapters = adapters
 
     async def run_source(self, *, source: str, **kwargs: object) -> dict[str, object]:
+        user_id = kwargs.get("user_id")
         adapter = self.adapters[source]
-        job_id = await self.job_runner.start_job(source=source, total_items=kwargs.get("limit"))
+        job_id = await self.job_runner.start_job(
+            source=source,
+            total_items=kwargs.get("limit"),
+            user_id=user_id,
+        )
         context = SeedExecutionContext(
             source=source,
             job_id=job_id,
@@ -24,6 +29,7 @@ class SeedOrchestrator:
             limit=kwargs.get("limit"),
             batch_size=kwargs.get("batch_size"),
             only_unsynced=bool(kwargs.get("only_unsynced", False)),
+            user_id=user_id,
         )
         started_at = perf_counter()
         try:
@@ -76,6 +82,7 @@ class SeedOrchestrator:
         resume_job_id: str | None = None,
         batch_size: int | None = None,
         limit: int | None = None,
+        user_id: str | None = None,
     ) -> dict[str, object]:
         order = ["anime-offline", "anilist", "mangadex", "jikan"]
         completed_sources: set[str] = set()
@@ -83,7 +90,7 @@ class SeedOrchestrator:
         if resume_job_id:
             completed_sources = set(await self.job_runner.get_completed_sources_for_resume(job_id=resume_job_id))
 
-        umbrella_job_id = await self.job_runner.start_job(source="all", total_items=None)
+        umbrella_job_id = await self.job_runner.start_job(source="all", total_items=None, user_id=user_id)
         step_results: list[dict[str, object]] = []
 
         try:
@@ -106,6 +113,7 @@ class SeedOrchestrator:
                     batch_size=batch_size if source == "anime-offline" else None,
                     limit=limit if source != "anime-offline" else None,
                     only_unsynced=False,
+                    user_id=user_id,
                 )
                 step_results.append(source_result)
 

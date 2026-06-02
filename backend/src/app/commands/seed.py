@@ -76,6 +76,7 @@ def seed_all(
     resume_job_id: str | None = typer.Option(None, "--resume-job-id"),
     batch_size: int = typer.Option(50, "--batch-size"),
     limit: int = typer.Option(100, "--limit"),
+    user_id: str | None = typer.Option(None, "--user-id", help="UUID of user to associate with this seed job"),
 ) -> None:
     started_at = perf_counter()
     result = asyncio.run(
@@ -84,6 +85,7 @@ def seed_all(
             resume_job_id=resume_job_id,
             batch_size=batch_size,
             limit=limit,
+            user_id=user_id,
         )
     )
     logger.info(

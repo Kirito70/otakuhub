@@ -1,0 +1,419 @@
+FilePath,Hash,Length,LastWrite,Summary
+.pre-commit-config.yaml,95869DAEA278B217B8C1968C6EA2E17B,1205,2026-05-02 00:37:20,REAL - Project root file
+AGENTS.md,F1DB3F136DD2674116DAFA0E9FA3BC50,5929,2026-05-06 17:09:53,REAL - Project root file
+CLAUDE.md,D0983168B78F2573E839EEC01BBDF5FD,3755,2026-05-06 17:11:21,REAL - Project root file
+GEMINI.md,E22327BA39041B51A1BD403EEAF8B59A,2574,2026-05-04 16:26:37,REAL - Project root file
+PHASE-1-SUMMARY.md,860B44E9D20AE45C3957866B7609B66C,2466,2026-05-02 00:37:20,REAL - Project root file
+PROJECT-PROMPT.md,3071DA4740DE6FE77024F2AB3EA2E4E4,46076,2026-05-06 17:33:14,REAL - Project root file
+PROJECT-STATUS.md,4A1402FC0EEDAB13EC5771A1A26EEA3E,51891,2026-05-23 00:42:03,REAL - Project root file
+pytest.ini,D8A998AD9B74618EB76E917181783D2F,63,2026-05-02 00:37:20,REAL - Project root file
+README.md,BE78190D488516E86231CC035CED81EA,3531,2026-05-23 00:41:42,REAL - Project root file
+STATUS-UPDATE-2026-05-03.md,2BE7C2F7855AD1A4E9DDDD63B4CE33EF,4184,2026-05-03 07:35:56,REAL - Project root file
+.agents\agents.md,DC19AE092874922517D826ED697E4500,3168,2026-05-06 17:10:07,REAL - Project root file
+.agents\workflows\advance-phase.md,58E04FF24B47D187C22C858F12C408F4,1274,2026-05-02 00:36:43,REAL - Project root file
+.agents\workflows\reviewfeature.md,D4839833F7E1D9C8F7CC18FFBD2C778B,1398,2026-05-02 00:36:43,REAL - Project root file
+.agents\workflows\startcycle.md,E4EB114831B7517C76A2A75C9E8AA4EB,1816,2026-05-04 16:26:37,REAL - Project root file
+.antigravity\skills\pinia-store.md,37BC26D218681619A07A8AFC6AFDB05A,2839,2026-05-04 16:26:37,REAL - Project root file
+.antigravity\skills\quasar-page.md,9C38C8E2ECF68DED1EDEE13C9B77EAED,1287,2026-05-04 16:26:37,REAL - Project root file
+.claude\agents\orchestrator.py,B95EBB62FD501E587BD3C020CC48944A,3378,2026-05-10 15:26:54,REAL - Project root file
+.claude\agents\vibecoding-architect.py,AC635DA89FF63336C3E9BCCDDC29E948,338,2026-05-03 00:23:50,REAL - Project root file
+.claude\agents\vibecoding-backend-dev.py,BC200C0B114519BE4CEFC9F539973642,189,2026-05-03 00:23:50,REAL - Project root file
+.claude\agents\vibecoding-code-reviewer.py,8975B00E0FF63F66C4ADA15A1C6546E6,183,2026-05-03 00:23:50,REAL - Project root file
+.claude\agents\vibecoding-db-designer.py,DEE88900B32A4D7A3467F8FD4E9A3D92,182,2026-05-03 00:23:50,REAL - Project root file
+.claude\agents\vibecoding-flutter-dev.py,F6E1DC5CDF27BF3A31F7E24F31837C56,189,2026-05-03 00:23:50,REAL - Project root file
+.claude\agents\vibecoding-security-auditor.py,5DB504845F56F6FD77F77D00CB7617D4,192,2026-05-03 00:23:50,REAL - Project root file
+.claude\commands\audit-security.md,6CE4EBCA03170952D7FAA5B7BA47450B,2412,2026-05-02 00:37:20,REAL - Project root file
+.claude\commands\design-feature.md,A16ED365B5CE3A1199B734DFD37D7ABA,1546,2026-05-02 00:36:43,REAL - Project root file
+.claude\commands\new-migration.md,B9F5DBA2845730E244C69268384E3A09,2871,2026-05-02 00:37:20,REAL - Project root file
+.claude\commands\next-phase.md,E08B29E59515B368F3BE77BD3B184B3D,1641,2026-05-02 00:36:43,REAL - Project root file
+.claude\commands\quasar-page.md,15953946D65E4E7147B6506CC1F88226,2735,2026-05-04 16:26:37,REAL - Project root file
+.claude\commands\review-pr.md,E7ED6AB37D4FD7106A3A6E157B22938C,2084,2026-05-02 00:36:43,REAL - Project root file
+.claude\commands\seed-db.md,9E8C771723383F4CC5C59CCDF6DA519F,3796,2026-05-02 00:37:20,REAL - Project root file
+.claude\skills\api-design\SKILL.md,FE879FCAAB9BD4E3D47A5E5F3881B7B5,2442,2026-05-02 00:36:43,REAL - Project root file
+.claude\skills\code-review\SKILL.md,97AC0CF05F82AB7039D4E6DC2B6B885F,2533,2026-05-04 16:26:37,REAL - Project root file
+.claude\skills\db-migrations\SKILL.md,5B9A4622194286EC4F0F5BD7A58B0E4A,3688,2026-05-02 00:36:43,REAL - Project root file
+.claude\skills\fastapi-dev\SKILL.md,401FD5260B1DEC257C10DBFBD607D9A8,3499,2026-05-02 00:36:43,REAL - Project root file
+.claude\skills\quasar-dev\SKILL.md,D0EBFADCCF6BBE6D6C1D4F4B175E8FC6,2845,2026-05-04 16:26:37,REAL - Project root file
+.claude\skills\security-audit\SKILL.md,28EC076E5EE7B80289A7639118A144C2,3695,2026-05-02 00:36:43,REAL - Project root file
+.claude\skills\sync-pipeline\SKILL.md,5CEEF48458C34B19EF85D25CF328819E,4998,2026-05-02 00:36:43,REAL - Project root file
+.claude\skills\vibecoding-api-design\SKILL.md,0FE67299CDDEDF32423D2B6911313766,845,2026-05-03 00:23:50,REAL - Project root file
+.clinerules\backend.md,B0B785E63AB7654CE26BC54208DD0AF0,2082,2026-05-02 00:36:43,REAL - Project root file
+.clinerules\database.md,E07B90CFCBF77A7C9FFA390FF39DAB14,2660,2026-05-02 00:36:43,REAL - Project root file
+.clinerules\frontend.md,BC80C21B430A246F9FC30ACC9246ABAE,2801,2026-05-04 16:26:37,REAL - Project root file
+.clinerules\sync.md,8DE50C90C5346EA18419C565DAEDB485,1425,2026-05-02 00:36:43,REAL - Project root file
+.clinerules\testing.md,B6B2EA4F39B4D87EAF35C754970D1BAB,1944,2026-05-02 00:36:43,REAL - Project root file
+.clinerules\universal.md,5C28D901668EE19AF7FF8F9F55CD4755,1090,2026-05-04 16:26:37,REAL - Project root file
+.github\copilot-instructions.md,263EE0A8D9C9A25A82698572231EB69D,2278,2026-05-04 17:00:01,REAL - Project root file
+.github\instructions\backend.instructions.md,1342C89736C8D3C91B362B89DCEC9323,703,2026-05-02 00:36:43,REAL - Project root file
+.github\instructions\migrations.instructions.md,52EF690E444B6315B460658CE66E3CE2,685,2026-05-02 00:36:43,REAL - Project root file
+.github\instructions\quasar.instructions.md,36AFB39C313507D16324CACBF2B5470C,1041,2026-05-04 16:26:37,REAL - Project root file
+.github\instructions\workers.instructions.md,A5B906415E661313E60368BB4FC4CFBC,535,2026-05-02 00:36:43,REAL - Project root file
+.github\workflows\ci.yml,24FFA0516B019119B9C9709C5FA9D86E,1384,2026-05-02 00:37:20,REAL - Project root file
+.opencode\opencode.json,2B9C2C1D6E6C07483B1B3C1D9502F5B4,2774,2026-06-02 17:40:56,REAL - Project root file
+.opencode\package.json,2F639FA427459E7F0FE86F419D4AAFA5,65,2026-05-03 00:22:30,REAL - Project root file
+.opencode\agents\api-designer.md,54488919521CB24785ED886917AE5EA4,2788,2026-05-10 15:47:01,REAL - Project root file
+.opencode\agents\architect.md,8078553287F982E003A6C446BFA1A4C4,2269,2026-05-10 15:49:42,REAL - Project root file
+.opencode\agents\backend-dev.md,8EE06154312D735CE2D20BF1465D2207,2155,2026-05-10 15:47:05,REAL - Project root file
+.opencode\agents\code-reviewer.md,B378EFE40A82C5E59BD54960801182B9,2835,2026-05-10 15:47:07,REAL - Project root file
+.opencode\agents\db-designer.md,7EC5563C3995B3A06164212253375586,2822,2026-05-10 15:47:10,REAL - Project root file
+.opencode\agents\flutter-dev.md,4FE7B57F8B9EE8B94AB49300127A61EB,2583,2026-05-10 15:47:14,REAL - Project root file
+.opencode\agents\orchestrator.md,A84D4AD363B95FDAD3DB325AD7344CCC,1445,2026-05-10 16:06:13,REAL - Project root file
+.opencode\agents\quasar-dev.md,5F1CF922C46ED1BE68B857B3EA0136EA,3457,2026-05-10 15:47:18,REAL - Project root file
+.opencode\agents\security-auditor.md,4F0F9664988CEB82128388BA42BA8237,3025,2026-05-10 15:47:22,REAL - Project root file
+.opencode\agents\sync-engineer.md,616E970FDFD7EBB000F339FC3B3C3FF7,4278,2026-05-10 15:47:25,REAL - Project root file
+.opencode\agents\test-writer.md,0590F6436BA1A1AD73087903311CA2AC,4225,2026-05-10 15:47:27,REAL - Project root file
+agents\loader.py,26047E95F7D6B08D05EA5D69E4FBE6C3,1548,2026-05-03 00:23:50,REAL - Project root file
+agents\manifest.json,70C118198D2B379BF5589F5C7D637292,4813,2026-05-10 15:17:49,REAL - Project root file
+aiohttp\__init__.py,0F8D44ECA92A5B5F432B5ED30F09E08F,334,2026-05-02 00:37:20,REAL - Project root file
+backend\pyproject.toml,9E3F93EA2966F124AB9628CEFA03FC87,2214,2026-05-23 00:10:04,REAL - backend file
+backend\README.md,BBE10BB3DFC254B12E3A21BDA50E538D,2877,2026-05-11 00:38:01,REAL - backend file
+backend\src\__init__.py,B834BCC2E69E36317E1FF75585AF24F6,53,2026-05-22 23:51:29,REAL - backend source
+backend\src\app\__init__.py,31B72D63171DFABBBDC46211102BAB25,308,2026-05-02 00:37:20,REAL - backend application code
+backend\src\app\cli.py,3DB333B497BCF9504C5D9115A60D2593,183,2026-05-05 21:06:06,REAL - backend application code
+backend\src\app\config.py,B0E3E342AAAB32D7EDCC2ECFD4FAF2E7,1967,2026-05-23 00:12:05,REAL - backend application code
+backend\src\app\database.py,45BEAACEDEB800E7896818AAA65D6668,1700,2026-05-06 21:42:22,REAL - backend application code
+backend\src\app\main.py,DD850281ACC5DBDDF92096978C1803E8,1781,2026-05-05 21:06:14,REAL - backend application code
+backend\src\app\run.py,5AC60BA58213AA82FC323B76C8280B41,263,2026-05-05 21:05:29,REAL - backend application code
+backend\src\app\commands\__init__.py,F924EFC23107971823280992FE085698,498,2026-05-05 21:11:24,REAL - CLI command
+backend\src\app\commands\celery.py,3DAE05C858BE785749813FC4C62F71C8,2464,2026-05-06 16:53:12,REAL - CLI command
+backend\src\app\commands\db.py,6D10A67AFA890202DDFE86EA492D0FE0,1360,2026-05-02 00:37:20,REAL - CLI command
+backend\src\app\commands\seed.py,161AB0FE315153ED8442197F42226790,3773,2026-06-02 18:25:56,REAL - CLI command
+backend\src\app\core\__init__.py,14ABD0A9EBD6CB7C54EB6E317B9B5BD4,76,2026-05-02 00:37:20,"REAL - core infrastructure (auth, config)"
+backend\src\app\core\auth.py,88178FEB590BA6B34D19C354E89B4D58,2126,2026-05-06 21:41:16,"REAL - core infrastructure (auth, config)"
+backend\src\app\core\rate_limiter.py,2D46BE785F9D6C71BBDCC883E6AC5739,610,2026-05-02 00:37:20,"STUB - no-op, no actual rate limiting"
+backend\src\app\core\security.py,89F5CCC541000DA2F4002190703A556D,2254,2026-05-23 00:09:01,"REAL - core infrastructure (auth, config)"
+backend\src\app\external\__init__.py,406315F04B851180E091D0B32A9FFBB0,304,2026-05-06 14:41:19,REAL - HTTP client for external API
+backend\src\app\external\anilist_client.py,0059390B8C3FD4957BD104C5CE66D927,6063,2026-05-02 00:37:20,REAL - HTTP client for external API
+backend\src\app\external\apprise_client.py,E6C76F0096720F7ECB90D5CFDFDE9D69,1793,2026-05-06 17:08:34,REAL - HTTP client for external API
+backend\src\app\external\jikan_client.py,B80C67D61194D1859F11F5BA32DAD823,2066,2026-05-02 00:37:20,REAL - HTTP client for external API
+backend\src\app\external\mangadex_client.py,E80F163D587E182D7C90088585CAC838,2939,2026-05-02 00:37:20,REAL - HTTP client for external API
+backend\src\app\models\__init__.py,CE75E18F932209E26DBA49C2591F0EDE,1394,2026-05-02 00:37:20,REAL - SQLModel table definition
+backend\src\app\models\chapter.py,2966CA1259B9A1045BA086CB7FED94BB,1297,2026-06-02 18:07:16,REAL - SQLModel table definition
+backend\src\app\models\custom_list_entry.py,AED04C3204C821012B3613D57BB2A9A0,1106,2026-05-05 19:51:06,REAL - SQLModel table definition
+backend\src\app\models\custom_list.py,781F18F0700670681C76AD07C9BED27B,1160,2026-06-02 18:07:16,REAL - SQLModel table definition
+backend\src\app\models\discussion_reply.py,F76E8974D2AD2D4B115797A9BCCBAD94,1549,2026-05-05 22:12:05,REAL - SQLModel table definition
+backend\src\app\models\discussion.py,123B5C87043DBBB00E3030CCE25784ED,1669,2026-05-05 22:06:26,REAL - SQLModel table definition
+backend\src\app\models\enums.py,D6D48E189E026A7944473D11BB30E9C5,2392,2026-05-02 00:37:20,REAL - SQLModel table definition
+backend\src\app\models\episode.py,F84A99515A000AFF62CB9635967C5B5B,1244,2026-06-02 18:07:16,REAL - SQLModel table definition
+backend\src\app\models\external_auth.py,BFE26416079F890E2F0D08B474EDE191,1212,2026-06-02 18:07:16,REAL - SQLModel table definition
+backend\src\app\models\genre.py,83D5A282CD35A88D2BCD19402B20A9B2,715,2026-06-02 18:07:16,REAL - SQLModel table definition
+backend\src\app\models\group_member.py,FDEEF64412C9833981436A0A4DC3E25B,738,2026-05-02 00:37:20,REAL - SQLModel table definition
+backend\src\app\models\group.py,BBB82D22AA5725C9CB5AB6F9AC1E692A,1058,2026-05-04 16:55:37,REAL - SQLModel table definition
+backend\src\app\models\list_entry_history.py,7B60C8CFF57D42B4C4AF1E9A9249DD81,2032,2026-06-02 18:07:16,REAL - SQLModel table definition
+backend\src\app\models\media_entry.py,9FEBC3B11585216C1F87F4D1853140AB,4102,2026-06-02 18:07:16,REAL - SQLModel table definition
+backend\src\app\models\media_external_ids.py,6ADC8EC5FAD05D7419395FBD9D082327,1561,2026-06-02 18:07:16,REAL - SQLModel table definition
+backend\src\app\models\media_genre.py,BF2008614EDED1B5C92DA2D9ECE7A03B,869,2026-05-05 19:49:48,REAL - SQLModel table definition
+backend\src\app\models\media_studio.py,46D3B284B7E589A94615475B331585A5,920,2026-05-05 19:49:59,REAL - SQLModel table definition
+backend\src\app\models\media_tag.py,0D6B1A0A8B3D4D04638D24AF8AD01FE0,918,2026-05-05 19:50:09,REAL - SQLModel table definition
+backend\src\app\models\notification_preference.py,946E8FBC9F5D906D847B26F94187441C,1063,2026-05-02 00:37:20,REAL - SQLModel table definition
+backend\src\app\models\notification.py,D30A7822B11482FC9128CE8D8ADF6FF2,1584,2026-06-02 18:07:16,REAL - SQLModel table definition
+backend\src\app\models\recommendation.py,33AB9C8C0B410F82633487BBD486247C,1536,2026-05-05 21:00:30,REAL - SQLModel table definition
+backend\src\app\models\refresh_token.py,CA332AF7B4809FA018E3203EBF37FF87,1046,2026-05-04 16:55:37,REAL - SQLModel table definition
+backend\src\app\models\related_media.py,CF2AAB3CC3CC407A4E1434133064C57D,1186,2026-06-02 18:07:16,REAL - SQLModel table definition
+backend\src\app\models\studio.py,59D0D04F09FDC6974581F97BE902326A,696,2026-06-02 18:07:16,REAL - SQLModel table definition
+backend\src\app\models\sync_job.py,49EEBBF3D94DB03F304AEFB9CF838494,1308,2026-06-02 18:07:16,REAL - SQLModel table definition
+backend\src\app\models\tag.py,31D0A3F71BE9C8A2226A80BE1E6D8F73,769,2026-06-02 18:07:16,REAL - SQLModel table definition
+backend\src\app\models\user_list_entry.py,1986A0A0CFA37E0B71629526315B5BC5,1987,2026-05-05 21:00:23,REAL - SQLModel table definition
+backend\src\app\models\user.py,88080283F3C6014B14948C9E3E59FCC7,1451,2026-05-04 16:55:37,REAL - SQLModel table definition
+backend\src\app\models\watch_party_rsvp.py,614127499B1627466328E0CD366CBB36,1147,2026-05-05 19:50:59,REAL - SQLModel table definition
+backend\src\app\models\watch_party.py,48C17EA15C568FEEAC41297364B28827,1920,2026-05-06 12:11:17,REAL - SQLModel table definition
+backend\src\app\repositories\_deprecated_refresh_token_repository.py,DFE599917AD5C53EA4363B216194ABBE,1695,2026-05-04 11:34:12,"DEAD CODE - broken imports, orphaned"
+backend\src\app\repositories\base_repository.py,EEAF4292B87BF4AD12254FF9706DAC66,2555,2026-05-02 00:37:20,REAL - data access repository
+backend\src\app\repositories\group_member_repository.py,32F331AEE7B415F472317544FC3441F1,2609,2026-05-02 00:37:20,REAL - data access repository
+backend\src\app\repositories\group_repository.py,F3074F114A3A1ED24028E7FEE4C9980E,2104,2026-05-02 00:37:20,REAL - data access repository
+backend\src\app\repositories\media_repository.py,0E44856B4D96016851DADA0DBDE445F0,4498,2026-05-02 00:37:20,REAL - data access repository
+backend\src\app\repositories\query_builder.py,20D94F21503E2EAB21FF7FE0DC2DD9FA,8818,2026-05-02 00:37:20,REAL - data access repository
+backend\src\app\repositories\user_repository.py,A7BA7D9527FFAD706E55D59C8E00C40A,2434,2026-05-02 00:37:20,REAL - data access repository
+backend\src\app\routers\_deprecated_auth.py,8F726FA8DB2DDB1C3934E823EB5890D7,3787,2026-05-04 13:06:40,"DEAD CODE - old router, not registered anywhere"
+backend\src\app\routes\__init__.py,5076A8E86D4315DC18CF98C2DC1456D7,962,2026-05-06 19:30:16,REAL - API route handler
+backend\src\app\routes\auth.py,4F3A0A7F4D9BB15F7EF64E63FB3DEE41,1814,2026-06-02 18:18:00,REAL - API route handler
+backend\src\app\routes\groups.py,D7A134FEEE2F3E236012BABC1D1D7BEA,2676,2026-05-04 16:56:25,REAL - API route handler
+backend\src\app\routes\lists.py,6D304CEE3CA288E6D8E2FEE88DB8A4A0,7339,2026-05-04 19:21:37,REAL - API route handler
+backend\src\app\routes\media.py,9CA794B947E5C057D847BDEB108ECD43,3637,2026-05-05 21:02:24,REAL - API route handler
+backend\src\app\routes\notifications.py,242694DC3F74611446BFBEA7AD3DB59C,3439,2026-05-06 17:21:22,REAL - API route handler
+backend\src\app\routes\setup.py,99C8806F5A77D921DBEBD185C7033554,2416,2026-05-06 22:08:35,REAL - API route handler
+backend\src\app\routes\social.py,E858B6ACCB4239F556CF5CAC36168216,7422,2026-05-05 22:12:49,REAL - API route handler
+backend\src\app\routes\sync.py,F23C109C291333A476B9B1918AB6DF43,1990,2026-05-04 18:26:35,REAL - API route handler
+backend\src\app\routes\users.py,43D10B939B56DDEE83E9E7F95489A05F,2532,2026-05-06 19:29:46,REAL - API route handler
+backend\src\app\routes\watchparty.py,199336A4CE93D66A5F960DC7AD23E721,3836,2026-05-06 13:54:35,REAL - API route handler
+backend\src\app\schemas\__init__.py,8BEB6B2977356710A6CDCFBC5A8A2DBA,97,2026-05-02 00:37:20,REAL - Pydantic request/response schema
+backend\src\app\schemas\auth.py,D67F91EE75DB6D7099DF136739BBF3F8,1381,2026-05-04 13:50:54,REAL - Pydantic request/response schema
+backend\src\app\schemas\group.py,056A64A7F3183F7BB30F56CC3E7D1986,1757,2026-05-02 00:37:20,REAL - Pydantic request/response schema
+backend\src\app\schemas\media.py,1CC766ACB66F472825C5FACEE7E12511,1574,2026-05-02 00:37:20,REAL - Pydantic request/response schema
+backend\src\app\schemas\notification.py,34EB905F8BC253F32CDCAD4E6CABBE31,2195,2026-05-06 17:20:59,REAL - Pydantic request/response schema
+backend\src\app\schemas\setup.py,D5C7F01B1727635313F7A103526FC984,1160,2026-05-06 22:08:27,REAL - Pydantic request/response schema
+backend\src\app\schemas\social.py,22838A3BBDB6470E305AA03CBBAB19C9,3033,2026-05-05 22:12:17,REAL - Pydantic request/response schema
+backend\src\app\schemas\sync.py,34D656B8FEFE250229CADFE496F69D4B,677,2026-05-04 18:25:52,REAL - Pydantic request/response schema
+backend\src\app\schemas\tracking.py,6555A11D58BF36E2BB173053894C7014,2997,2026-05-04 19:21:00,REAL - Pydantic request/response schema
+backend\src\app\schemas\user.py,1FD204F41643FB939848E4F6DF5F5D2B,1545,2026-05-05 22:14:34,REAL - Pydantic request/response schema
+backend\src\app\schemas\watchparty.py,D3EDEC4DE21AFD1264E972FFC90BAB7C,1698,2026-05-06 13:54:23,REAL - Pydantic request/response schema
+backend\src\app\services\__init__.py,927332C05C42AB34189B6B6AC8206408,518,2026-05-02 00:37:20,REAL - business logic service
+backend\src\app\services\auth_service.py,5B6E7180A9F65214397D9EAEF75E32B0,7564,2026-05-23 00:34:48,REAL - business logic service
+backend\src\app\services\base_service.py,A3180F42DB3AFF8B4AC749401EE183E1,928,2026-05-02 00:37:20,REAL - business logic service
+backend\src\app\services\group_service.py,58A5620240312DE416826AF2CB0D1B97,3491,2026-05-04 16:55:58,REAL - business logic service
+backend\src\app\services\media_service.py,DB774523CDD149A18AF4739FF05D02B5,6614,2026-05-02 00:37:20,REAL - business logic service
+backend\src\app\services\notification_service.py,72EF24CEFA39A39C1DE7531DDAF97800,3432,2026-05-06 17:21:10,REAL - business logic service
+backend\src\app\services\social_service.py,7B9603D76F772B3139BFB9FE1834AD0E,20212,2026-05-23 00:45:24,REAL - business logic service
+backend\src\app\services\sync_service.py,D39804A3943B4A79697537AFE217A3A9,6205,2026-05-02 00:37:20,REAL - business logic service
+backend\src\app\services\tracking_service.py,8DB1E56944938736571ADC63C139C6E3,9875,2026-05-04 19:22:26,REAL - business logic service
+backend\src\app\services\user_service.py,DB54F2F9B7D50DFB2EAF71979A3F2389,5111,2026-05-02 00:37:20,REAL - business logic service
+backend\src\app\services\watch_party_service.py,2481060D39DFA67B5363038365101891,10809,2026-05-06 13:54:23,REAL - business logic service
+backend\src\app\sync\__init__.py,6A859F6B2970482ABC767C34F58C754B,154,2026-05-10 22:56:09,REAL - sync pipeline code (adapters are STUB)
+backend\src\app\sync\entrypoints.py,6C2E37CA992FAD094774642FD980DC64,1236,2026-06-02 18:25:44,REAL - sync pipeline code (adapters are STUB)
+backend\src\app\sync\factory.py,556ECC72691B5668EAEAB795302DED3A,816,2026-05-10 23:13:52,REAL - sync pipeline code (adapters are STUB)
+backend\src\app\sync\ingestion.py,050058D5E93C335B390994DB884BBC8C,1943,2026-05-10 23:13:43,REAL - sync pipeline code (adapters are STUB)
+backend\src\app\sync\job_runner.py,192E182D480DF964A85D25A9EE882F77,4100,2026-06-02 18:25:31,REAL - sync pipeline code (adapters are STUB)
+backend\src\app\sync\observability.py,1DAB6AD47CFC84B1F5A4A3CF86C4C9AF,1420,2026-05-10 23:38:04,REAL - sync pipeline code (adapters are STUB)
+backend\src\app\sync\orchestrator.py,C48A4E4D8CAAAC042E49E503769CB867,7603,2026-06-02 18:25:51,REAL - sync pipeline code (adapters are STUB)
+backend\src\app\sync\types.py,5AA85C4F6C1737E08D9C3466AB013994,725,2026-06-02 18:25:26,REAL - sync pipeline code (adapters are STUB)
+backend\src\app\sync\sources\anilist.py,8E3309B030272A99F851CE95F51D0529,795,2026-05-10 23:14:32,"STUB - dummy adapter, no real data ingestion"
+backend\src\app\sync\sources\anime_offline.py,4DE1A8FD022CDE172537F7FED293F79E,751,2026-05-10 23:14:32,"STUB - dummy adapter, no real data ingestion"
+backend\src\app\sync\sources\jikan.py,C2D744350C86F48962BE312A5256DA37,739,2026-05-10 23:14:32,"STUB - dummy adapter, no real data ingestion"
+backend\src\app\sync\sources\mangadex.py,3F2300B2CE955C8D1D5FA3784374D2E4,742,2026-05-10 23:14:32,"STUB - dummy adapter, no real data ingestion"
+backend\src\app\workers\celery_app.py,3BE82E5FE93D7D335EC86096DCF3C61C,1534,2026-05-10 23:30:37,REAL - Celery worker task
+backend\src\app\workers\notification_tasks.py,4D307B98104A63F534927B02EA71D419,5191,2026-05-06 16:53:05,REAL - Celery worker task
+backend\src\app\workers\sync_tasks.py,B7CF2E6FBB72491B85E9CE1F97ADB3CC,8795,2026-05-10 23:38:46,REAL - Celery worker task
+backend\tests\conftest.py,147334DFF408BD5F073886640AC4A91D,573,2026-05-23 00:12:05,REAL - backend test file
+backend\tests\debug_path.py,86BE66CB386C382A7F4E001B4CF1F55B,198,2026-05-02 00:37:20,"DUMMY - debugging aid, not a real test"
+backend\tests\phase10_watchparty.py,FA2FD61CBA5A37C7DDFC22FC558E024F,6709,2026-05-06 13:54:46,REAL integration test (NOT auto-discovered)
+backend\tests\phase11_notifications.py,804A2EEA839CDBE8625324A28C978E56,5703,2026-05-06 17:21:39,REAL integration test (NOT auto-discovered)
+backend\tests\phase12_setup.py,F0DCD9B7CA90502463F84ED7F0F097CE,4646,2026-05-06 21:44:22,REAL integration test (NOT auto-discovered)
+backend\tests\phase9_social.py,34804A267EC48BC71C1799486DEB24D5,16836,2026-05-05 22:14:56,REAL integration test (NOT auto-discovered - missing test_ prefix)
+backend\tests\test_auth_service_unit.py,403595746E095712E345D841FE2E2F01,8092,2026-05-23 00:34:48,REAL - backend test file
+backend\tests\test_config_security_defaults.py,183A06FF93D1567BC6F5D9D19B906C34,780,2026-05-23 00:12:05,REAL - backend test file
+backend\tests\test_group_user_service_unit.py,ACD283A3AA017FFF5059EDAE6DADE064,5137,2026-05-21 16:36:35,REAL - backend test file
+backend\tests\test_main.py,DDBF76AB787B4E98E6596B02CB09E565,774,2026-05-02 00:37:20,REAL - backend test file
+backend\tests\test_media_service_unit.py,03EAA07FB413E11E1A35A6DF3C57BF88,4304,2026-05-21 16:38:06,REAL - backend test file
+backend\tests\test_notification_tasks_unit.py,871503B76867192E0F141E47BCE93118,3547,2026-05-21 14:21:36,REAL - backend test file
+backend\tests\test_phase13_deprecation_paths.py,161893E2ED8E4E4799B5F3316EC50296,1973,2026-05-10 23:55:59,REAL - backend test file
+backend\tests\test_phase13_docs_command_consistency.py,7133AB40436C7A485047FED266919802,1121,2026-05-11 00:36:04,REAL - backend test file
+backend\tests\test_phase13_job_runner.py,87CE812226F696017ACF88D2591A26DC,938,2026-05-10 23:40:08,REAL - backend test file
+backend\tests\test_phase13_orchestrator.py,F9B61CA6D6D248D5736FE4EA1C941B49,2942,2026-06-02 18:29:47,REAL - backend test file
+backend\tests\test_phase13_seed_all_orchestrator.py,21C816B3753EAE5CA8BA8B0805B10039,4034,2026-06-02 18:30:17,REAL - backend test file
+backend\tests\test_phase13_seed_commands.py,BF2E51F0984CF62577588015CB116E41,2517,2026-05-10 23:05:20,REAL - backend test file
+backend\tests\test_phase13_shared_ingestion.py,BE0F87E5E00EB1BE182EC7190ED1C47C,1677,2026-05-10 23:12:18,REAL - backend test file
+backend\tests\test_phase13_sync_tasks_shared_path.py,889F300652FF5A3FE3F1E2F536AE38CE,7303,2026-05-10 23:35:38,REAL - backend test file
+backend\tests\test_phase23_performance.py,738000658658AF812E7294DA72B38411,1665,2026-05-21 23:22:23,REAL - backend test file
+backend\tests\test_phase5_auth_groups.py,FB2839C874B922B054DE744E40EE5763,3650,2026-05-21 14:19:14,REAL - backend test file
+backend\tests\test_phase6_lists.py,134436DA4E13949449777F1C4BC08F28,1758,2026-05-21 14:19:14,REAL - backend test file
+backend\tests\test_query_repo_sync_unit.py,DBECC707167D9776BD82FFD9A533C553,7896,2026-05-18 23:22:24,REAL - backend test file
+backend\tests\test_security_password_hashing.py,8C47B98BF4B2AFB00E129D82053FE130,691,2026-05-23 00:09:20,REAL - backend test file
+backend\tests\test_security_regressions_auth_config.py,3DB4B1133BC1E0C512C9BE4B31A97DEF,1698,2026-05-23 00:36:06,REAL - backend test file
+backend\tests\test_services_unit.py,41FEC13FFF964C0ABC94524BCFFEB889,17218,2026-05-18 23:43:10,REAL - backend test file
+backend\tests\test_social_service_unit_extended.py,8FC3BDBF916E3808B8CD7994CA45DC93,11205,2026-06-02 18:31:10,REAL - backend test file
+backend\tests\test_watch_party_service_unit_extended.py,6D9F9839C1BCD176BAAF6C0C17461B10,6959,2026-05-21 16:37:28,REAL - backend test file
+celery\__init__.py,E6F646AA13E76C74A81F29E71287F7AB,1061,2026-05-02 00:37:20,REAL - Project root file
+celery\utils\__init__.py,D41D8CD98F00B204E9800998ECF8427E,0,2026-05-02 00:37:20,REAL - Project root file
+celery\utils\log.py,D65864FCEA936744FB74CA504B80F4C2,267,2026-05-02 00:37:20,REAL - Project root file
+docs\agents.md,09D1B141A29CF5988F055A5D2251BC1D,4689,2026-05-06 17:10:14,REAL - Documentation
+docs\api-spec.md,7DA57F721D19D15702DDBF273FF33169,14453,2026-05-11 17:57:31,REAL - Documentation
+docs\backend-architecture.md,4F563C6D12E41BA34F63CF187563417F,9514,2026-05-23 00:41:32,REAL - Documentation
+docs\build-verification-2026-05-21.md,37D3AA125944E990EEF7F8F9561CDBDD,1761,2026-05-21 23:32:06,REAL - Documentation
+docs\database-schema.md,6EA3A30D29E098C1C55136E8D6564949,30377,2026-05-11 17:57:40,REAL - Documentation
+docs\external-auth-and-api-keys.md,977F571E76A8ED54B7D7D43DFE71C2C8,4609,2026-05-06 21:44:08,REAL - Documentation
+docs\quasar-architecture.md,39B10B9E30E6A641F1814949BF2BDAE1,53357,2026-05-11 17:57:21,REAL - Documentation
+docs\security-audit-2026-05-21.md,E65A43998055E106C005B42CDCC06309,3489,2026-05-21 23:11:07,REAL - Documentation
+docs\security-audit-2026-05-23-followup.md,2F9266BB7434140A8C1C2F8C749A7CB1,3443,2026-05-23 00:40:18,REAL - Documentation
+docs\seed-sync-architecture-phase13.md,DFAC7A343F10AF18E6DD11649D65C1C4,6370,2026-05-08 15:26:33,REAL - Documentation
+docs\seed-sync-inventory-phase13.md,B897F5A23B6495DAB8227712D9230380,4244,2026-05-08 15:25:27,REAL - Documentation
+docs\seed-sync-migration-phase13.md,8C42EE46C438ED4E095011C4605EA047,1318,2026-05-10 23:57:57,REAL - Documentation
+docs\sync-pipeline.md,440C7A40E24E099D141A6F426E4A576F,10195,2026-05-11 00:38:15,REAL - Documentation
+docs\adr\005-repo-query-builder-default.md,B5EE094569EE43636555B109ABD15BD1,2950,2026-05-02 00:37:20,REAL - Documentation
+docs\adr\006-global-soft-delete.md,1E185ACF1A5AB760023CFA845BEC3051,1323,2026-05-02 00:37:20,REAL - Documentation
+docs\adr\007-auth-group-design.md,BE5BC4957E859FAC7143723B0B6303AD,3432,2026-05-02 00:37:20,REAL - Documentation
+docs\adr\008-auth-system-design.md,CA9467EE93E6F43F85FB183B4939364B,2766,2026-05-03 06:28:55,REAL - Documentation
+docs\adr\009-user-auth-impl.md,B8C0485BBBCB95F8E8848AD2B9EEC421,4205,2026-05-04 04:10:42,REAL - Documentation
+docs\adr\031-add-vibecoding-agents.md,AAAF0F65B889EFDCF07BB5C1E6BC2BB8,2431,2026-05-03 00:23:50,REAL - Documentation
+docs\adr\032-bootstrap-super-admin-setup.md,9BBFC67C354A6B760A2F14849551C796,1857,2026-05-06 19:32:54,REAL - Documentation
+docs\adr\033-frontend-design-tokens-theme-semantics.md,E49971333D51BF83DBBB6493170C3554,2491,2026-05-11 01:47:21,REAL - Documentation
+docs\adr\034-frontend-typography-spacing-scale.md,A1893728BFD90DA3DEB04773C06C2C32,2635,2026-05-11 01:49:26,REAL - Documentation
+docs\adr\035-shared-ui-primitives-contract.md,0A420146987B6DA02F34DD7B335AE484,2729,2026-05-11 01:50:40,REAL - Documentation
+docs\adr\036-dashboard-template-layout-contract.md,70E563722DC9A74C41D8FDAD591D33C3,2336,2026-05-11 01:56:48,REAL - Documentation
+docs\adr\037-responsive-validation-contract.md,AA513163A369645F162D0F158ED6CDDD,2440,2026-05-11 02:01:16,REAL - Documentation
+docs\adr\038-login-page-hardening-contract.md,102E9CC08AD4FF200E315FB4C6890659,2314,2026-05-11 02:02:30,REAL - Documentation
+docs\adr\039-register-page-hardening-contract.md,B2247BB53D2ED40A50B83EF83225ADC7,2524,2026-05-11 02:11:01,REAL - Documentation
+docs\adr\040-setup-bootstrap-page-hardening-contract.md,04109FAF7EB21A7BAC7359501D5DF96C,2462,2026-05-11 02:12:11,REAL - Documentation
+docs\adr\041-auth-setup-test-expansion-contract.md,A2DF2A7A9F3298E4DF45A21F3515BFAE,2070,2026-05-11 02:13:07,REAL - Documentation
+docs\adr\042-discover-search-tab-contract.md,C95A5299D33BB581941C32C14708C006,2266,2026-05-11 02:23:07,REAL - Documentation
+docs\adr\043-discover-trending-tab-contract.md,F2128C053AE3F86CF3052F6C4B7B520B,1114,2026-05-11 02:24:01,REAL - Documentation
+docs\adr\044-discover-new-releases-tab-contract.md,D1E78C3878FCDCE20973987B5D4CB4D2,1256,2026-05-11 02:25:04,REAL - Documentation
+docs\adr\045-media-detail-overview-tab-contract.md,0DEA8D47ABF2DF61D4F4A0C149D37666,1432,2026-05-11 02:28:06,REAL - Documentation
+docs\adr\046-media-detail-episodes-chapters-tab-contract.md,D14416057B3EAC9C85931C66E6385671,1442,2026-05-11 02:30:00,REAL - Documentation
+docs\adr\047-media-detail-relations-tab-contract.md,43C8AFF2FAD22CECE6BB4A85C8F0DC9C,1369,2026-05-11 03:53:28,REAL - Documentation
+docs\adr\048-my-list-watching-reading-tab-contract.md,5169FDDC54C5CECF4C78631F6648E56E,1318,2026-05-11 05:00:38,REAL - Documentation
+docs\adr\049-my-list-completed-tab-contract.md,1A94234933A3A5AEF6F75912C01198D4,1277,2026-05-11 06:52:50,REAL - Documentation
+docs\adr\050-my-list-paused-tab-contract.md,58E609926F95372F844E7C5A91B32B4A,1268,2026-05-11 06:54:24,REAL - Documentation
+docs\adr\051-my-list-dropped-tab-contract.md,54741507E63229737965E1AD9DBDD81C,1359,2026-05-11 07:10:06,REAL - Documentation
+docs\adr\052-my-list-plan-tab-contract.md,77DF0565833A8849D87BB630B354742D,1450,2026-05-11 07:11:12,REAL - Documentation
+docs\adr\053-my-list-custom-lists-tab-contract.md,050C32467F8C29799821F12C23C8F2AB,1484,2026-05-11 07:12:53,REAL - Documentation
+docs\adr\054-airing-calendar-page-contract.md,3E4B543421DD5F3E4280510955AD2358,1331,2026-05-11 10:14:24,REAL - Documentation
+docs\adr\055-social-feed-group-activity-tab-contract.md,F8857F8BE4D12D1AD71419D2CBAEE7DD,1299,2026-05-11 10:30:19,REAL - Documentation
+docs\adr\056-social-feed-my-activity-tab-contract.md,036842A7E192E8A5CBFC79A4F618146C,1249,2026-05-11 10:33:33,REAL - Documentation
+docs\adr\057-recommendations-inbox-tab-contract.md,4D4972D1740C12E92FB5A598831FA08B,1199,2026-05-11 13:23:33,REAL - Documentation
+docs\adr\058-recommendations-sent-tab-contract.md,17B8FB700797A284FDAD3BAD95DDFA57,1239,2026-05-11 13:25:10,REAL - Documentation
+docs\adr\059-discussions-threads-tab-contract.md,496857BBFEB0387EC742641DF5034176,1281,2026-05-11 13:32:27,REAL - Documentation
+docs\adr\060-discussions-thread-detail-tab-contract.md,6F9897826F308A78D2EA5A60BD27BF8D,1491,2026-05-11 13:51:43,REAL - Documentation
+docs\adr\061-discussions-create-tab-contract.md,5D4897818428E7964E9120A70C93FA30,1431,2026-05-11 13:57:36,REAL - Documentation
+docs\adr\062-social-page-tests-contract.md,DD6F27350365F8D8DCB494BF7A262CE9,1360,2026-05-11 14:00:45,REAL - Documentation
+docs\adr\063-watch-party-upcoming-tab-contract.md,6B0A18DC855A4EE26D97F7A5174A5CD8,1220,2026-05-11 14:11:09,REAL - Documentation
+docs\adr\064-watch-party-create-tab-contract.md,3B6041A500B9BE03FC2829EFE19FFDA5,1375,2026-05-11 14:12:29,REAL - Documentation
+docs\adr\065-watch-party-detail-tab-contract.md,634614E0270842B32C0869CA09F836E0,1328,2026-05-11 14:13:45,REAL - Documentation
+docs\adr\066-watch-party-past-tab-contract.md,A4CAFC640BAF8C7DC9A288C997EE8D7D,1271,2026-05-11 14:14:50,REAL - Documentation
+docs\adr\067-watch-party-tests-contract.md,356A0338B56955B5BC0A7792CEBB5673,1221,2026-05-11 14:16:09,REAL - Documentation
+docs\adr\068-notifications-inbox-all-tab-contract.md,FE60BC767C94468191DA162FCE9B1AC7,1291,2026-05-11 14:17:08,REAL - Documentation
+docs\adr\069-notifications-inbox-unread-tab-contract.md,295ADFDD57CC8583A3816B336478101C,1204,2026-05-11 14:19:10,REAL - Documentation
+docs\adr\070-notification-preferences-content-tab-contract.md,750C2E8A40A75687869EB3A2C1721C2D,1420,2026-05-11 14:22:11,REAL - Documentation
+docs\adr\071-notification-preferences-channels-tab-contract.md,F9D628534085F6EEAC87F5EB69ECC72F,1508,2026-05-11 14:26:11,REAL - Documentation
+docs\adr\072-profile-overview-tab-contract.md,49549F1F698FE54F254CDF7510E3EC9F,1285,2026-05-11 17:52:25,REAL - Documentation
+docs\adr\073-profile-edit-tab-contract.md,9667F80121695781640A26E4DA522CDA,1416,2026-05-11 17:53:54,REAL - Documentation
+docs\adr\074-profile-account-security-tab-contract.md,C08AFC7B2887724F4C093D7BA9E18FFF,1551,2026-05-11 17:55:35,REAL - Documentation
+docs\adr\075-profile-tests-contract.md,9A12B7A71AA6D868FC7FD0DC93114645,1217,2026-05-11 17:57:08,REAL - Documentation
+frontend\package.json,059300E69CCC005BBB0C7288C52A6DF4,732,2026-05-05 11:30:32,REAL - Frontend file
+frontend\PHASE14-TODO.md,BCA5029D69B9A3AAEFDE3A50A40E69A5,1006,2026-05-11 01:29:37,REAL - Frontend file
+frontend\quasar.config.ts,4908E48B5E20CA501FD891B6B6E38166,884,2026-06-02 17:49:33,REAL - Frontend file
+frontend\tsconfig.json,7D3E102827D284235522CE058716FAEB,353,2026-05-05 00:01:23,REAL - Frontend file
+frontend\vitest.config.ts,DA84655EAE864CB80D4D20913C4C660E,341,2026-05-05 11:29:29,REAL - Frontend file
+frontend\.quasar\feature-flags.d.ts,D1A885721AF71E43849BCAB8EB3965F3,220,2026-05-06 16:50:52,REAL - Frontend file
+frontend\.quasar\pinia.d.ts,299E1B9484F34690BD23D97A05541D05,162,2026-05-06 16:50:52,REAL - Frontend file
+frontend\.quasar\quasar.d.ts,97A51151AE8EC5D88E931DABD1368766,103,2026-05-04 23:32:58,REAL - Frontend file
+frontend\.quasar\tsconfig.json,5CC3A831698076C07C718D52EF4BD83F,2874,2026-05-21 23:30:55,REAL - Frontend file
+frontend\src\App.vue,A93AE5870E9C06CF95F46A0A4FC6D8E0,76,2026-05-04 23:32:06,REAL - Frontend source file
+frontend\src\boot\axios.ts,EAE4E6F040210234BD15BD157D2890C3,1851,2026-06-02 17:53:17,REAL - Quasar boot file
+frontend\src\boot\bootstrap.ts,6D8F8FF1E4C6245042108D48D8EC0A32,636,2026-06-02 18:18:46,REAL - Quasar boot file
+frontend\src\boot\theme.ts,57EEF5424CBA5E9E49C6B1032485E534,120,2026-05-04 22:43:12,REAL - Quasar boot file
+frontend\src\components\AppPageState.vue,772896F11BA1F656E34F11DBB0FAF0CB,1028,2026-05-11 01:23:28,REAL - Vue shared component
+frontend\src\components\tracking\AddToListSheet.vue,1E14C2ACE49F55DA1A416B45FA69C1CF,2069,2026-05-05 10:15:28,REAL - Vue shared component
+frontend\src\components\tracking\ProgressWidget.vue,8C048E16CB554265B150E56804F9C682,1177,2026-05-05 10:27:33,REAL - Vue shared component
+frontend\src\components\tracking\ScoreWidget.vue,192DC0F1F80C37308E99FBD8BE313511,1453,2026-05-05 10:27:33,REAL - Vue shared component
+frontend\src\composables\useMediaDetail.ts,D6C3F96569364E8206967A5D061C97F9,2074,2026-05-05 10:14:42,REAL - Vue composable
+frontend\src\composables\useMediaSearch.ts,29F2B13162A91C0586685E7459F1A32D,2243,2026-05-05 02:58:46,REAL - Vue composable
+frontend\src\composables\useTheme.ts,EF957B1B1285DEAD7C9FD579BC85A350,380,2026-05-04 22:42:47,REAL - Vue composable
+frontend\src\composables\useValidationRules.ts,D542FA0E4BAFCCE19A72D1241E68B3AD,1277,2026-05-11 01:24:58,REAL - Vue composable
+frontend\src\composables\__tests__\useValidationRules.test.ts,8A0AC535495090094D485BB1959B71BE,937,2026-05-11 01:27:56,REAL - frontend component test
+frontend\src\css\app.scss,9CFE14ACD335EBC6F027A493B90CDE2F,55,2026-05-04 22:42:47,REAL - CSS/SCSS styles
+frontend\src\css\quasar.variables.scss,854FBF018ED241E9CB6AADE11AF14F9D,172,2026-05-04 22:42:47,REAL - CSS/SCSS styles
+frontend\src\layouts\AuthLayout.vue,C5717DCA6DE6BA89EF942845B3D9291C,173,2026-05-04 20:10:58,REAL - Vue layout component
+frontend\src\layouts\MainLayout.vue,702BF4374D9F8A067877600A4DE8A422,9003,2026-06-02 18:23:15,REAL - Vue layout component
+frontend\src\layouts\__tests__\MainLayout.test.ts,D8B7CE1715A88515D8B665A0B59F935E,4073,2026-06-02 18:20:00,REAL - frontend component test
+frontend\src\pages\auth\LoginPage.vue,8BCA6F3BA107E7AB2D40058EF6B697D7,2164,2026-05-11 01:25:40,REAL - Vue page component
+frontend\src\pages\auth\RegisterPage.vue,BE5176E656CD7F2E9B97DE51AE7BE0D0,2418,2026-05-11 01:25:58,REAL - Vue page component
+frontend\src\pages\discover\DiscoverPage.vue,B4EDC2BBC052759C6E6054F0510B7362,3175,2026-05-11 01:23:49,REAL - Vue page component
+frontend\src\pages\discover\__tests__\DiscoverPage.test.ts,D4AE08BEF3D3DBA33BA1737E62EAAF70,1495,2026-05-21 20:20:55,REAL - Vue page component
+frontend\src\pages\media\MediaDetailPage.vue,21ECAA3D4971644083F3E71527640F5D,2513,2026-05-05 10:16:03,REAL - Vue page component
+frontend\src\pages\media\__tests__\MediaDetailPage.test.ts,B3B9E137D7CD8E7EE10A54C52663ABD0,954,2026-05-05 11:29:29,REAL - Vue page component
+frontend\src\pages\notifications\NotificationPreferencesPage.vue,D8780F2DDB88EE4515D359975A6C513E,4568,2026-05-06 17:24:54,REAL - Vue page component
+frontend\src\pages\notifications\NotificationsPage.vue,97DF87186CF450ABE875656CAD57A3E8,3390,2026-05-11 01:24:18,REAL - Vue page component
+frontend\src\pages\notifications\__tests__\NotificationPreferencesPage.test.ts,6C0B396DA2154531132DE040E8D47FDA,3191,2026-05-06 17:25:32,REAL - Vue page component
+frontend\src\pages\notifications\__tests__\NotificationsPage.test.ts,636ABD99961BF6ABE1D88B12F35716D5,1450,2026-05-11 01:28:54,REAL - Vue page component
+frontend\src\pages\profile\ProfilePage.vue,0696E821E03A9F04B4C2E5BAA93D1ECD,96,2026-05-04 20:11:22,"STUB - placeholder page, only renders title text"
+frontend\src\pages\setup\SetupPage.vue,5A59D98FD1D0D8D630F300C93B37862E,3440,2026-06-02 17:49:57,REAL - Vue page component
+frontend\src\pages\setup\__tests__\SetupPage.test.ts,79B844217D87D6A1B15E4A86AE710173,2388,2026-06-02 17:51:05,REAL - Vue page component
+frontend\src\pages\social\DiscussionPage.vue,0511863C5D485FF0DBD0877834C50336,99,2026-05-04 20:11:22,"STUB - placeholder page, only renders title text"
+frontend\src\pages\social\FeedPage.vue,729605E7F5F5EA208362170B2926D125,93,2026-05-04 20:11:22,"STUB - placeholder page, only renders title text"
+frontend\src\pages\social\RecommendationsPage.vue,A96970A197F3E0CC37FFF3758658ED9A,104,2026-05-04 20:11:22,"STUB - placeholder page, only renders title text"
+frontend\src\pages\tracking\AiringCalendarPage.vue,20369C6D729A304E13B694836DE80975,2809,2026-05-05 11:23:20,REAL - Vue page component
+frontend\src\pages\tracking\ImportListPage.vue,806EB0638AFB54F6EE1163C88FAEB993,2636,2026-05-11 18:48:00,REAL - Vue page component
+frontend\src\pages\tracking\MyListPage.vue,1ACD8332A5042F546B15F389582BA76E,7215,2026-06-02 18:36:34,REAL - Vue page component
+frontend\src\pages\tracking\__tests__\AiringCalendarPage.test.ts,C0BF455AB8FF7E35FD88443C5E05FBD0,806,2026-05-05 11:29:58,REAL - Vue page component
+frontend\src\pages\tracking\__tests__\ImportListPage.test.ts,9E6F8DA99423F79FE41607459C3D8872,955,2026-05-11 18:49:08,REAL - Vue page component
+frontend\src\pages\tracking\__tests__\MyListPage.test.ts,85E6A7C1E23EB91553A60567BE20B4E2,1452,2026-06-02 18:03:15,REAL - Vue page component
+frontend\src\pages\watchparty\WatchPartyPage.vue,C8466E27EE2610A510AA0A1B3D192C0D,5519,2026-05-11 01:26:39,REAL - Vue page component
+frontend\src\pages\watchparty\__tests__\WatchPartyPage.test.ts,797D94B8A19724B44FD4E6E750D8F28D,2661,2026-05-11 01:28:46,REAL - Vue page component
+frontend\src\router\guard.ts,6726DCA5D0BCB22BB1F6D13F4FBC9247,751,2026-05-11 01:26:51,REAL - Vue router config
+frontend\src\router\index.ts,70A4889EEA8CABF929953DB198B636DE,1704,2026-06-02 17:49:39,REAL - Vue router config
+frontend\src\router\routes.ts,B13316C485F2BC56EDB901E612201B05,2728,2026-06-02 18:02:56,REAL - Vue router config
+frontend\src\router\__tests__\guard.test.ts,4C3FCDD79F76B25ED9FF1203CD067200,1267,2026-05-11 01:27:38,REAL - frontend component test
+frontend\src\services\storage.ts,C0514E5EA8D6AB12BE8F2B5075E05639,1045,2026-05-04 20:53:52,REAL - Frontend source file
+frontend\src\stores\auth.ts,EF3695B2B07F6AABD5DA4ABC894E329D,4639,2026-06-02 18:18:38,REAL - Pinia store
+frontend\src\stores\bootstrap.ts,571FA717E56B021F0CD16D8CE7EA3953,1900,2026-06-02 17:49:22,REAL - Pinia store
+frontend\src\stores\index.ts,D079B21FE79315340AEA3F992FE575A7,155,2026-05-06 16:50:01,REAL - Pinia store
+frontend\src\stores\notifications.ts,3767EFEB71D3449771857DEA25F34ED0,3314,2026-05-06 17:22:17,REAL - Pinia store
+frontend\src\stores\tracking.ts,CAD38CE1A9138A13C1F61E800DED9857,2805,2026-06-02 18:36:18,REAL - Pinia store
+frontend\src\stores\watchparty.ts,C210C1184426FFC1753972C19F783D59,1945,2026-05-06 14:33:16,REAL - Pinia store
+frontend\src\types\media.ts,B358FB237EE92908803E11BB84678583,354,2026-05-05 11:23:27,REAL - TypeScript type definitions
+frontend\src\types\notification.ts,5BBE2AD0771EE2E2D8871C416BA73FC4,1216,2026-05-06 17:21:50,REAL - TypeScript type definitions
+frontend\src\types\tracking.ts,E2BD8A2A8DB761A207A8952CE8C27C30,1189,2026-05-05 11:22:46,REAL - TypeScript type definitions
+frontend\src\types\watchparty.ts,242E270389FCEB0F5A7DF08FA6EF5861,726,2026-05-06 14:06:10,REAL - TypeScript type definitions
+frontend\src-electron\electron-env.d.ts,9043E589E3EA48B6DDF9652562A2B360,204,2026-05-04 22:45:53,REAL - Frontend file
+frontend\src-electron\electron-main.ts,CFFA192F54A69D5C9C48A6F21F6A122E,1681,2026-05-04 22:45:53,REAL - Frontend file
+frontend\src-electron\electron-preload.ts,8082951DE0E88A18993CAE28CDF0A409,943,2026-05-04 22:45:53,REAL - Frontend file
+infra\docker-compose.prod.yml,741F28DDC4E3012C8C65CEA764328EBE,2446,2026-05-22 21:28:12,"REAL - Infrastructure config (Docker, Nginx)"
+infra\docker-compose.yml,F41A8DCFE4570BF7F6838F5815C739A1,2377,2026-05-02 00:37:20,"REAL - Infrastructure config (Docker, Nginx)"
+scripts\seed_database.py,C114B6D3DCAAF05C93E47256249133C4,868,2026-05-10 23:57:19,REAL - Utility script
+src\__init__.py,2369ECBAAE564656EB8A1ACE8729452D,435,2026-05-10 23:57:27,DEAD CODE - old version superseded by backend/src/
+src\app\__init__.py,31B72D63171DFABBBDC46211102BAB25,308,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\config.py,ED563AECF7F56F081101DDCBA4994AE5,1260,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\database.py,AF771888C30B39E6524D9981FE219188,1674,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\main.py,01D666E8808425ACE180068D45867D95,1580,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\commands\__init__.py,C0905C3549E1F7778B64F6D20E1DFC45,320,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\commands\db.py,6D10A67AFA890202DDFE86EA492D0FE0,1360,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\core\__init__.py,14ABD0A9EBD6CB7C54EB6E317B9B5BD4,76,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\core\auth.py,B0027553A458D00B8E8D2FDF1F8D638A,298,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\core\rate_limiter.py,2D46BE785F9D6C71BBDCC883E6AC5739,610,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\external\__init__.py,C45E5B9932237C938F847C8AE6ECA8BB,248,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\external\anilist_client.py,0059390B8C3FD4957BD104C5CE66D927,6063,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\external\jikan_client.py,B80C67D61194D1859F11F5BA32DAD823,2066,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\external\mangadex_client.py,E80F163D587E182D7C90088585CAC838,2939,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\models\__init__.py,CE75E18F932209E26DBA49C2591F0EDE,1394,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\models\chapter.py,59C81641F4CD7CE53D1C8C74E1FF0A65,1286,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\models\custom_list_entry.py,8860DE1C37ED880ED587E918FF371341,1125,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\models\custom_list.py,2E6AFF202B5DD1B65BEC7D34E2E25E2C,1119,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\models\discussion_reply.py,BFFB915B70EA3376FB67CBE71669A2FC,1601,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\models\discussion.py,99024300ED1A5469B1DD7244D292245F,1753,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\models\enums.py,D6D48E189E026A7944473D11BB30E9C5,2392,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\models\episode.py,C809DA1DDD36B41530FF378D3AC26EB3,1233,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\models\external_auth.py,5008659F4E6DAFCAEE4577E8BEEB494F,1204,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\models\genre.py,DED728D164A8FD336E85DB844CAC93EC,707,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\models\group_member.py,FDEEF64412C9833981436A0A4DC3E25B,738,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\models\group.py,9FEC46B1460220DB4B0D20C3C312B7A6,1084,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\models\list_entry_history.py,93DDE8FF99FAECF9FA5DE89302000C9D,2094,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\models\media_entry.py,A11A8508C50415244A832EE15738C649,4219,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\models\media_external_ids.py,8AD17B774C3A0918E93E4352F8396219,1550,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\models\media_genre.py,74E42E6BFB0D7442AD28CB202C289581,926,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\models\media_studio.py,FEDCBFFB7CE45E48CC5D1A8EA55DCAE8,979,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\models\media_tag.py,554657920720BA1E2CEA7EF6C8D8E5FF,971,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\models\notification_preference.py,946E8FBC9F5D906D847B26F94187441C,1063,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\models\notification.py,15BCCEEA1BEBCB411A8B1E9003ADF14B,1819,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\models\recommendation.py,E32D8AE4E60150427D29C1AD70AE59A5,1739,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\models\refresh_token.py,C664E7E360A06C37AA6322D7D543360E,1069,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\models\related_media.py,31606F57678DCFFEBF6E33B84D28B627,1347,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\models\studio.py,F89B921B925C90C2D72A17B59EC4ADB6,688,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\models\sync_job.py,4538D002E4FBF8A4274F911B44FF048C,1339,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\models\tag.py,C8E00622037F15EDB3E98AF86B6F42B1,761,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\models\user_list_entry.py,8BFAB1A066B02A0403A006EFCA54552D,2005,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\models\user.py,223F16E06C03C5CD9708D177A2806733,1482,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\models\watch_party_rsvp.py,41808AD0506BE84D9B877C4C6271430E,1166,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\models\watch_party.py,996BE5C35399B9BEF901E8343894B46A,2027,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\repositories\base_repository.py,97A28A80E2A15929C5B81F7BF9785D92,2511,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\repositories\group_member_repository.py,32F331AEE7B415F472317544FC3441F1,2609,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\repositories\group_repository.py,A3EEF2EF9514C04B65334D8C21C3BF99,2035,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\repositories\media_repository.py,4592471A5FB38E99A0D06DEAD619BBBC,4414,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\repositories\query_builder.py,20D94F21503E2EAB21FF7FE0DC2DD9FA,8818,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\repositories\user_repository.py,A7BA7D9527FFAD706E55D59C8E00C40A,2434,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\routes\__init__.py,823EC3CDCDE8EED748ECF8CB22373F5A,846,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\routes\admin.py,CDEC19051ADCF029A772A6EAC9282A03,122,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\routes\auth.py,4752B6B42E273AE6B7FA55BB90424ED0,998,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\routes\lists.py,969C9F1881FAE37F6DA4CB00B77463B9,3569,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\routes\media.py,A754020CDFF9D006A63B700305DF92F6,3634,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\routes\notifications.py,F491D4EFEE862B2566711475899AA380,130,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\routes\social.py,D5092E7B1A85405CD0378522BA88074F,238,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\routes\sync.py,5666BA2B8C5B378BEA9CEC2CC15D77BB,121,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\routes\watchparty.py,87A0F59EA5F8D7C1E6766A81DEBBC2C5,127,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\schemas\__init__.py,D9B764E108009612781B6A45F57CA9CD,83,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\schemas\auth.py,4B5472C6EB3775CB8966451C22C70957,1154,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\schemas\group.py,056A64A7F3183F7BB30F56CC3E7D1986,1757,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\schemas\media.py,7255BF87DDDDBBF6FE0F5C37EB179C7B,1198,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\schemas\social.py,A8B505057AAA96D5B0D111D8542E0A99,122,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\schemas\tracking.py,2F2E734550789BFC1F8275566A65C2EB,1397,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\schemas\user.py,E52E2626B447C6DED58A9660DD5A7F5D,586,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\services\__init__.py,927332C05C42AB34189B6B6AC8206408,518,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\services\auth_service.py,0090C6AC5F2A475CA5C4B5C010F166A2,642,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\services\base_service.py,55A0E8A96AAC5895FFE7D2225234C517,427,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\services\media_service.py,F0FEFDFAE3369A08AFCA1785BEF5F2FA,554,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\services\social_service.py,EB19DC28FBB59554FC9CBA69E8FB6E48,148,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\services\sync_service.py,8F79E4C64F7331CFB39CE9F4A68E31B8,273,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\services\tracking_service.py,4BAEFD81B47F4F5379A8D60ED8E0F197,307,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\services\user_service.py,B12AD07037C13D75411BE57B7E2B5D59,471,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\services\watch_party_service.py,B54973488589076E8EA2A3C0F397E57E,157,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\workers\celery_app.py,0605549E200664F738DF901B507E497F,819,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/
+src\app\workers\sync_tasks.py,9A20FCB9A259E490573488D900600581,6246,2026-05-02 00:37:20,DEAD CODE - old version superseded by backend/src/

@@ -96,7 +96,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import ProgressWidget from 'src/components/tracking/ProgressWidget.vue'
@@ -207,7 +207,13 @@ async function onSaveCustomListEntries(): Promise<void> {
   }
 }
 
-onMounted(async () => {
-  await trackingStore.fetchMyList()
-})
+// Fetch list data on mount and whenever the route param (tab) changes.
+// Using immediate: true ensures the initial mount also triggers the watch.
+watch(
+  () => route.params.status,
+  async () => {
+    await trackingStore.fetchMyList(activeStatus.value)
+  },
+  { immediate: true },
+)
 </script>
