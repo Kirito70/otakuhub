@@ -2,7 +2,7 @@
 
 from sqlmodel import SQLModel, Field, Index
 from typing import Optional
-from uuid import UUID
+from uuid import UUID, uuid4
 from datetime import datetime
 
 
@@ -10,7 +10,7 @@ class SyncJob(SQLModel, table=True):
     """Tracks every run of the background sync pipeline."""
 
     id: UUID = Field(
-        default_factory=UUID,
+        default_factory=uuid4,
         primary_key=True,
         nullable=False
     )

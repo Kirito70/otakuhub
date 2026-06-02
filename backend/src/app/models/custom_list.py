@@ -2,7 +2,7 @@
 
 from sqlmodel import SQLModel, Field, Index
 from typing import Optional
-from uuid import UUID
+from uuid import UUID, uuid4
 from datetime import datetime
 
 
@@ -12,7 +12,7 @@ class CustomList(SQLModel, table=True):
     __tablename__ = "custom_list"
 
     id: UUID = Field(
-        default_factory=UUID,
+        default_factory=uuid4,
         primary_key=True,
         nullable=False
     )

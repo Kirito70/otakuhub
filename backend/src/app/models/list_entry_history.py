@@ -2,7 +2,7 @@
 
 from sqlmodel import SQLModel, Field, Relationship, Index
 from typing import Optional, TYPE_CHECKING
-from uuid import UUID
+from uuid import UUID, uuid4
 from datetime import datetime
 from src.app.models.enums import WatchStatus
 
@@ -16,7 +16,7 @@ class ListEntryHistory(SQLModel, table=True):
     """Append-only log of every status/progress change. Powers the activity feed."""
 
     id: UUID = Field(
-        default_factory=UUID,
+        default_factory=uuid4,
         primary_key=True,
         nullable=False
     )

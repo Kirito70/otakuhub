@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 import re
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Any
 
 from sqlmodel import select
@@ -79,7 +79,7 @@ class SyncJobRunner:
         if not job:
             return
         job.status = status
-        job.completed_at = datetime.now(timezone.utc)
+        job.completed_at = datetime.utcnow()
         sanitized_errors = []
         for item in errors:
             sanitized_errors.append(

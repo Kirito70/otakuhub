@@ -3,7 +3,7 @@
 
 from sqlmodel import SQLModel, Field, Column, Text, Index, Relationship
 from typing import Optional, TYPE_CHECKING
-from uuid import UUID
+from uuid import UUID, uuid4
 from datetime import datetime
 from src.app.models.enums import MediaType, MediaFormat, MediaStatus, Season
 from .media_genre import MediaGenre  # noqa: F401
@@ -23,7 +23,7 @@ class MediaEntry(SQLModel, table=True):
     __tablename__ = "media_entries"
 
     id: UUID = Field(
-        default_factory=UUID,
+        default_factory=uuid4,
         primary_key=True,
         nullable=False
     )
