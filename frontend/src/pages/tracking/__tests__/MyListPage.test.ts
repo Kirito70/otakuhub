@@ -5,7 +5,7 @@ import MyListPage from '../MyListPage.vue'
 
 vi.mock('vue-router', () => ({
   useRouter: () => ({ push: vi.fn().mockResolvedValue(undefined) }),
-  useRoute: () => ({ query: {} }),
+  useRoute: () => ({ params: { status: 'watching' } }),
 }))
 
 vi.mock('src/stores/tracking', () => ({

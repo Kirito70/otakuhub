@@ -21,7 +21,14 @@ const routes: RouteRecordRaw[] = [
       { path: '', redirect: { name: 'discover' } },
       { path: 'discover', name: 'discover', component: () => import('pages/discover/DiscoverPage.vue'), meta: { requiresAuth: true } },
       { path: 'media/:id', name: 'media-detail', component: () => import('pages/media/MediaDetailPage.vue'), meta: { requiresAuth: true } },
-      { path: 'list', name: 'my-list', component: () => import('pages/tracking/MyListPage.vue'), meta: { requiresAuth: true } },
+      {
+        path: 'list',
+        meta: { requiresAuth: true },
+        children: [
+          { path: '', redirect: { name: 'my-list-status', params: { status: 'watching' } } },
+          { path: ':status', name: 'my-list-status', component: () => import('pages/tracking/MyListPage.vue') },
+        ],
+      },
       { path: 'airing-calendar', name: 'airing-calendar', component: () => import('pages/tracking/AiringCalendarPage.vue'), meta: { requiresAuth: true } },
       { path: 'import-list', name: 'import-list', component: () => import('pages/tracking/ImportListPage.vue'), meta: { requiresAuth: true } },
       { path: 'feed', name: 'feed', component: () => import('pages/social/FeedPage.vue'), meta: { requiresAuth: true } },

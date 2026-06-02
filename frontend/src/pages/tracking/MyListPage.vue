@@ -10,7 +10,7 @@
         :key="status"
         :name="status"
         :label="statusLabel(status)"
-        :to="{ name: 'my-list', query: { ...route.query, status } }"
+        :to="{ name: 'my-list-status', params: { status } }"
         exact
       />
     </q-tabs>
@@ -123,7 +123,7 @@ const statuses: WatchStatus[] = [
 const defaultStatus: WatchStatus = 'watching'
 
 const activeStatus = computed<WatchStatus>(() => {
-  const raw = route.query.status
+  const raw = route.params.status
   const status = Array.isArray(raw) ? raw[0] : raw
   if (typeof status === 'string' && statuses.includes(status as WatchStatus)) {
     return status as WatchStatus
