@@ -61,6 +61,7 @@ import type { QForm } from 'quasar'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
+import { useBootstrapStore } from 'src/stores/bootstrap'
 import { useValidationRules } from 'src/composables/useValidationRules'
 
 const router = useRouter()
@@ -102,6 +103,9 @@ async function onSubmit(): Promise<void> {
       password: password.value,
     })
     success.value = true
+    // Refresh bootstrap context so the route guard sees setup_required=false.
+    const bootstrap = useBootstrapStore()
+    await bootstrap.refresh()
     await router.push({ name: 'login' })
   } catch {
     error.value = 'Setup failed. It may already be completed.'

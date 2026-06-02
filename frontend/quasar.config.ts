@@ -5,7 +5,7 @@ export default configure((ctx) => {
 
   return {
     css: ['app.scss'],
-    boot: ['axios', 'theme'],
+    boot: ['axios', 'theme', 'bootstrap'],
     extras: ['material-icons'],
     build: {
       target: {

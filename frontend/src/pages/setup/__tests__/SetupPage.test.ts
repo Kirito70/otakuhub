@@ -17,6 +17,12 @@ vi.mock('axios', () => ({
   },
 }))
 
+vi.mock('src/stores/bootstrap', () => ({
+  useBootstrapStore: () => ({
+    refresh: vi.fn().mockResolvedValue(undefined),
+  }),
+}))
+
 const QFormStub = defineComponent({
   name: 'QForm',
   emits: ['submit'],

@@ -1,5 +1,6 @@
 import axios, { AxiosError, type InternalAxiosRequestConfig } from 'axios'
 import { boot } from 'quasar/wrappers'
+import type { Router } from 'vue-router'
 
 import { useAuthStore } from 'src/stores/auth'
 
@@ -12,7 +13,18 @@ interface RetryableRequestConfig extends InternalAxiosRequestConfig {
   _retry?: boolean
 }
 
-export default boot(({ store }) => {
+/** Routes that are allowed to stay on after a 401 without redirecting to login. */
+const PUBLIC_AUTH_ROUTES = new Set(['login', 'register', 'setup'])
+
+function redirectToLoginOnAuthFailure(router: Router): void {
+  const currentRouteName = router.currentRoute.value?.name
+  if (typeof currentRouteName === 'string' && PUBLIC_AUTH_ROUTES.has(currentRouteName)) {
+    return // already on a public auth route — no redirect loop
+  }
+  router.push({ name: 'login' })
+}
+
+export default boot(({ app, store, router }) => {
   const authStore = useAuthStore(store)
 
   api.interceptors.request.use((config) => {
@@ -37,6 +49,8 @@ export default boot(({ store }) => {
       const newAccessToken = await authStore.refreshAccessToken()
 
       if (!newAccessToken) {
+        // Refresh failed — session is invalid. Redirect to login.
+        redirectToLoginOnAuthFailure(router)
         return Promise.reject(error)
       }
 

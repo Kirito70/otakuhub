@@ -5,9 +5,9 @@ import {
   createWebHashHistory,
   createWebHistory,
 } from 'vue-router'
-import axios from 'axios'
 
 import { useAuthStore } from 'src/stores/auth'
+import { useBootstrapStore } from 'src/stores/bootstrap'
 import { resolveAccessGuard } from './guard'
 import routes from './routes'
 
@@ -24,51 +24,33 @@ export default route(function ({ store }) {
     history: createHistory(process.env.VUE_ROUTER_BASE),
   })
 
+  /*
+   * Unified route guard.
+   *
+   * Reads bootstrap + auth stores synchronously — no HTTP calls.
+   * The bootstrap store is hydrated once during app boot (boot/bootstrap.ts).
+   * The auth store is hydrated from localStorage during boot.
+   *
+   * If for any reason bootstrap hasn't finished hydrating yet,
+   * navigation is allowed through (a subsequent redirect will correct it).
+   */
   Router.beforeEach((to) => {
     const auth = useAuthStore(store)
+    const bootstrap = useBootstrapStore(store)
 
-    // Unified app bootstrap flow via backend routing context endpoint.
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    return (async () => {
-      try {
-        const bootstrapResponse = await axios.get<{
-          site_status: 'up' | 'degraded'
-          setup_required?: boolean
-          logged_in_user?: { id: string; username: string; is_admin: boolean }
-        }>(
-          `${process.env.API_BASE_URL}/api/v1/setup/bootstrap`,
-          {
-            timeout: 5000,
-            headers: auth.accessToken
-              ? {
-                  Authorization: `Bearer ${auth.accessToken}`,
-                }
-              : undefined,
-          },
-        )
-        const setupRequired = bootstrapResponse.data.setup_required === true
-        const loggedInUser = bootstrapResponse.data.logged_in_user
+    if (!bootstrap.isHydrated) {
+      // Bootstrap not ready yet — allow navigation.
+      // The first protected-route request will naturally redirect
+      // once the app is fully initialised.
+      return true
+    }
 
-        const guardDecision = resolveAccessGuard({
-          toName: typeof to.name === 'string' ? to.name : null,
-          requiresAuth: to.meta.requiresAuth === true,
-          setupRequired,
-          loggedInUser: Boolean(loggedInUser),
-        })
-        if (guardDecision !== true) {
-          return guardDecision
-        }
-      } catch {
-        // If setup status cannot be fetched, continue with regular auth guard.
-      }
-
-      return resolveAccessGuard({
-        toName: typeof to.name === 'string' ? to.name : null,
-        requiresAuth: to.meta.requiresAuth === true,
-        setupRequired: false,
-        loggedInUser: auth.isAuthenticated,
-      })
-    })()
+    return resolveAccessGuard({
+      toName: typeof to.name === 'string' ? to.name : null,
+      requiresAuth: to.meta.requiresAuth === true,
+      setupRequired: bootstrap.setupRequired,
+      loggedInUser: auth.isAuthenticated,
+    })
   })
 
   return Router
