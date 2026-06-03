@@ -10,13 +10,15 @@
 ## Current State
 
 ```
-CURRENT_PHASE:     24
-CURRENT_SUB_PHASE: 24.6
+CURRENT_PHASE:     AUDIT_PHASE_1 (Sync Pipeline)
+CURRENT_SUB_PHASE: 1.7
 STATUS:            PHASE_COMPLETE
-LAST_UPDATED:      2026-05-23
+LAST_UPDATED:      2026-06-03
 BLOCKED_BY:        none
-NEXT_ACTION:       Await user direction for next phase planning
+NEXT_ACTION:       Review AUDIT-PLAN.md Phase 2 (Database & Models Alignment)
 ```
+
+> **Note**: After completing all 24 formal phases, an audit (AUDIT-PLAN.md) identified real gaps. Phase 0 (cleanup) and Phase 1 (sync pipeline) of that audit are now complete. Phases 2+ are pending.
 
 ---
 
@@ -588,6 +590,14 @@ NEXT_ACTION:       Await user direction for next phase planning
 # 2026-05-23 | Phase 24.4 | Added security regression tests for JWT/CORS config guards and refresh-token replay edge cases
 # 2026-05-23 | Phase 24.5 | Re-ran security audit and published follow-up report documenting resolved criticals and remaining high-risk placeholder
 # 2026-05-23 | Phase 24.6 | Updated architecture/runbook/env docs to reflect security hardening baseline and fail-fast config rules
+# 2026-06-03 | Audit Phase 0 | Cleanup: deleted root src/app/ (79 files), 4 hidden test files renamed, conftest fixed, 13 test failures reduced to 2
+# 2026-06-03 | Audit Phase 1.1 | Fixed external API clients (lazy-init sessions, RateLimiter token-bucket, MangaDex title param)
+# 2026-06-03 | Audit Phase 1.2 | Implemented AnimeOfflineSeedAdapter — real _parse_item/_upsert_item with data loading
+# 2026-06-03 | Audit Phase 1.3 | Implemented AniListSeedAdapter — batch GraphQL backfill with full metadata upsert
+# 2026-06-03 | Audit Phase 1.4 | Implemented MangaDexSeedAdapter — chapter fetching and upsert for manga types
+# 2026-06-03 | Audit Phase 1.5 | De-stubbed SyncService (sync_media_from_anilist, backfill_missing_metadata, update_or_create_media_from_anilist)
+# 2026-06-03 | Audit Phase 1.6 | Implemented import_user_list_task and process_new_episodes_task with real async logic
+# 2026-06-03 | Audit Phase 1.7 | Completed — 206 tests pass, 2 pre-existing failures remain (media_id FK validation)
 ```
 
 ---
@@ -600,6 +610,7 @@ NEXT_ACTION:       Await user direction for next phase planning
 # Format: [OPEN/RESOLVED] Phase X.Y — description
 [RESOLVED] Phase 13.3 — Backend pytest runtime verified via backend .venv and tests passed
 [RESOLVED] Phase 7.10 — Android SDK configured; Capacitor Android release build succeeds
+[OPEN] Pre-existing — watchparty + discussion create endpoints don't validate media_id FK (return 201 instead of 400)
 ```
 
 ---

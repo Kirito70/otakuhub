@@ -63,9 +63,7 @@ migrations/
 celerybeat.pid
 celerybeat-schedule
 
-# Test files
-test_*.py
-_*_test.py
+# Test artifacts (compiled bytecode only)
 test_*.pyc
 
 sample-repos

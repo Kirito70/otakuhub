@@ -14,16 +14,16 @@ from src.app.routes import api_router
 async def lifespan(app: FastAPI):
     """Application lifespan events."""
     # Startup
-    print(f"🚀 Starting {settings.app_name}...")
-    print(f"📝 Environment: {settings.environment}")
-    print(f"🔧 Debug mode: {settings.debug}")
+    print(f"Starting {settings.app_name}...", flush=True)
+    print(f"Environment: {settings.environment}", flush=True)
+    print(f"Debug mode: {settings.debug}", flush=True)
 
     await connect_db()
 
     yield
 
     # Shutdown
-    print(f"🛑 Shutting down {settings.app_name}...")
+    print(f"Shutting down {settings.app_name}...", flush=True)
     await disconnect_db()
 
 

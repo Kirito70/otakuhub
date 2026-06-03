@@ -32,13 +32,13 @@ async def connect_db() -> None:
     async with engine.begin() as conn:
         # Create all tables defined in SQLModel models
         await conn.run_sync(SQLModel.metadata.create_all)
-    print(f"✓ Database connected: {settings.database_url.split('@')[-1]}")
+    print(f"Database connected: {settings.database_url.split('@')[-1]}")
 
 
 async def disconnect_db() -> None:
     """Disconnect from the database."""
     await engine.dispose()
-    print("✓ Database disconnected")
+    print("Database disconnected")
 
 
 async def check_db_connection() -> bool:
