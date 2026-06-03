@@ -7,22 +7,33 @@ Handles all anime/manga metadata, user tracking, social features, and sync pipel
 ## Project Structure
 ```
 backend/
-├── main.py                    ← FastAPI app factory, middleware, router registration
-├── core/
-│   ├── config.py              ← Pydantic Settings — all config from env vars
-│   ├── database.py            ← AsyncEngine, AsyncSession, get_db dependency
-│   ├── auth.py                ← JWT creation, verification, get_current_user dep
-│   ├── security.py            ← bcrypt hashing, token utilities
-│   ├── redis.py               ← Redis connection pool
-│   └── rate_limiter.py        ← Token bucket rate limiter for external APIs
-├── models/
-│   ├── base.py                ← DeclarativeBase, TimestampMixin
-│   ├── media.py               ← MediaEntry, MediaExternalIds, Genre, Studio, Tag
-│   ├── user.py                ← User, RefreshToken, ExternalAuth
-│   ├── tracking.py            ← UserListEntry, ListEntryHistory, CustomList
-│   ├── social.py              ← Recommendation, Discussion, DiscussionReply
-│   ├── watchparty.py          ← WatchParty, WatchPartyRsvp
-│   └── notification.py        ← NotificationPreference, Notification
+├── src/
+│   └── app/
+│       ├── main.py                    ← FastAPI app factory, middleware, router registration
+│       ├── config.py                  ← Pydantic Settings — all config from env vars (NOT core/)
+│       ├── database.py                ← AsyncEngine, AsyncSession, get_db dependency (NOT core/)
+│       ├── core/
+│       │   ├── auth.py                ← JWT creation, verification, get_current_user dep
+│       │   ├── security.py            ← bcrypt hashing, token utilities
+│       │   ├── rate_limiter.py        ← Token bucket rate limiter for external APIs
+│       │   ├── uuid7.py              ← RFC 9562 UUID v7 generator
+│       │   └── tsvector.py           ← Portable TSVECTOR type (PG → TSVECTOR, SQLite → Text)
+│       ├── models/                    ← One file per table model (no base.py)
+│       │   ├── enums.py              ← All Python StrEnum types
+│       │   ├── media_entry.py
+│       │   ├── media_external_ids.py
+│       │   ├── genre.py, media_genre.py
+│       │   ├── studio.py, media_studio.py
+│       │   ├── tag.py, media_tag.py
+│       │   ├── related_media.py, episode.py, chapter.py
+│       │   ├── user.py, refresh_token.py, external_auth.py
+│       │   ├── group.py, group_member.py
+│       │   ├── user_list_entry.py, list_entry_history.py
+│       │   ├── custom_list.py, custom_list_entry.py
+│       │   ├── recommendation.py, discussion.py, discussion_reply.py
+│       │   ├── watch_party.py, watch_party_rsvp.py
+│       │   ├── notification.py, notification_preference.py
+│       │   └── sync_job.py
 ├── schemas/
 │   ├── media.py               ← MediaDetailResponse, MediaSearchResponse, etc.
 │   ├── user.py                ← UserProfile, UserSettings
@@ -144,7 +155,7 @@ CORS_ORIGINS=https://otakuhub.local,http://localhost:8080  # wildcard '*' reject
 
 ## Dependency Injection Pattern
 ```python
-# core/database.py
+# src/app/database.py
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
     async with AsyncSessionLocal() as session:
         yield session

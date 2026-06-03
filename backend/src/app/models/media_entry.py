@@ -3,7 +3,9 @@
 
 from sqlmodel import SQLModel, Field, Column, Text, Index, Relationship
 from typing import Optional, TYPE_CHECKING
-from uuid import UUID, uuid4
+from uuid import UUID
+from src.app.core.uuid7 import generate_uuid7
+from src.app.core.tsvector import TSVector
 from datetime import datetime
 from src.app.models.enums import MediaType, MediaFormat, MediaStatus, Season
 from .media_genre import MediaGenre  # noqa: F401
@@ -23,14 +25,14 @@ class MediaEntry(SQLModel, table=True):
     __tablename__ = "media_entries"
 
     id: UUID = Field(
-        default_factory=uuid4,
+        default_factory=generate_uuid7,
         primary_key=True,
         nullable=False
     )
     title_romaji: str = Field(nullable=False, max_length=500)
     title_english: Optional[str] = Field(default=None, max_length=500)
     title_native: Optional[str] = Field(default=None, max_length=500)
-    title_search: Optional[str] = Field(default=None, sa_column=Column(Text))  # GIN indexed, auto-updated via trigger
+    title_search: Optional[str] = Field(default=None, sa_column=Column(TSVector()))  # GIN indexed, auto-updated via trigger
     media_type: MediaType = Field(nullable=False)
     format: Optional[MediaFormat] = Field(default=None)
     status: MediaStatus = Field(default=MediaStatus.not_yet_released)

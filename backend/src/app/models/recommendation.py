@@ -1,8 +1,9 @@
 """Recommendation model for OtakuHub."""
 
-from sqlmodel import SQLModel, Field, Relationship, Index
+from sqlmodel import SQLModel, Field, Relationship, Index, UniqueConstraint
 from typing import Optional, TYPE_CHECKING
-from uuid import UUID, uuid4
+from uuid import UUID
+from src.app.core.uuid7 import generate_uuid7
 from datetime import datetime
 
 if TYPE_CHECKING:
@@ -14,7 +15,7 @@ class Recommendation(SQLModel, table=True):
     """Friend recommending a title to specific people."""
 
     id: UUID = Field(
-        default_factory=uuid4,
+        default_factory=generate_uuid7,
         primary_key=True,
         nullable=False
     )
@@ -38,5 +39,5 @@ class Recommendation(SQLModel, table=True):
     __table_args__ = (
         Index("idx_recommendations_to_user", "to_user_id", "is_acknowledged", "created_at"),
         Index("idx_recommendations_from", "from_user_id"),
-        Index("idx_recommendations_user_media", "from_user_id", "to_user_id", "media_id", unique=True),
+        UniqueConstraint("from_user_id", "to_user_id", "media_id", name="uq_recommendation_users_media"),
     )

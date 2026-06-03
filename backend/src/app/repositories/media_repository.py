@@ -1,11 +1,12 @@
 """Repository for media-related database operations."""
 
-from typing import List, Optional
-from sqlalchemy import desc
-from sqlmodel import func
+from typing import List, Optional, Tuple
+from datetime import datetime
+from sqlalchemy import desc, or_, and_
+from sqlmodel import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.app.models import MediaEntry, MediaExternalIds, Genre, MediaGenre
+from src.app.models import MediaEntry, MediaExternalIds, Genre, MediaGenre, Episode
 from src.app.repositories.base_repository import BaseRepository
 
 
@@ -42,10 +43,14 @@ class MediaRepository(BaseRepository[MediaEntry]):
 
         # Apply filters
         if query_text:
-            # Full text search using the title_search tsvector
+            # Cross-dialect search: uses ILIKE which works on both SQLite and PostgreSQL.
+            # On PostgreSQL, trigram indexes (from FTS migration) make ILIKE fast.
+            search_pattern = f"%{query_text}%"
             media_query = media_query.filter(
-                func.to_tsvector('simple', func.unaccent(MediaEntry.title_search)).match(
-                    func.unaccent(query_text)
+                or_(
+                    MediaEntry.title_romaji.ilike(search_pattern),
+                    MediaEntry.title_english.ilike(search_pattern),
+                    MediaEntry.title_native.ilike(search_pattern),
                 )
             )
 
@@ -113,3 +118,52 @@ class MediaRepository(BaseRepository[MediaEntry]):
         media_query = media_query.limit(limit)
 
         return await media_query.all()
+
+    async def get_airing_schedule(
+        self,
+        start_date: Optional[datetime] = None,
+        end_date: Optional[datetime] = None,
+        media_type: Optional[str] = None,
+        limit: int = 20,
+        offset: int = 0
+    ) -> Tuple[List[Tuple[Episode, MediaEntry]], int]:
+        """Get airing schedule episodes with media metadata.
+
+        Returns a tuple of (items, total_count).
+        Each item is a tuple of (Episode, MediaEntry).
+        """
+        from datetime import datetime as dt
+
+        now = dt.utcnow()
+
+        # Default time window: today to 7 days from now
+        if start_date is None:
+            start_date = now
+        if end_date is None:
+            end_date = dt(now.year + 1, 12, 31)  # Far future default
+
+        # Build base query for episodes joined with media_entries
+        statement = (
+            select(Episode, MediaEntry)
+            .join(MediaEntry, Episode.media_id == MediaEntry.id)
+            .where(Episode.air_date >= start_date)
+            .where(Episode.air_date <= end_date)
+            .where(MediaEntry.deleted_at.is_(None))
+            .order_by(Episode.air_date.asc())
+        )
+
+        if media_type:
+            statement = statement.where(MediaEntry.media_type == media_type)
+
+        # Get total count first
+        count_statement = select(func.count()).select_from(statement.subquery())
+        count_result = await self.db_session.exec(count_statement)
+        total = count_result.one() or 0
+
+        # Apply pagination
+        paginated = statement.limit(limit).offset(offset)
+
+        result = await self.db_session.exec(paginated)
+        items = result.all()
+
+        return items, total

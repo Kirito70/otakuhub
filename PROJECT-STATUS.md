@@ -10,15 +10,15 @@
 ## Current State
 
 ```
-CURRENT_PHASE:     AUDIT_PHASE_1 (Sync Pipeline)
-CURRENT_SUB_PHASE: 1.7
+CURRENT_PHASE:     AUDIT_PHASE_2 (Database & Models Alignment)
+CURRENT_SUB_PHASE: 2.6
 STATUS:            PHASE_COMPLETE
-LAST_UPDATED:      2026-06-03
+LAST_UPDATED:      2026-06-04
 BLOCKED_BY:        none
-NEXT_ACTION:       Review AUDIT-PLAN.md Phase 2 (Database & Models Alignment)
+NEXT_ACTION:       Review AUDIT-PLAN.md Phase 3 (Backend Endpoint Gaps)
 ```
 
-> **Note**: After completing all 24 formal phases, an audit (AUDIT-PLAN.md) identified real gaps. Phase 0 (cleanup) and Phase 1 (sync pipeline) of that audit are now complete. Phases 2+ are pending.
+> **Note**: After completing all 24 formal phases, an audit (AUDIT-PLAN.md) identified real gaps. Phase 0 (cleanup), Phase 1 (sync pipeline), and Phase 2 (Database & Models Alignment) are now complete. Phases 3+ pending.
 
 ---
 
@@ -395,6 +395,22 @@ NEXT_ACTION:       Review AUDIT-PLAN.md Phase 2 (Database & Models Alignment)
 
 ---
 
+### Audit Phase 2 — Database & Models Alignment
+**Goal**: Fix UUID v7, Full-Text Search, Alembic migrations, PostgreSQL default config, and missing constraints.
+
+**ADR**: `docs/adr/077-database-models-alignment.md`
+
+| Sub-phase | Task | Status | Notes |
+|-----------|------|--------|-------|
+| 2.1 | UUID v7 migration — create `generate_uuid7()`, update all 28 model PKs | ✅ | `core/uuid7.py` + 21 model files updated |
+| 2.2 | Full-Text Search — `TSVector` type, GIN indexes, trigram indexes, PG trigger | ✅ | `core/tsvector.py`, media_entry uses TSVector, repo search uses ILIKE |
+| 2.3 | Alembic migration system — init, configure async, baseline migration | ✅ | `alembic/` initialized, async env.py, 001_initial_tables.py |
+| 2.4 | PostgreSQL default config — change `DATABASE_URL`, wire pool settings | ✅ | config.py default → postgresql+asyncpg, pool_size/max_overflow wired |
+| 2.5 | Missing constraints — explicit `UniqueConstraint` on models | ✅ | user_list_entry + recommendation updated |
+| 2.6 | Update docs — backend-architecture.md paths, database.py location | ✅ | Fixed config.py/database.py paths, added uuid7/tsvector modules |
+
+---
+
 ## Completion Log
 
 > Add a line here every time a sub-phase is completed.
@@ -598,6 +614,7 @@ NEXT_ACTION:       Review AUDIT-PLAN.md Phase 2 (Database & Models Alignment)
 # 2026-06-03 | Audit Phase 1.5 | De-stubbed SyncService (sync_media_from_anilist, backfill_missing_metadata, update_or_create_media_from_anilist)
 # 2026-06-03 | Audit Phase 1.6 | Implemented import_user_list_task and process_new_episodes_task with real async logic
 # 2026-06-03 | Audit Phase 1.7 | Completed — 206 tests pass, 2 pre-existing failures remain (media_id FK validation)
+# 2026-06-04 | Audit Phase 2.0 | Design complete — ADR 077 covers UUID v7, Full-Text Search, Alembic migration system, PostgreSQL default config, and constraint alignment
 ```
 
 ---

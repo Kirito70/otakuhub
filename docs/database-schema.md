@@ -44,13 +44,21 @@
 - **2026-05-11 (Phase 22.2)**: No database schema changes required for Profile edit profile tab behavior contract.
 - **2026-05-11 (Phase 22.3)**: No database schema changes required for Profile account & security tab behavior contract.
 - **2026-05-11 (Phase 22.4)**: No database schema changes required for Profile tests contract.
+- **2026-06-04 (Phase 2.1)**: All model PKs changed from `uuid4()` to `uuid7()` (RFC 9562). See ADR 077.
+- **2026-06-04 (Phase 2.2)**: `media_entries.title_search` changed from `Text` to `TSVECTOR` (portable via `TSVector` SQLAlchemy type). GIN indexes, trigram indexes, and PostgreSQL trigger function added via Alembic migration. See ADR 077.
+- **2026-06-04 (Phase 2.3)**: Alembic migration system initialized. Baseline migration `001_initial_tables.py` captures all current tables. See ADR 077.
+- **2026-06-04 (Phase 2.4)**: Default `DATABASE_URL` changed to `postgresql+asyncpg://postgres:postgres@localhost:5432/otakuhub`. Pool settings wired to engine. SQLite retained for tests only. See ADR 077.
+- **2026-06-04 (Phase 2.5)**: Explicit `UniqueConstraint` declarations added to `user_list_entry` and `recommendation` models. See ADR 077.
 
 ## PostgreSQL Extensions Required
+
+> **Note**: `pg_uuidv7` is optional — the app uses a Python implementation of UUID v7 (RFC 9562) for portability across SQLite and PostgreSQL. The extension can be used for server-side generation if desired but is not required.
+
 ```sql
-CREATE EXTENSION IF NOT EXISTS "pg_uuidv7";      -- UUID v7 generation
-CREATE EXTENSION IF NOT EXISTS "pg_trgm";         -- Trigram similarity for search
-CREATE EXTENSION IF NOT EXISTS "unaccent";         -- Accent-insensitive search
-CREATE EXTENSION IF NOT EXISTS "btree_gin";        -- GIN on btree-able types
+CREATE EXTENSION IF NOT EXISTS "pg_trgm";         -- Trigram similarity for search (FTS migration)
+CREATE EXTENSION IF NOT EXISTS "unaccent";         -- Accent-insensitive search (FTS migration)
+CREATE EXTENSION IF NOT EXISTS "btree_gin";        -- GIN on btree-able types (FTS migration)
+-- Optional: CREATE EXTENSION IF NOT EXISTS "pg_uuidv7";  -- Not required — Python uuid7 used instead
 ```
 
 ---

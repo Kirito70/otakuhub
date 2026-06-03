@@ -23,7 +23,9 @@ class Settings(BaseSettings):
     debug: bool = False
 
     # Database
-    database_url: str = "sqlite+aiosqlite:///:memory:"
+    # Default uses PostgreSQL for dev/prod parity. Override with DATABASE_URL env var.
+    # For local SQLite testing: sqlite+aiosqlite:///./test.db or set in conftest.py
+    database_url: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/otakuhub"
     db_pool_size: int = 20
     db_max_overflow: int = 30
 

@@ -2,7 +2,8 @@
 
 from sqlmodel import SQLModel, Field
 from typing import Optional
-from uuid import UUID, uuid4
+from uuid import UUID
+from src.app.core.uuid7 import generate_uuid7
 from datetime import datetime
 
 
@@ -10,7 +11,7 @@ class Tag(SQLModel, table=True):
     """Tag model."""
 
     id: UUID = Field(
-        default_factory=uuid4,
+        default_factory=generate_uuid7,
         primary_key=True,
         nullable=False
     )

@@ -94,7 +94,7 @@
 | **GET** | `/api/v1/media/search` | Yes | `MediaSearchRequest { query?: string, type?: string, page?: int }` | `MediaSearchResponse` | 400 Bad request |
 | **GET** | `/api/v1/media/popular` | Yes | – | `MediaListResponse` | – |
 | **GET** | `/api/v1/media/trending` | Yes | – | `MediaListResponse` | – |
-| **GET** | `/api/v1/media/airing` | Yes | `AiringRequest { page?: int, per_page?: int }` | `AiringResponse` | 400 Bad request |
+| **GET** | `/api/v1/media/airing` | Yes | `AiringRequest { start_date?: string, end_date?: string, media_type?: string, limit?: int, offset?: int }` | `AiringResponse { items: AiringEpisodeItem[], total: int, limit: int, offset: int }` | 400 Bad request |
 
 ## Tracking Endpoints
 | Method | Path | Auth | Request Schema | Response Schema | Errors |
@@ -130,3 +130,30 @@
 - `SyncJob.status` uses: `running | completed | failed | partial`.
 - `error_log` should be structured JSON for retry tooling.
 - `processed_items`, `failed_items`, and `total_items` must be present for all long-running fetch jobs.
+
+## Media Schemas
+
+### `AiringEpisodeItem`
+```json
+{
+  "id": "uuid (episode ID)",
+  "media_id": "uuid (media entry ID)",
+  "media_title": "string — title_romaji from media_entries",
+  "media_cover": "string | null — cover_image_medium from media_entries",
+  "media_type": "string — anime, manga, manhwa, etc.",
+  "episode_number": "int",
+  "title": "string | null — episode title",
+  "air_date": "datetime | null — ISO 8601",
+  "duration_minutes": "int | null"
+}
+```
+
+### `AiringResponse`
+```json
+{
+  "items": ["AiringEpisodeItem[]"],
+  "total": "int",
+  "limit": "int (default 20, max 100)",
+  "offset": "int (default 0)"
+}
+```

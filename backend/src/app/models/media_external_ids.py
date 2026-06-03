@@ -2,7 +2,8 @@
 
 from sqlmodel import SQLModel, Field, Relationship
 from typing import Optional, TYPE_CHECKING
-from uuid import UUID, uuid4
+from uuid import UUID
+from src.app.core.uuid7 import generate_uuid7
 from datetime import datetime
 
 if TYPE_CHECKING:
@@ -13,7 +14,7 @@ class MediaExternalIds(SQLModel, table=True):
     """Cross-reference table mapping internal UUID to external platform IDs."""
 
     id: UUID = Field(
-        default_factory=uuid4,
+        default_factory=generate_uuid7,
         primary_key=True,
         nullable=False
     )

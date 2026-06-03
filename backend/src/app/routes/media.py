@@ -1,12 +1,13 @@
 """API routes for media management."""
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import Optional
 from uuid import UUID
+from datetime import datetime
 
 from src.app.services.media_service import MediaService
 from src.app.services.user_service import UserService
-from src.app.schemas.media import MediaDetailResponse
+from src.app.schemas.media import MediaDetailResponse, AiringResponse
 from src.app.core.auth import get_current_user
 from src.app.models import User
 
@@ -95,22 +96,33 @@ async def get_trending_media(
         "total": len(media_list)
     }
 
-@router.get("/media/airing")
+@router.get("/media/airing", response_model=AiringResponse)
 async def get_airing_calendar(
-    media_type: Optional[str] = None,
-    start_date: Optional[str] = None,
-    end_date: Optional[str] = None,
-    limit: int = 20,
-    offset: int = 0,
+    media_type: Optional[str] = Query(None, description="Filter by media type (anime, manga, manhwa, etc.)"),
+    start_date: Optional[str] = Query(None, description="Start date (ISO format, e.g. 2026-01-01). Defaults to today."),
+    end_date: Optional[str] = Query(None, description="End date (ISO format, e.g. 2026-12-31). Defaults to 1 year from now."),
+    limit: int = Query(20, ge=1, le=100, description="Results per page"),
+    offset: int = Query(0, ge=0, description="Pagination offset"),
     media_service: MediaService = Depends(get_media_service),
     user: User = Depends(get_current_user)
 ):
-    """Get airing schedule/episode calendar."""
-    # This would be implemented to return upcoming episodes
-    # Placeholder for now
-    return {
-        "items": [],
-        "total": 0,
-        "limit": limit,
-        "offset": offset
-    }
+    """Get airing schedule/episode calendar.
+
+    Returns upcoming episodes for the specified date range, with media metadata
+    (title, cover image, type) joined from the media_entries table.
+    """
+    # Parse dates if provided
+    parsed_start = None
+    parsed_end = None
+    if start_date:
+        parsed_start = datetime.fromisoformat(start_date)
+    if end_date:
+        parsed_end = datetime.fromisoformat(end_date)
+
+    return await media_service.get_airing_schedule(
+        start_date=parsed_start,
+        end_date=parsed_end,
+        media_type=media_type,
+        limit=limit,
+        offset=offset,
+    )

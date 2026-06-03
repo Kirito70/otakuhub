@@ -47,3 +47,28 @@ class MediaDetailResponse(BaseModel):
     tags: List[Any] = []
     created_at: datetime
     updated_at: datetime
+
+
+class AiringEpisodeItem(BaseModel):
+    """A single airing episode with joined media metadata."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    media_id: UUID
+    media_title: str
+    media_cover: Optional[str] = None
+    media_type: Any
+    episode_number: int
+    title: Optional[str] = None
+    air_date: Optional[datetime] = None
+    duration_minutes: Optional[int] = None
+
+
+class AiringResponse(BaseModel):
+    """Paginated response for airing schedule."""
+
+    items: List[AiringEpisodeItem] = []
+    total: int = 0
+    limit: int = 20
+    offset: int = 0

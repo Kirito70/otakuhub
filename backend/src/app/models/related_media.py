@@ -2,7 +2,8 @@
 
 from sqlmodel import SQLModel, Field, Relationship, Index
 from typing import Optional, TYPE_CHECKING
-from uuid import UUID, uuid4
+from uuid import UUID
+from src.app.core.uuid7 import generate_uuid7
 from datetime import datetime
 from src.app.models.enums import RelationType
 
@@ -14,7 +15,7 @@ class RelatedMedia(SQLModel, table=True):
     """Relationships between media entries (sequel/prequel, etc)."""
 
     id: UUID = Field(
-        default_factory=uuid4,
+        default_factory=generate_uuid7,
         primary_key=True,
         nullable=False
     )

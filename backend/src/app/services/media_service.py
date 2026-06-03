@@ -1,14 +1,14 @@
 """Media service for managing anime, manga, and other media entries."""
 
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, Tuple
 from sqlmodel import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime
 from uuid import UUID
 
-from src.app.models import MediaEntry, MediaExternalIds, Genre, Studio, Tag, MediaGenre, MediaStudio, MediaTag
+from src.app.models import MediaEntry, MediaExternalIds, Genre, Studio, Tag, MediaGenre, MediaStudio, MediaTag, Episode
 from src.app.services.base_service import BaseService
-from src.app.schemas.media import MediaDetailResponse
+from src.app.schemas.media import MediaDetailResponse, AiringEpisodeItem, AiringResponse
 from src.app.repositories.media_repository import MediaRepository
 
 
@@ -154,3 +154,42 @@ class MediaService(BaseService):
     async def get_by_status(self, status: str, limit: int = 20) -> List[MediaEntry]:
         """Get media by status."""
         return await self._media_repository.get_by_status(status, limit)
+
+    async def get_airing_schedule(
+        self,
+        start_date: Optional[datetime] = None,
+        end_date: Optional[datetime] = None,
+        media_type: Optional[str] = None,
+        limit: int = 20,
+        offset: int = 0
+    ) -> AiringResponse:
+        """Get airing schedule with media metadata."""
+        items, total = await self._media_repository.get_airing_schedule(
+            start_date=start_date,
+            end_date=end_date,
+            media_type=media_type,
+            limit=limit,
+            offset=offset
+        )
+
+        episode_items = [
+            AiringEpisodeItem(
+                id=episode.id,
+                media_id=media.id,
+                media_title=media.title_romaji,
+                media_cover=media.cover_image_medium,
+                media_type=media.media_type,
+                episode_number=episode.episode_number,
+                title=episode.title,
+                air_date=episode.air_date,
+                duration_minutes=episode.duration_minutes,
+            )
+            for episode, media in items
+        ]
+
+        return AiringResponse(
+            items=episode_items,
+            total=total,
+            limit=limit,
+            offset=offset,
+        )

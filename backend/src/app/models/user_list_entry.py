@@ -1,8 +1,9 @@
 """User list entry model for OtakuHub."""
 
-from sqlmodel import SQLModel, Field, Relationship, Index
+from sqlmodel import SQLModel, Field, Relationship, Index, UniqueConstraint
 from typing import Optional, TYPE_CHECKING
-from uuid import UUID, uuid4
+from uuid import UUID
+from src.app.core.uuid7 import generate_uuid7
 from datetime import datetime
 from src.app.models.enums import WatchStatus
 
@@ -17,7 +18,7 @@ class UserListEntry(SQLModel, table=True):
     __tablename__ = "user_list_entry"
 
     id: UUID = Field(
-        default_factory=uuid4,
+        default_factory=generate_uuid7,
         primary_key=True,
         nullable=False
     )
@@ -49,5 +50,5 @@ class UserListEntry(SQLModel, table=True):
         Index("idx_list_entries_media_id", "media_id"),
         Index("idx_list_entries_status", "user_id", "status"),
         Index("idx_list_entries_updated", "user_id", "updated_at"),
-        Index("idx_list_entries_user_media", "user_id", "media_id", unique=True),
+        UniqueConstraint("user_id", "media_id", name="uq_user_list_entry_user_media"),
     )
