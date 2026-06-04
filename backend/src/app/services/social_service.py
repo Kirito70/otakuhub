@@ -106,13 +106,34 @@ class SocialService(BaseService):
         count_result = await self.db_session.exec(count_stmt)
         return count_result.one_or_none() or 0
 
-    async def get_user_sent_recommendations(self, user_id: UUID, limit: int = 20) -> List[Recommendation]:
-        """Get recommendations sent by a user."""
-        statement = select(Recommendation).where(Recommendation.from_user_id == user_id)
-        statement = statement.order_by(Recommendation.created_at.desc()).limit(limit)
-
+    async def get_user_sent_recommendations(
+        self,
+        user_id: UUID,
+        limit: int = 20,
+        offset: int = 0,
+    ) -> List[Recommendation]:
+        """Get paginated recommendations sent by a user (non-deleted)."""
+        statement = (
+            select(Recommendation)
+            .where(
+                Recommendation.from_user_id == user_id,
+                Recommendation.deleted_at.is_(None),
+            )
+            .order_by(Recommendation.created_at.desc())
+            .offset(offset)
+            .limit(limit)
+        )
         result = await self.db_session.exec(statement)
         return result.all()
+
+    async def count_user_sent_recommendations(self, user_id: UUID) -> int:
+        """Count sent recommendations for pagination metadata."""
+        statement = select(func.count(Recommendation.id)).where(
+            Recommendation.from_user_id == user_id,
+            Recommendation.deleted_at.is_(None),
+        )
+        result = await self.db_session.exec(statement)
+        return result.one_or_none() or 0
 
     async def create_recommendation(self, from_user_id: UUID, to_user_id: UUID,
                                   media_id: UUID, message: str) -> Recommendation:

@@ -416,3 +416,148 @@ def test_phase9_public_profile_by_username_not_found() -> None:
     with TestClient(app) as client:
         res = client.get("/api/v1/users/nonexistent_user_123/profile")
         assert res.status_code == 404
+
+
+# --- Sent Recommendations ---
+
+
+def test_phase9_recommendations_sent_requires_auth() -> None:
+    with TestClient(app) as client:
+        res = client.get("/api/v1/social/recommendations/sent")
+        assert res.status_code == 401
+
+
+def test_phase9_recommendations_sent_returns_only_sent_by_user() -> None:
+    with TestClient(app) as client:
+        sender1 = _register_and_login(client, "sent1")
+        sender2 = _register_and_login(client, "sent2")
+        receiver = _register_and_login(client, "sentrecv")
+
+        h1 = {"Authorization": f"Bearer {sender1['access_token']}"}
+        h2 = {"Authorization": f"Bearer {sender2['access_token']}"}
+        hr = {"Authorization": f"Bearer {receiver['access_token']}"}
+
+        # Create shared group
+        group = client.post(
+            "/api/v1/groups",
+            json={"name": "Sent Test", "description": "sent recs", "is_private": True},
+            headers=h1,
+        )
+        assert group.status_code == 201, group.text
+        invite_code = group.json()["invite_code"]
+
+        join_res = client.post(f"/api/v1/groups/join/{invite_code}", headers=h2)
+        assert join_res.status_code == 200, join_res.text
+
+        join_res = client.post(f"/api/v1/groups/join/{invite_code}", headers=hr)
+        assert join_res.status_code == 200, join_res.text
+
+        media_id = _existing_media_id(client, h1)
+
+        # sender1 -> receiver
+        rec1 = client.post(
+            "/api/v1/social/recommend",
+            json={"to_user_id": receiver["user_id"], "media_id": media_id, "message": "from1"},
+            headers=h1,
+        )
+        assert rec1.status_code == 201, rec1.text
+
+        # sender2 -> receiver
+        rec2 = client.post(
+            "/api/v1/social/recommend",
+            json={"to_user_id": receiver["user_id"], "media_id": media_id, "message": "from2"},
+            headers=h2,
+        )
+        assert rec2.status_code == 201, rec2.text
+
+        # sender1 sent recs should contain only rec1
+        sent1_resp = client.get("/api/v1/social/recommendations/sent", headers=h1)
+        assert sent1_resp.status_code == 200, sent1_resp.text
+        body = sent1_resp.json()
+        assert body["total"] >= 1
+        assert body["limit"] == 50
+        assert body["offset"] == 0
+        for item in body["items"]:
+            assert item["from_user_id"] == sender1["user_id"]
+
+        # sender2 sent recs should contain only rec2
+        sent2_resp = client.get("/api/v1/social/recommendations/sent", headers=h2)
+        assert sent2_resp.status_code == 200, sent2_resp.text
+        body2 = sent2_resp.json()
+        assert body2["total"] >= 1
+        for item in body2["items"]:
+            assert item["from_user_id"] == sender2["user_id"]
+
+
+def test_phase9_recommendations_sent_pagination() -> None:
+    with TestClient(app) as client:
+        sender = _register_and_login(client, "sentpage")
+        receiver1 = _register_and_login(client, "sentpagercv1")
+        receiver2 = _register_and_login(client, "sentpagercv2")
+        receiver3 = _register_and_login(client, "sentpagercv3")
+
+        h = {"Authorization": f"Bearer {sender['access_token']}"}
+        hr1 = {"Authorization": f"Bearer {receiver1['access_token']}"}
+        hr2 = {"Authorization": f"Bearer {receiver2['access_token']}"}
+        hr3 = {"Authorization": f"Bearer {receiver3['access_token']}"}
+
+        group = client.post(
+            "/api/v1/groups",
+            json={"name": "Sent Page", "description": "sent pagination", "is_private": True},
+            headers=h,
+        )
+        assert group.status_code == 201, group.text
+        invite_code = group.json()["invite_code"]
+        for hr in (hr1, hr2, hr3):
+            join_res = client.post(f"/api/v1/groups/join/{invite_code}", headers=hr)
+            assert join_res.status_code == 200, join_res.text
+
+        media_id = _existing_media_id(client, h)
+
+        receivers = [receiver1, receiver2, receiver3]
+        # Create 3 sent recommendations to 3 different users (unique constraint)
+        for idx, rcv in enumerate(receivers):
+            rec = client.post(
+                "/api/v1/social/recommend",
+                json={
+                    "to_user_id": rcv["user_id"],
+                    "media_id": media_id,
+                    "message": f"page_{idx}",
+                },
+                headers=h,
+            )
+            assert rec.status_code == 201, rec.text
+
+        # First page: limit=2
+        page1 = client.get("/api/v1/social/recommendations/sent?limit=2&offset=0", headers=h)
+        assert page1.status_code == 200, page1.text
+        body1 = page1.json()
+        assert len(body1["items"]) == 2
+        assert body1["total"] >= 3
+        assert body1["limit"] == 2
+        assert body1["offset"] == 0
+
+        # Second page: offset=2
+        page2 = client.get("/api/v1/social/recommendations/sent?limit=2&offset=2", headers=h)
+        assert page2.status_code == 200, page2.text
+        body2 = page2.json()
+        assert len(body2["items"]) >= 1
+        assert body2["offset"] == 2
+
+        # Items should differ between pages (different IDs)
+        ids1 = {item["id"] for item in body1["items"]}
+        ids2 = {item["id"] for item in body2["items"]}
+        assert ids1.isdisjoint(ids2), "Pages should return different items"
+
+
+def test_phase9_recommendations_sent_empty_for_user_with_no_sent() -> None:
+    """A user who has never sent a recommendation gets an empty list."""
+    with TestClient(app) as client:
+        user = _register_and_login(client, "sentempty")
+        h = {"Authorization": f"Bearer {user['access_token']}"}
+
+        resp = client.get("/api/v1/social/recommendations/sent", headers=h)
+        assert resp.status_code == 200, resp.text
+        body = resp.json()
+        assert body["items"] == []
+        assert body["total"] == 0

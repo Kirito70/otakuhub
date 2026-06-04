@@ -72,6 +72,15 @@ class RecommendationInboxResponse(BaseModel):
     offset: int
 
 
+class RecommendationSentResponse(BaseModel):
+    """Paginated sent recommendations for current user."""
+
+    items: list[RecommendationResponse]
+    total: int
+    limit: int
+    offset: int
+
+
 class DiscussionCreateRequest(BaseModel):
     """Payload to create a discussion thread."""
 

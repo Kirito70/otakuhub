@@ -126,6 +126,18 @@
 | **GET** | `/api/v1/admin/sync/jobs` | Yes (admin) | `SyncJobsQuery { job_type?: string, status?: string, limit?: int, offset?: int }` | `SyncJobsResponse { items: SyncJob[], total: int, limit: int, offset: int }` | 401 / 403 |
 | **GET** | `/api/v1/admin/sync/jobs/{job_id}` | Yes (admin) | – | `SyncJobDetail` | 401 / 403 / 404 |
 
+## Social Endpoints
+| Method | Path | Auth | Request Schema | Response Schema | Errors |
+|--------|------|------|----------------|----------------|--------|
+| **GET** | `/api/v1/social/feed` | Yes | `FeedQuery { limit?: int, offset?: int }` | `SocialFeedResponse { items: SocialFeedItemResponse[], total: int, limit: int, offset: int }` | 401 |
+| **POST** | `/api/v1/social/recommend` | Yes | `RecommendationCreateRequest { to_user_id: UUID, media_id: UUID, message?: string }` | `RecommendationResponse` | 400 / 404 / 409 |
+| **GET** | `/api/v1/social/recommendations/inbox` | Yes | `InboxQuery { include_acknowledged?: bool, limit?: int, offset?: int }` | `RecommendationInboxResponse { items: RecommendationResponse[], total: int, limit: int, offset: int }` | 401 |
+| **GET** | `/api/v1/social/recommendations/sent` | Yes | `SentQuery { limit?: int, offset?: int }` | `RecommendationSentResponse { items: RecommendationResponse[], total: int, limit: int, offset: int }` | 401 |
+| **PATCH** | `/api/v1/social/recommendations/{id}/acknowledge` | Yes | – | `RecommendationResponse` | 401 / 404 |
+| **POST** | `/api/v1/social/discussions` | Yes | `DiscussionCreateRequest { media_id: UUID, group_id: UUID, title?: string, body: string, has_spoilers?: bool, episode_number?: int, chapter_number?: float }` | `DiscussionResponse` | 400 / 403 |
+| **GET** | `/api/v1/social/discussions/{media_id}` | Yes | `DiscussionsQuery { group_id?: UUID, limit?: int, offset?: int }` | `DiscussionListResponse { items: DiscussionResponse[], total: int, limit: int, offset: int }` | 401 |
+| **POST** | `/api/v1/social/discussions/{id}/replies` | Yes | `DiscussionReplyCreateRequest { body: string, has_spoilers?: bool, parent_reply_id?: UUID }` | `DiscussionReplyResponse` | 400 / 403 / 404 |
+
 ### Sync job response notes
 - `SyncJob.status` uses: `running | completed | failed | partial`.
 - `error_log` should be structured JSON for retry tooling.

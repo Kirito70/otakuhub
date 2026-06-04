@@ -53,7 +53,7 @@ async def test_social_read_queries_return_rows() -> None:
     assert await svc.count_user_recommendations_inbox(user_id, include_acknowledged=False) == 3
     assert await svc.get_group_activity_feed(user_id, limit=10, offset=0) == [row]
     assert await svc.count_group_activity_feed(user_id) == 2
-    assert await svc.get_user_sent_recommendations(user_id, limit=3) == [row]
+    assert await svc.get_user_sent_recommendations(user_id, limit=3, offset=0) == [row]
     assert await svc.get_discussions(media_id, group_id=None, limit=5, offset=0) == [row]
     assert await svc.get_discussions_for_user_media(user_id=user_id, media_id=media_id, group_id=None, limit=5, offset=0) == [row]
     assert await svc.count_discussions_for_user_media(user_id=user_id, media_id=media_id, group_id=None) == 4

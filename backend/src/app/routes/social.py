@@ -18,6 +18,7 @@ from src.app.schemas.social import (
     RecommendationCreateRequest,
     RecommendationInboxResponse,
     RecommendationResponse,
+    RecommendationSentResponse,
     SocialFeedItemResponse,
     SocialFeedResponse,
 )
@@ -97,6 +98,29 @@ async def get_recommendation_inbox(
     )
 
     return RecommendationInboxResponse(
+        items=[RecommendationResponse.model_validate(item) for item in items],
+        total=total,
+        limit=limit,
+        offset=offset,
+    )
+
+
+@router.get("/recommendations/sent", response_model=RecommendationSentResponse)
+async def get_recommendation_sent(
+    limit: int = Query(default=50, ge=1, le=200),
+    offset: int = Query(default=0, ge=0),
+    social_service: SocialService = Depends(get_social_service),
+    user: User = Depends(get_current_user),
+) -> RecommendationSentResponse:
+    """Get current user's sent recommendations."""
+    items = await social_service.get_user_sent_recommendations(
+        user_id=user.id,
+        limit=limit,
+        offset=offset,
+    )
+    total = await social_service.count_user_sent_recommendations(user_id=user.id)
+
+    return RecommendationSentResponse(
         items=[RecommendationResponse.model_validate(item) for item in items],
         total=total,
         limit=limit,
