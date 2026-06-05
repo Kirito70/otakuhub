@@ -317,3 +317,123 @@ def test_phase10_watchparty_detail_success() -> None:
         assert body["rsvp_summary"] is not None
         assert body["rsvp_summary"]["attending"] >= 1
         assert body["attendee_count"] >= 1
+
+
+# --- Watch Party Past (GET /past) ---
+
+
+def test_phase10_watchparty_past_requires_auth() -> None:
+    with TestClient(app) as client:
+        res = client.get("/api/v1/watchparty/past")
+        assert res.status_code == 401
+
+
+def test_phase10_watchparty_past_returns_empty_for_no_past_parties() -> None:
+    with TestClient(app) as client:
+        owner = _register_and_login(client, "pastempty")
+        member = _register_and_login(client, "pastemptymem")
+
+        owner_headers = {"Authorization": f"Bearer {owner['access_token']}"}
+        member_headers = {"Authorization": f"Bearer {member['access_token']}"}
+
+        media_id = _get_seeded_media_id(client, owner_headers)
+
+        group_create = client.post(
+            "/api/v1/groups",
+            json={"name": "Past Empty Group", "description": "pastempty", "is_private": True},
+            headers=owner_headers,
+        )
+        assert group_create.status_code == 201, group_create.text
+        group_id = group_create.json()["id"]
+        invite_code = group_create.json()["invite_code"]
+
+        join_member = client.post(f"/api/v1/groups/join/{invite_code}", headers=member_headers)
+        assert join_member.status_code == 200, join_member.text
+
+        # Create a future party (should NOT appear in past)
+        future_scheduled = (datetime.now(UTC) + timedelta(days=1)).isoformat()
+        party_create = client.post(
+            "/api/v1/watchparty",
+            json={
+                "group_id": group_id,
+                "media_id": media_id,
+                "scheduled_at": future_scheduled,
+                "title": "Future Party",
+            },
+            headers=owner_headers,
+        )
+        assert party_create.status_code == 201, party_create.text
+
+        # Get past parties — should be empty
+        res = client.get("/api/v1/watchparty/past?limit=20&offset=0", headers=member_headers)
+        assert res.status_code == 200, res.text
+        body = res.json()
+        assert body["items"] == []
+        assert body["total"] == 0
+
+
+def test_phase10_watchparty_past_returns_past_parties() -> None:
+    with TestClient(app) as client:
+        owner = _register_and_login(client, "pasthost")
+        member = _register_and_login(client, "pastmem")
+
+        owner_headers = {"Authorization": f"Bearer {owner['access_token']}"}
+        member_headers = {"Authorization": f"Bearer {member['access_token']}"}
+
+        media_id = _get_seeded_media_id(client, owner_headers)
+
+        group_create = client.post(
+            "/api/v1/groups",
+            json={"name": "Past Party Group", "description": "pastparty", "is_private": True},
+            headers=owner_headers,
+        )
+        assert group_create.status_code == 201, group_create.text
+        group_id = group_create.json()["id"]
+        invite_code = group_create.json()["invite_code"]
+
+        join_member = client.post(f"/api/v1/groups/join/{invite_code}", headers=member_headers)
+        assert join_member.status_code == 200, join_member.text
+
+        # Create a past party (scheduled yesterday) — should appear in past
+        past_scheduled = (datetime.now(UTC) - timedelta(days=1)).isoformat()
+        party_create = client.post(
+            "/api/v1/watchparty",
+            json={
+                "group_id": group_id,
+                "media_id": media_id,
+                "scheduled_at": past_scheduled,
+                "title": "Past Party",
+            },
+            headers=owner_headers,
+        )
+        assert party_create.status_code == 201, party_create.text
+        past_party_id = party_create.json()["id"]
+
+        # Get past parties — should include the past party
+        res = client.get("/api/v1/watchparty/past?limit=20&offset=0", headers=member_headers)
+        assert res.status_code == 200, res.text
+        body = res.json()
+        assert len(body["items"]) >= 1
+        assert body["total"] >= 1
+        party_ids = [item["id"] for item in body["items"]]
+        assert past_party_id in party_ids
+
+
+def test_phase10_watchparty_past_returns_403_for_non_member_group_scope() -> None:
+    with TestClient(app) as client:
+        owner = _register_and_login(client, "pastowner2")
+        outsider = _register_and_login(client, "pastoutsider2")
+
+        owner_headers = {"Authorization": f"Bearer {owner['access_token']}"}
+
+        group_create = client.post(
+            "/api/v1/groups",
+            json={"name": "Past Group 2", "description": "past403", "is_private": True},
+            headers=owner_headers,
+        )
+        assert group_create.status_code == 201, group_create.text
+        group_id = group_create.json()["id"]
+
+        outsider_headers = {"Authorization": f"Bearer {outsider['access_token']}"}
+        res = client.get(f"/api/v1/watchparty/past?group_id={group_id}", headers=outsider_headers)
+        assert res.status_code == 403, res.text

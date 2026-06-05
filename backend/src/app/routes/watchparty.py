@@ -79,6 +79,37 @@ async def get_upcoming_watch_parties(
     )
 
 
+@router.get("/past", response_model=WatchPartyListResponse)
+async def get_past_watch_parties(
+    group_id: UUID | None = Query(default=None),
+    limit: int = Query(default=50, ge=1, le=200),
+    offset: int = Query(default=0, ge=0),
+    watchparty_service: WatchPartyService = Depends(get_watch_party_service),
+    user: User = Depends(get_current_user),
+) -> WatchPartyListResponse:
+    """Phase 10.4 — list past/completed/cancelled parties in user's groups."""
+    try:
+        items = await watchparty_service.get_past_watch_parties_for_user(
+            user_id=user.id,
+            group_id=group_id,
+            limit=limit,
+            offset=offset,
+        )
+        total = await watchparty_service.count_past_watch_parties_for_user(
+            user_id=user.id,
+            group_id=group_id,
+        )
+    except PermissionError as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from exc
+
+    return WatchPartyListResponse(
+        items=[WatchPartyResponse.model_validate(item) for item in items],
+        total=total,
+        limit=limit,
+        offset=offset,
+    )
+
+
 @router.get("/{party_id}", response_model=WatchPartyDetailResponse)
 async def get_watch_party_detail(
     party_id: UUID,

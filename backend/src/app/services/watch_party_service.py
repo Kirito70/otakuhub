@@ -120,6 +120,75 @@ class WatchPartyService(BaseService):
         result = await self.db_session.exec(statement)
         return result.one_or_none() or 0
 
+    async def get_past_watch_parties_for_user(
+        self,
+        *,
+        user_id: UUID,
+        group_id: Optional[UUID] = None,
+        limit: int = 20,
+        offset: int = 0,
+    ) -> List[WatchParty]:
+        """Get past/completed/cancelled watch parties visible to a user in their groups."""
+        if group_id is not None:
+            membership_stmt = select(GroupMember).where(
+                GroupMember.group_id == group_id,
+                GroupMember.user_id == user_id,
+            )
+            membership = (await self.db_session.exec(membership_stmt)).one_or_none()
+            if membership is None:
+                raise PermissionError("User is not a member of this group")
+
+        member_group_ids_stmt = select(GroupMember.group_id).where(GroupMember.user_id == user_id)
+
+        statement = select(WatchParty).where(
+            WatchParty.deleted_at.is_(None),
+            WatchParty.group_id.in_(member_group_ids_stmt),
+            or_(
+                WatchParty.status == PartyStatus.completed,
+                WatchParty.status == PartyStatus.cancelled,
+                WatchParty.scheduled_at < datetime.utcnow(),
+            ),
+        )
+        if group_id is not None:
+            statement = statement.where(WatchParty.group_id == group_id)
+
+        statement = statement.order_by(WatchParty.scheduled_at.desc()).offset(offset).limit(limit)
+        result = await self.db_session.exec(statement)
+        return result.all()
+
+    async def count_past_watch_parties_for_user(
+        self,
+        *,
+        user_id: UUID,
+        group_id: Optional[UUID] = None,
+    ) -> int:
+        """Count past/completed/cancelled watch parties visible to a user."""
+        if group_id is not None:
+            membership_stmt = select(GroupMember).where(
+                GroupMember.group_id == group_id,
+                GroupMember.user_id == user_id,
+            )
+            membership = (await self.db_session.exec(membership_stmt)).one_or_none()
+            if membership is None:
+                raise PermissionError("User is not a member of this group")
+
+        member_group_ids_stmt = select(GroupMember.group_id).where(GroupMember.user_id == user_id)
+
+        statement = select(func.count(WatchParty.id)).where(
+            WatchParty.deleted_at.is_(None),
+            WatchParty.group_id.in_(member_group_ids_stmt),
+            or_(
+                WatchParty.status == PartyStatus.completed,
+                WatchParty.status == PartyStatus.cancelled,
+                WatchParty.scheduled_at < datetime.utcnow(),
+            ),
+        )
+        if group_id is not None:
+            statement = statement.where(WatchParty.group_id == group_id)
+
+        result = await self.db_session.exec(statement)
+        return result.one_or_none() or 0
+
     async def create_watch_party(self, host_user_id: UUID, group_id: UUID, media_id: UUID,
                                 title: str, scheduled_at: datetime,
                                 episode_number: Optional[int] = None,
