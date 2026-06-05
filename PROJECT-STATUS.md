@@ -10,15 +10,15 @@
 ## Current State
 
 ```
-CURRENT_PHASE:     AUDIT_PHASE_3 (Backend Endpoint Gaps)
-CURRENT_SUB_PHASE: 3.2
+CURRENT_PHASE:     AUDIT_PHASE_4 (Frontend Pages — Complete Missing Implementations)
+CURRENT_SUB_PHASE: 4.1
 STATUS:            COMPLETED
 LAST_UPDATED:      2026-06-05
 BLOCKED_BY:        none
-NEXT_ACTION:       Mark phase complete, update docs/api-spec.md with new endpoints, then advance to next audit phase
+NEXT_ACTION:       Implement ProfilePage (Phase 4.2) — 3-tab layout: Overview, Edit Profile, Account & Security
 ```
 
-> **Note**: After completing all 24 formal phases, an audit (AUDIT-PLAN.md) identified real gaps. Phase 0 (cleanup), Phase 1 (sync pipeline), and Phase 2 (Database & Models Alignment) are now complete. Phase 3 (Backend Endpoint Gaps) is in progress.
+> **Note**: After completing all 24 formal phases, an audit (AUDIT-PLAN.md) identified real gaps. Phase 0 (cleanup), Phase 1 (sync pipeline), Phase 2 (Database & Models Alignment), and Phase 3 (Backend Endpoint Gaps) are complete. Phase 4 (Frontend Pages) is in progress.
 
 ---
 
@@ -431,6 +431,20 @@ NEXT_ACTION:       Mark phase complete, update docs/api-spec.md with new endpoin
 
 ---
 
+### Audit Phase 4 — Frontend Pages (Complete Missing Implementations)
+**Goal**: Replace all stub pages with full implementations per architecture contracts. Covers social domain (Feed, Recommendations, Discussions), Profile, shared components, stores, and composables.
+
+**Reference**: `AUDIT-PLAN.md §4`
+
+| Sub-phase | Task | Status | Notes |
+|-----------|------|--------|-------|
+| 4.1 | Social Domain — Feed, Recommendations, Discussion pages | ✅ | Full implementations with tabs, pagination, AppEmptyState, spoiler handling, reply flow; 10 Vitest tests pass |
+| 4.2 | Profile page (Overview, Edit Profile, Account & Security tabs) | ⏳ | Currently renders `"Profile"` text only. Must implement 3-tab layout with forms, validation, save-state, and tests |
+| 4.3 | Missing stores & composable (`social.ts`, `useInfiniteScroll.ts`) | ⏳ | Pinia social store + infinite scroll composable needed for paginated pages |
+| 4.4 | Missing shared components (MediaCard, MediaBanner, ActivityFeedItem, RecommendCard) | ⏳ | Currently built inline; extract to reusable primitives |
+
+---
+
 ## Completion Log
 
 > Add a line here every time a sub-phase is completed.
@@ -647,6 +661,7 @@ NEXT_ACTION:       Mark phase complete, update docs/api-spec.md with new endpoin
 # 2026-06-05 | Audit Phase 3.4 | Confirmed user_settings table exists with real get/update operations (not a stub)
 # 2026-06-05 | Bugfix | Fixed BaseService.db_session session-caching bug — property created new AsyncSessionLocal() on every call instead of caching it, causing all write operations to commit on a different session than the one tracking object changes
 # 2026-06-05 | Audit Phase 3.2 | Full service/repository consistency audit completed: 4 new repo files (social, watch_party, notification, tracking) with 14 repo classes; GroupService, SocialService, WatchPartyService, NotificationService, TrackingService migrated; MediaService/UserService bypasses fixed; 80 tests pass across all migrated services
+# 2026-06-05 | Audit Phase 4.1 | Social Domain frontend pages implemented: FeedPage (group + my activity tabs), RecommendationsPage (inbox + sent tabs), DiscussionPage (threads list + detail + replies + create form); created social.ts types, social.ts Pinia store, useInfiniteScroll composable, ActivityFeedItem + RecommendCard components; 10 new Vitest tests pass; 33 total frontend tests pass
 ```
 
 ---
