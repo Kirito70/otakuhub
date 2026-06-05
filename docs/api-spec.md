@@ -44,6 +44,7 @@
 - **2026-05-11 (Phase 22.2)**: No new endpoints. Profile Edit tab standardizes frontend behavior over existing profile update contract(s).
 - **2026-05-11 (Phase 22.3)**: No new endpoints. Profile Account & Security tab standardizes frontend behavior over existing account-security/password-session contracts.
 - **2026-05-11 (Phase 22.4)**: No new endpoints. Profile test expansion standardizes validation coverage for existing overview/edit/security contracts.
+- **2026-06-06 (ADR 078 implementation)**: Implemented admin enqueue endpoints for Anikoto provider-source sync: `POST /api/v1/admin/sync/providers/anikoto/full` and `/recent`. No public playback endpoints are exposed.
 
 ## Authentication Endpoints
 | Method | Path | Auth | Request Schema | Response Schema | Errors |
@@ -124,8 +125,27 @@
 |--------|------|------|----------------|----------------|--------|
 | **POST** | `/api/v1/admin/sync/seed` | Yes (admin) | `SeedRequest { batch_size?: int }` | `JobEnqueueResponse { job_id: UUID, job_type: "seed", status: "queued" }` | 401 / 403 |
 | **POST** | `/api/v1/admin/sync/weekly-refresh` | Yes (admin) | – | `JobEnqueueResponse { job_id: UUID, job_type: "weekly_refresh", status: "queued" }` | 401 / 403 |
+| **POST** | `/api/v1/admin/sync/providers/anikoto/full` | Yes (admin) | `AnikotoFullSyncRequest { per_page?: int = 20, max_pages?: int, refresh_details?: bool = true, dry_run?: bool = false }` | `JobEnqueueResponse { job_id: UUID, job_type: "anikoto_full_catalog", status: "queued" }` | 401 / 403 / 429 |
+| **POST** | `/api/v1/admin/sync/providers/anikoto/recent` | Yes (admin) | `AnikotoRecentSyncRequest { per_page?: int = 20, max_pages?: int = 5, refresh_details?: bool = true, dry_run?: bool = false }` | `JobEnqueueResponse { job_id: UUID, job_type: "anikoto_recent_refresh", status: "queued" }` | 401 / 403 / 429 |
+| **POST** | `/api/v1/admin/sync/providers/megaplay/full` | Yes (admin) | `AnikotoFullSyncRequest` | `JobEnqueueResponse { job_id: UUID, job_type: "anikoto_full_catalog", status: "queued" }` | 401 / 403 / 429 |
+| **POST** | `/api/v1/admin/sync/providers/megaplay/recent` | Yes (admin) | `AnikotoRecentSyncRequest` | `JobEnqueueResponse { job_id: UUID, job_type: "anikoto_recent_refresh", status: "queued" }` | 401 / 403 / 429 |
 | **GET** | `/api/v1/admin/sync/jobs` | Yes (admin) | `SyncJobsQuery { job_type?: string, status?: string, limit?: int, offset?: int }` | `SyncJobsResponse { items: SyncJob[], total: int, limit: int, offset: int }` | 401 / 403 |
 | **GET** | `/api/v1/admin/sync/jobs/{job_id}` | Yes (admin) | – | `SyncJobDetail` | 401 / 403 / 404 |
+
+### Provider Source Mapping Endpoints (planned — ADR 078)
+| Method | Path | Auth | Request Schema | Response Schema | Errors |
+|--------|------|------|----------------|----------------|--------|
+| **GET** | `/api/v1/admin/media/source-mappings` | Yes (admin) | `SourceMappingQuery { source?: string, mapping_status?: "matched"|"unmatched"|"ignored"|"stale", media_id?: UUID, limit?: int, offset?: int }` | `SourceMappingListResponse { items: SourceMappingResponse[], total: int, limit: int, offset: int }` | 401 / 403 |
+| **PATCH** | `/api/v1/admin/media/source-mappings/{mapping_id}` | Yes (admin) | `SourceMappingUpdate { media_id?: UUID, mapping_status?: "matched"|"unmatched"|"ignored"|"stale", is_streaming_enabled?: bool }` | `SourceMappingResponse` | 400 / 401 / 403 / 404 |
+
+Rate limiting considerations:
+- Admin enqueue endpoints are low-volume: 2 requests/minute per admin for full sync, 10 requests/minute per admin for recent sync.
+- External Anikoto calls are rate-limited in worker/client code to 45 requests per 120 seconds, below the documented 60 requests per 120 seconds.
+- Routers enqueue jobs only; they must not call Anikoto synchronously.
+
+Playback note:
+- No public playback endpoint is accepted in this contract. ADR 078 stores provider IDs and availability only. Future playback must use a separate accepted contract and may only return approved embed URLs, never raw media segment URLs.
+- MegaPlay endpoint names are aliases over the same Anikoto catalog sync because MegaPlay's own docs direct catalog/episode discovery to Anikoto and then consume Anikoto/legacy HiAnime `episode_embed_id` values at `https://megaplay.buzz/stream/s-2/{episode_embed_id}/{language}`.
 
 ## Social Endpoints
 | Method | Path | Auth | Request Schema | Response Schema | Errors |

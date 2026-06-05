@@ -16,6 +16,9 @@ class SeedExecutionContext:
     batch_size: int | None = None
     only_unsynced: bool = False
     user_id: str | None = None
+    per_page: int | None = None
+    max_pages: int | None = None
+    refresh_details: bool = True
 
 
 @dataclass(slots=True)

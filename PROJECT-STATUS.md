@@ -10,15 +10,17 @@
 ## Current State
 
 ```
-CURRENT_PHASE:     AUDIT_PHASE_6 (Frontend Test Coverage)
-CURRENT_SUB_PHASE: --
-STATUS:            PHASE_COMPLETE
-LAST_UPDATED:      2026-06-05
+CURRENT_PHASE:     AUDIT_PHASE_RESUME_PENDING
+CURRENT_SUB_PHASE: ADR_078_SOURCE_PROVIDER_ID_REGISTRY
+STATUS:            IMPLEMENTED_AND_VERIFIED
+LAST_UPDATED:      2026-06-06
 BLOCKED_BY:        none
-NEXT_ACTION:       Audit Phase 6 complete — review AUDIT-PLAN.md for next phase
+NEXT_ACTION:       Resume paused audit phase progression after ADR 078 source-provider sync implementation
 ```
 
 > **Note**: After completing all 24 formal phases, an audit (AUDIT-PLAN.md) identified real gaps. Phases 0–4 are complete. Phase 5 (Frontend Feature Gaps) is in progress.
+
+> **Urgent pre-audit interruption (2026-06-05/06)**: ADR 078 defines and implements source-provider ID storage and Anikoto/MegaPlay sync so OtakuHub can store provider catalog/episode IDs for future approved playback integrations. Implementation is verified; audit phase progression can resume.
 
 ---
 

@@ -33,6 +33,7 @@ from sqlmodel import select
 from src.app.sync.entrypoints import run_seed_all, run_seed_source
 from src.app.sync.observability import build_log_payload, duration_ms_since
 from src.app.workers.celery_app import celery_app
+from src.app.config import settings
 
 logger = get_task_logger(__name__)
 
@@ -61,6 +62,14 @@ def _retry_or_raise(self: Any, exc: Exception) -> None:
     if self is None:
         raise exc
     raise self.retry(exc=exc, countdown=DEFAULT_RETRY_COUNTDOWN_SECONDS)
+
+
+def _immutable_signature(task: Any, **kwargs: Any) -> Any:
+    """Build an immutable Celery signature, with fallback for local test stubs."""
+    signature = getattr(task, "si", None)
+    if callable(signature):
+        return signature(**kwargs)
+    return task.s(**kwargs)
 
 
 @celery_app.task(bind=True, name="sync.seed_database", max_retries=3)
@@ -149,15 +158,74 @@ def weekly_refresh_task(
         _retry_or_raise(self, exc)
 
 
+@celery_app.task(bind=True, name="sync.anikoto_full_catalog", max_retries=3)
+def anikoto_full_catalog_task(
+    self,
+    *,
+    per_page: int = 20,
+    max_pages: int | None = None,
+    refresh_details: bool = True,
+    dry_run: bool = False,
+) -> dict[str, Any]:
+    """Run admin-triggered full Anikoto provider catalog sync."""
+    logger.info("Starting Anikoto full catalog task")
+    started_at = perf_counter()
+    try:
+        result = asyncio.run(
+            run_seed_source(
+                source="anikoto_full_catalog",
+                per_page=per_page,
+                max_pages=max_pages,
+                refresh_details=refresh_details,
+                dry_run=dry_run,
+            )
+        )
+        return _with_task_metadata(result, task_name="sync.anikoto_full_catalog", started_at=started_at)
+    except Exception as exc:
+        logger.error("Anikoto full catalog task failed: %s", exc)
+        _retry_or_raise(self, exc)
+
+
+@celery_app.task(bind=True, name="sync.anikoto_recent_refresh", max_retries=3)
+def anikoto_recent_refresh_task(
+    self,
+    *,
+    per_page: int = 20,
+    max_pages: int = 5,
+    refresh_details: bool = True,
+    dry_run: bool = False,
+) -> dict[str, Any]:
+    """Run bounded recent Anikoto provider refresh."""
+    logger.info("Starting Anikoto recent refresh task")
+    started_at = perf_counter()
+    try:
+        result = asyncio.run(
+            run_seed_source(
+                source="anikoto_recent_refresh",
+                per_page=per_page,
+                max_pages=max_pages,
+                refresh_details=refresh_details,
+                dry_run=dry_run,
+            )
+        )
+        return _with_task_metadata(result, task_name="sync.anikoto_recent_refresh", started_at=started_at)
+    except Exception as exc:
+        logger.error("Anikoto recent refresh task failed: %s", exc)
+        _retry_or_raise(self, exc)
+
+
 @celery_app.task(name="sync.daily_refresh_compose")
 def daily_refresh_compose_task() -> dict[str, Any]:
     """Compose daily refresh flow from existing shared sync tasks only."""
     logger.info("Starting daily refresh composition")
     started_at = perf_counter()
-    workflow = chain(
-        backfill_anilist_task.s(only_unsynced=True),
-        mangadex_detail_task.s(),
-    )
+    signatures = [
+        _immutable_signature(backfill_anilist_task, only_unsynced=True),
+        _immutable_signature(mangadex_detail_task),
+    ]
+    if settings.anikoto_sync_enabled:
+        signatures.append(_immutable_signature(anikoto_recent_refresh_task))
+    workflow = chain(*signatures)
     async_result = workflow.apply_async()
     return {
         **build_log_payload(
@@ -178,10 +246,10 @@ def weekly_refresh_compose_task() -> dict[str, Any]:
     logger.info("Starting weekly refresh composition")
     started_at = perf_counter()
     workflow = chain(
-        seed_database_task.s(),
-        backfill_anilist_task.s(only_unsynced=False),
-        mangadex_detail_task.s(),
-        weekly_refresh_task.s(),
+        _immutable_signature(seed_database_task),
+        _immutable_signature(backfill_anilist_task, only_unsynced=False),
+        _immutable_signature(mangadex_detail_task),
+        _immutable_signature(weekly_refresh_task),
     )
     async_result = workflow.apply_async()
     return {

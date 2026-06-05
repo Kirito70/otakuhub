@@ -13,12 +13,15 @@ from src.app.core.auth import get_current_user
 from src.app.database import get_db_session
 from src.app.models import User
 from src.app.services.sync_service import SyncService
+from src.app.schemas.source_provider import AnikotoFullSyncRequest, AnikotoRecentSyncRequest, JobEnqueueResponse
 
 try:
-    from src.app.workers.sync_tasks import seed_database_task, weekly_refresh_task
+    from src.app.workers.sync_tasks import anikoto_full_catalog_task, anikoto_recent_refresh_task, seed_database_task, weekly_refresh_task
 except Exception:
     seed_database_task = None
     weekly_refresh_task = None
+    anikoto_full_catalog_task = None
+    anikoto_recent_refresh_task = None
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -27,15 +30,6 @@ class SeedRequest(BaseModel):
     """Request to trigger a database seed."""
 
     batch_size: int = 50
-
-
-class JobEnqueueResponse(BaseModel):
-    """Response for enqueued Celery job."""
-
-    job_id: str
-    job_type: str
-    status: str = "queued"
-    message: str = ""
 
 
 class SyncJobDetail(BaseModel):
@@ -132,6 +126,90 @@ async def admin_trigger_weekly_refresh(
         status="unavailable",
         message="Celery worker not available",
     )
+
+
+@router.post("/sync/providers/anikoto/full", response_model=JobEnqueueResponse, status_code=202)
+async def admin_trigger_anikoto_full(
+    payload: AnikotoFullSyncRequest = AnikotoFullSyncRequest(),
+    _: User = Depends(require_admin),
+) -> JobEnqueueResponse:
+    """ADR 078 — enqueue full Anikoto provider catalog sync."""
+    if anikoto_full_catalog_task is not None:
+        try:
+            result = anikoto_full_catalog_task.delay(
+                per_page=payload.per_page,
+                max_pages=payload.max_pages,
+                refresh_details=payload.refresh_details,
+                dry_run=payload.dry_run,
+            )
+            return JobEnqueueResponse(
+                job_id=str(result.id),
+                job_type="anikoto_full_catalog",
+                status="queued",
+                message="Anikoto full catalog sync enqueued",
+            )
+        except Exception as exc:
+            import logging
+
+            logging.getLogger(__name__).warning("Anikoto full sync could not be enqueued", exc_info=exc)
+            return JobEnqueueResponse(
+                job_id="",
+                job_type="anikoto_full_catalog",
+                status="unavailable",
+                message="Anikoto full sync could not be enqueued",
+            )
+    return JobEnqueueResponse(job_id="", job_type="anikoto_full_catalog", status="unavailable", message="Celery worker not available")
+
+
+@router.post("/sync/providers/megaplay/full", response_model=JobEnqueueResponse, status_code=202)
+async def admin_trigger_megaplay_full(
+    payload: AnikotoFullSyncRequest = AnikotoFullSyncRequest(),
+    current_user: User = Depends(require_admin),
+) -> JobEnqueueResponse:
+    """ADR 078 — enqueue full MegaPlay provider catalog sync via Anikoto discovery."""
+    return await admin_trigger_anikoto_full(payload=payload, _=current_user)
+
+
+@router.post("/sync/providers/anikoto/recent", response_model=JobEnqueueResponse, status_code=202)
+async def admin_trigger_anikoto_recent(
+    payload: AnikotoRecentSyncRequest = AnikotoRecentSyncRequest(),
+    _: User = Depends(require_admin),
+) -> JobEnqueueResponse:
+    """ADR 078 — enqueue bounded recent Anikoto provider refresh."""
+    if anikoto_recent_refresh_task is not None:
+        try:
+            result = anikoto_recent_refresh_task.delay(
+                per_page=payload.per_page,
+                max_pages=payload.max_pages,
+                refresh_details=payload.refresh_details,
+                dry_run=payload.dry_run,
+            )
+            return JobEnqueueResponse(
+                job_id=str(result.id),
+                job_type="anikoto_recent_refresh",
+                status="queued",
+                message="Anikoto recent refresh enqueued",
+            )
+        except Exception as exc:
+            import logging
+
+            logging.getLogger(__name__).warning("Anikoto recent refresh could not be enqueued", exc_info=exc)
+            return JobEnqueueResponse(
+                job_id="",
+                job_type="anikoto_recent_refresh",
+                status="unavailable",
+                message="Anikoto recent refresh could not be enqueued",
+            )
+    return JobEnqueueResponse(job_id="", job_type="anikoto_recent_refresh", status="unavailable", message="Celery worker not available")
+
+
+@router.post("/sync/providers/megaplay/recent", response_model=JobEnqueueResponse, status_code=202)
+async def admin_trigger_megaplay_recent(
+    payload: AnikotoRecentSyncRequest = AnikotoRecentSyncRequest(),
+    current_user: User = Depends(require_admin),
+) -> JobEnqueueResponse:
+    """ADR 078 — enqueue recent MegaPlay provider refresh via Anikoto discovery."""
+    return await admin_trigger_anikoto_recent(payload=payload, _=current_user)
 
 
 @router.get("/sync/jobs", response_model=SyncJobsResponse)

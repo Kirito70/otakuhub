@@ -35,6 +35,8 @@ class SyncJobRunner:
             "anilist": "backfill_anilist",
             "mangadex": "mangadex_detail",
             "jikan": "weekly_refresh",
+            "anikoto_full_catalog": "anikoto_full_catalog",
+            "anikoto_recent_refresh": "anikoto_recent_refresh",
         }
         job_type = job_type_map.get(source, "seed")
         job = SyncJob(

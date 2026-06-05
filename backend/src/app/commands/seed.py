@@ -60,6 +60,74 @@ def seed_jikan(limit: int = typer.Option(100, "--limit")) -> None:
     _execute_and_print(source="jikan", limit=limit)
 
 
+@app.command("anikoto-full")
+def seed_anikoto_full(
+    per_page: int = typer.Option(20, "--per-page", min=1, max=50),
+    max_pages: int | None = typer.Option(None, "--max-pages"),
+    refresh_details: bool = typer.Option(True, "--refresh-details/--no-refresh-details"),
+    dry_run: bool = typer.Option(False, "--dry-run"),
+) -> None:
+    """Sync the full Anikoto/MegaPlay provider catalog IDs into source tables."""
+    _execute_and_print(
+        source="anikoto_full_catalog",
+        per_page=per_page,
+        max_pages=max_pages,
+        refresh_details=refresh_details,
+        dry_run=dry_run,
+    )
+
+
+@app.command("megaplay-full")
+def seed_megaplay_full(
+    per_page: int = typer.Option(20, "--per-page", min=1, max=50),
+    max_pages: int | None = typer.Option(None, "--max-pages"),
+    refresh_details: bool = typer.Option(True, "--refresh-details/--no-refresh-details"),
+    dry_run: bool = typer.Option(False, "--dry-run"),
+) -> None:
+    """Sync all anime IDs needed for MegaPlay playback using the Anikoto catalog API."""
+    _execute_and_print(
+        source="anikoto_full_catalog",
+        per_page=per_page,
+        max_pages=max_pages,
+        refresh_details=refresh_details,
+        dry_run=dry_run,
+    )
+
+
+@app.command("anikoto-recent")
+def seed_anikoto_recent(
+    per_page: int = typer.Option(20, "--per-page", min=1, max=50),
+    max_pages: int = typer.Option(5, "--max-pages", min=1),
+    refresh_details: bool = typer.Option(True, "--refresh-details/--no-refresh-details"),
+    dry_run: bool = typer.Option(False, "--dry-run"),
+) -> None:
+    """Sync recent Anikoto/MegaPlay provider IDs; same path used by daily Celery refresh."""
+    _execute_and_print(
+        source="anikoto_recent_refresh",
+        per_page=per_page,
+        max_pages=max_pages,
+        refresh_details=refresh_details,
+        dry_run=dry_run,
+    )
+
+
+@app.command("megaplay-recent")
+def seed_megaplay_recent(
+    per_page: int = typer.Option(20, "--per-page", min=1, max=50),
+    max_pages: int = typer.Option(5, "--max-pages", min=1),
+    refresh_details: bool = typer.Option(True, "--refresh-details/--no-refresh-details"),
+    dry_run: bool = typer.Option(False, "--dry-run"),
+) -> None:
+    """Sync recent anime IDs needed for MegaPlay playback; same path used by daily Celery refresh."""
+    _execute_and_print(
+        source="anikoto_recent_refresh",
+        per_page=per_page,
+        max_pages=max_pages,
+        refresh_details=refresh_details,
+        dry_run=dry_run,
+    )
+
+
 @app.command("run", hidden=True)
 def seed_run_compat() -> None:
     """Deprecated compatibility alias for legacy seed entrypoint."""

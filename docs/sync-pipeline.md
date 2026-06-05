@@ -2,8 +2,15 @@
 
 ## Overview
 The sync pipeline populates and maintains the local anime/manga database
-by pulling from three external sources: anime-offline-database (seed),
-AniList GraphQL (primary metadata), and MangaDex REST (manga detail).
+by pulling from canonical metadata sources: anime-offline-database (seed),
+AniList GraphQL (primary metadata), MangaDex REST (manga detail), and Jikan.
+
+ADR 078 adds a second class of sources: **provider/source mappings** for systems
+that expose catalog IDs and episode IDs used by future playback integrations.
+The first provider-source integration is Anikoto/MegaPlay. Anikoto provides the
+catalog and episode IDs; MegaPlay consumes those IDs for approved embeds. These
+IDs are stored in `media_source_mappings` and `media_source_episodes`, not in
+`media_external_ids`.
 
 ## Pipeline Stages
 
@@ -45,6 +52,14 @@ AniList GraphQL (primary metadata), and MangaDex REST (manga detail).
 │  Source: AniList OAuth / MAL API v2 (user's own list)    │
 │  Output: user_list_entries populated from external list  │
 └──────────────────────────────────────────────────────────┘
+
+  Plus (provider-source mapping):
+┌──────────────────────────────────────────────────────────┐
+│  Stage 7: ANIKOTO / MEGAPLAY SOURCE IDS                  │
+│  Source: Anikoto API (catalog + series + episode IDs)     │
+│  Output: media_source_mappings + media_source_episodes    │
+│          for future approved MegaPlay/provider playback   │
+└──────────────────────────────────────────────────────────┘
 ```
 
 ## Rate Limits Reference
@@ -55,6 +70,7 @@ AniList GraphQL (primary metadata), and MangaDex REST (manga detail).
 | MangaDex REST | ~5 req/s global | 4 req/s | asyncio.sleep(0.25) between calls |
 | MAL API v2 | ~1 req/s (unofficial) | 0.8 req/s | Sleep 1.25s between calls |
 | Jikan v4 | 60 req/min | 50 req/min | Token bucket |
+| Anikoto API | 60 req / 120 sec / IP | 45 req / 120 sec | Backend-only client; bounded recent refresh; retry 429 using headers/backoff |
 
 ## AniList Batch Math
 - 29,000 entries ÷ 50 IDs/query = 580 queries needed
@@ -111,6 +127,10 @@ beat_schedule = {
     },
 }
 
+# ADR 078 extension: daily composition should enqueue Anikoto recent refresh
+# after canonical metadata refresh, subject to ANIKOTO_SYNC_ENABLED=true.
+# Full Anikoto catalog sync is admin-triggered/manual, not an every-day full scan.
+
 # Notification/cleanup schedules remain under their own task namespace.
 
 ```
@@ -162,6 +182,8 @@ Keep `sync_jobs.job_type` values consistent:
 - `weekly_refresh`
 - `user_import_anilist`
 - `user_import_mal`
+- `anikoto_full_catalog`
+- `anikoto_recent_refresh`
 
 ## Upsert Strategy
 
@@ -194,6 +216,91 @@ ON CONFLICT (anilist_id) DO UPDATE SET
     mal_id = COALESCE(EXCLUDED.mal_id, media_external_ids.mal_id),
     mangadex_id = COALESCE(EXCLUDED.mangadex_id, media_external_ids.mangadex_id)
 ```
+
+### media_source_mappings / media_source_episodes (ADR 078)
+
+Provider-source sync stores source IDs separately from canonical metadata IDs:
+
+```sql
+-- series/catalog-level upsert
+INSERT INTO media_source_mappings (media_id, source, source_media_id, source_title, mapping_status, match_confidence, ...)
+VALUES ($media_id, 'anikoto', $anikoto_series_id, $title, $status, $confidence, ...)
+ON CONFLICT (source, source_media_id) DO UPDATE SET
+    media_id = COALESCE(EXCLUDED.media_id, media_source_mappings.media_id),
+    source_title = EXCLUDED.source_title,
+    mapping_status = EXCLUDED.mapping_status,
+    match_confidence = EXCLUDED.match_confidence,
+    last_seen_at = NOW(),
+    details_synced_at = EXCLUDED.details_synced_at,
+    updated_at = NOW();
+
+-- episode-level upsert
+INSERT INTO media_source_episodes (mapping_id, media_id, source, source_episode_id, episode_number, language, embed_path, ...)
+VALUES ($mapping_id, $media_id, 'anikoto', $episode_embed_id, $episode_number, $language, $embed_path, ...)
+ON CONFLICT (source, source_episode_id, language) DO UPDATE SET
+    mapping_id = EXCLUDED.mapping_id,
+    media_id = COALESCE(EXCLUDED.media_id, media_source_episodes.media_id),
+    episode_number = EXCLUDED.episode_number,
+    embed_path = EXCLUDED.embed_path,
+    is_available = TRUE,
+    last_seen_at = NOW(),
+    updated_at = NOW();
+```
+
+Matching order for Anikoto/MegaPlay source rows:
+
+1. AniList ID → `media_external_ids.anilist_id`
+2. MAL ID → `media_external_ids.mal_id`
+3. Conservative title/year/type match → `mapping_status='matched'` only above threshold
+4. Otherwise store as `mapping_status='unmatched'` with `media_id=NULL`
+
+Do not create duplicate `media_entries` from Anikoto-only data unless a canonical AniList lookup confirms the media.
+
+## Anikoto/MegaPlay Provider Sync Contract (ADR 078)
+
+### External APIs
+
+- Catalog API base URL: `https://anikotoapi.site`
+- Recent anime: `GET /recent-anime?page={page}&per_page={per_page}`
+- Series details: `GET /series/{id}`
+- Playback/embed host: `https://megaplay.buzz`
+- MegaPlay embed path from Anikoto episode ID: `/stream/s-2/{episode_embed_id}/{language}`
+
+### Implementation boundaries
+
+- `external/anikoto_client.py`: HTTP client, server-side only, timeout/backoff/rate limit handling.
+- `sync/sources/anikoto.py`: source adapter for full catalog and recent refresh modes.
+- `external/megaplay_client.py`: safe MegaPlay embed path/url builder for Anikoto `episode_embed_id` values.
+- source mapping repository: upserts `media_source_mappings` and `media_source_episodes`.
+- sync service: matching policy, confidence thresholds, and progress reporting.
+- Celery: schedules/retries jobs and updates `sync_jobs`.
+- frontend: no direct Anikoto/MegaPlay calls.
+
+### Daily refresh composition
+
+`sync.daily_refresh_compose` should become:
+
+1. `backfill_anilist_task.s(only_unsynced=True)`
+2. `mangadex_detail_task.s()`
+3. `anikoto_recent_refresh_task.s()` when `ANIKOTO_SYNC_ENABLED=true`
+
+### Full catalog sync
+
+Full Anikoto sync should be admin-triggered via API/CLI because it can require many `/series/{id}` calls. It must:
+
+- create a `sync_jobs` row with `job_type='anikoto_full_catalog'`;
+- page through recent/catalog listing with bounded `per_page`;
+- call detail endpoint per new/changed series;
+- persist progress after each page/batch;
+- mark stale source mappings not seen in the latest full sync;
+- end with `completed`, `partial`, or `failed`.
+
+### Compliance / security rules
+
+- Store provider IDs and safe embed paths only; never scrape or persist raw media segment URLs.
+- Do not bypass provider embed restrictions.
+- Do not expose playback endpoints until a separate playback ADR/API contract is accepted.
+- Any future player event listener must validate `event.origin === 'https://megaplay.buzz'` before trusting watch-progress events.
 
 ## Monitoring
 

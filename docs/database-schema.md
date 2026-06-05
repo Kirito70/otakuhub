@@ -49,6 +49,8 @@
 - **2026-06-04 (Phase 2.3)**: Alembic migration system initialized. Baseline migration `001_initial_tables.py` captures all current tables. See ADR 077.
 - **2026-06-04 (Phase 2.4)**: Default `DATABASE_URL` changed to `postgresql+asyncpg://postgres:postgres@localhost:5432/otakuhub`. Pool settings wired to engine. SQLite retained for tests only. See ADR 077.
 - **2026-06-04 (Phase 2.5)**: Explicit `UniqueConstraint` declarations added to `user_list_entry` and `recommendation` models. See ADR 077.
+- **2026-06-05 (Urgent source-provider design)**: Add source-provider registry design for Anikoto/MegaPlay and future playback providers. `media_external_ids` remains canonical metadata cross-reference; provider-specific series and episode IDs are stored in `media_source_mappings` and `media_source_episodes`. See ADR 078.
+- **2026-06-06 (ADR 078 implementation)**: Implemented `media_source_mappings` and `media_source_episodes` via Alembic revision `002`; no raw media segment URLs are stored and AniList remains canonical cross-reference key.
 
 ## PostgreSQL Extensions Required
 
@@ -171,6 +173,81 @@ CREATE UNIQUE INDEX idx_media_ext_anilist     ON media_external_ids (anilist_id)
 CREATE UNIQUE INDEX idx_media_ext_mal         ON media_external_ids (mal_id) WHERE mal_id IS NOT NULL;
 CREATE UNIQUE INDEX idx_media_ext_mangadex    ON media_external_ids (mangadex_id) WHERE mangadex_id IS NOT NULL;
 ```
+
+### `media_source_mappings` (ADR 078)
+Provider/source registry for external catalog/playback systems. This is separate from `media_external_ids` because playback providers need source names, provider-specific IDs, availability, matching confidence, and source freshness. `media_id` is nullable to allow safe storage of unmatched provider titles until manual/canonical matching is possible.
+
+```sql
+CREATE TABLE media_source_mappings (
+    id                    UUID         PRIMARY KEY DEFAULT uuid_generate_v7(),
+    media_id              UUID         REFERENCES media_entries(id) ON DELETE SET NULL,
+    source                VARCHAR(50)  NOT NULL,     -- 'anikoto', 'megaplay', future provider names
+    source_media_id       VARCHAR(128) NOT NULL,     -- provider series/catalog ID
+    source_slug           VARCHAR(300),              -- provider slug/path when available
+    source_url            VARCHAR(2048),             -- provider detail/catalog URL when safe to store
+    source_title          VARCHAR(500),              -- title exactly as returned by provider
+    source_title_normalized VARCHAR(500),            -- lower/unaccent/punctuation-stripped matching key
+    source_payload_hash   VARCHAR(64),               -- detects provider payload changes without storing raw payload by default
+    mapping_status        VARCHAR(20)  NOT NULL DEFAULT 'matched', -- matched|unmatched|ignored|stale
+    match_confidence      NUMERIC(5,2) NOT NULL DEFAULT 100.00,
+    is_streaming_enabled  BOOLEAN      NOT NULL DEFAULT FALSE,
+    has_sub               BOOLEAN      NOT NULL DEFAULT FALSE,
+    has_dub               BOOLEAN      NOT NULL DEFAULT FALSE,
+    episode_count         INT,
+    first_seen_at         TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    last_seen_at          TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    details_synced_at     TIMESTAMPTZ,
+    created_at            TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    updated_at            TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    deleted_at            TIMESTAMPTZ,
+    UNIQUE (source, source_media_id)
+);
+
+CREATE INDEX idx_media_source_mappings_media ON media_source_mappings (media_id, source) WHERE deleted_at IS NULL;
+CREATE INDEX idx_media_source_mappings_source_seen ON media_source_mappings (source, last_seen_at DESC) WHERE deleted_at IS NULL;
+CREATE INDEX idx_media_source_mappings_status ON media_source_mappings (source, mapping_status) WHERE deleted_at IS NULL;
+CREATE INDEX idx_media_source_mappings_title_trgm ON media_source_mappings USING GIN (source_title_normalized gin_trgm_ops);
+```
+
+Rationale:
+- `source` + `source_media_id` is the provider conflict key.
+- `media_id` is nullable so uncertain Anikoto rows do not create duplicate canonical media entries.
+- `mapping_status` and `match_confidence` support manual reconciliation.
+- `details_synced_at` and `last_seen_at` support daily recent refresh and stale detection.
+
+### `media_source_episodes` (ADR 078)
+Episode-level provider IDs and language availability. This table lets future playback resolve from our media/episode context to provider-specific episode IDs without storing direct raw stream URLs.
+
+```sql
+CREATE TABLE media_source_episodes (
+    id                    UUID         PRIMARY KEY DEFAULT uuid_generate_v7(),
+    mapping_id            UUID         NOT NULL REFERENCES media_source_mappings(id) ON DELETE CASCADE,
+    media_id              UUID         REFERENCES media_entries(id) ON DELETE SET NULL,
+    episode_id            UUID         REFERENCES episodes(id) ON DELETE SET NULL,
+    source                VARCHAR(50)  NOT NULL,      -- denormalized for fast lookup; matches mapping.source
+    source_episode_id     VARCHAR(128) NOT NULL,      -- Anikoto/MegaPlay/legacy HiAnime episode_embed_id
+    episode_number        NUMERIC(8,2) NOT NULL,
+    title                 VARCHAR(500),
+    language              VARCHAR(20)  NOT NULL DEFAULT 'sub', -- sub|dub|raw|unknown
+    embed_path            VARCHAR(512),                -- provider path only; no raw media URLs
+    is_available          BOOLEAN      NOT NULL DEFAULT TRUE,
+    first_seen_at         TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    last_seen_at          TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    created_at            TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    updated_at            TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    deleted_at            TIMESTAMPTZ,
+    UNIQUE (source, source_episode_id, language)
+);
+
+CREATE INDEX idx_media_source_episodes_mapping ON media_source_episodes (mapping_id, episode_number);
+CREATE INDEX idx_media_source_episodes_media ON media_source_episodes (media_id, episode_number, language) WHERE deleted_at IS NULL;
+CREATE INDEX idx_media_source_episodes_available ON media_source_episodes (source, is_available, last_seen_at DESC) WHERE deleted_at IS NULL;
+```
+
+Rationale:
+- Supports Anikoto `episode_embed_id` and future providers with episode-level IDs.
+- `language` allows sub/dub rows to differ without overloading one ID field.
+- `embed_path` stores only provider path/template data needed for approved embeds, never extracted raw stream URLs.
 
 ### `genres`
 ```sql
@@ -624,6 +701,8 @@ CREATE INDEX idx_sync_jobs_status ON sync_jobs (status) WHERE status = 'running'
 |-------|---------|----------------|
 | `media_entries` | All anime/manga/manhwa | ~30,000 seeded, grows weekly |
 | `media_external_ids` | Cross-reference IDs | 1:1 with media_entries |
+| `media_source_mappings` | Provider/source series IDs and availability mappings | 0–N per media title |
+| `media_source_episodes` | Provider/source episode IDs by language | 0–N per mapped source title |
 | `genres` | Genre lookup | ~50 |
 | `studios` | Studio lookup | ~1,000 |
 | `tags` | Tag lookup | ~600 |

@@ -12,6 +12,9 @@ async def run_seed_source(
     dry_run: bool = False,
     only_unsynced: bool = False,
     user_id: str | None = None,
+    per_page: int | None = None,
+    max_pages: int | None = None,
+    refresh_details: bool = True,
 ) -> dict[str, object]:
     async with AsyncSessionLocal() as session:
         orchestrator = build_seed_orchestrator(session)
@@ -22,6 +25,9 @@ async def run_seed_source(
             dry_run=dry_run,
             only_unsynced=only_unsynced,
             user_id=user_id,
+            per_page=per_page,
+            max_pages=max_pages,
+            refresh_details=refresh_details,
         )
 
 

@@ -35,3 +35,5 @@ from .notification_preference import NotificationPreference
 from .notification import Notification
 from .sync_job import SyncJob
 from .user_settings import UserSettings  # noqa: F401
+from .media_source_mapping import MediaSourceMapping  # noqa: F401
+from .media_source_episode import MediaSourceEpisode  # noqa: F401

@@ -4,19 +4,27 @@ import logging
 from time import perf_counter
 
 from src.app.sync.observability import build_log_payload, duration_ms_since
+from collections.abc import Callable
+
 from src.app.sync.types import SeedExecutionContext, SeedSourceAdapter
 
 logger = logging.getLogger(__name__)
 
 
 class SeedOrchestrator:
-    def __init__(self, job_runner, adapters: dict[str, SeedSourceAdapter]):
+    def __init__(self, job_runner, adapters: dict[str, SeedSourceAdapter | Callable[[], SeedSourceAdapter]]):
         self.job_runner = job_runner
         self.adapters = adapters
 
+    def _get_adapter(self, source: str) -> SeedSourceAdapter:
+        adapter_or_factory = self.adapters[source]
+        if callable(adapter_or_factory):
+            return adapter_or_factory()
+        return adapter_or_factory
+
     async def run_source(self, *, source: str, **kwargs: object) -> dict[str, object]:
         user_id = kwargs.get("user_id")
-        adapter = self.adapters[source]
+        adapter = self._get_adapter(source)
         job_id = await self.job_runner.start_job(
             source=source,
             total_items=kwargs.get("limit"),
@@ -30,6 +38,9 @@ class SeedOrchestrator:
             batch_size=kwargs.get("batch_size"),
             only_unsynced=bool(kwargs.get("only_unsynced", False)),
             user_id=user_id,
+            per_page=kwargs.get("per_page"),
+            max_pages=kwargs.get("max_pages"),
+            refresh_details=bool(kwargs.get("refresh_details", True)),
         )
         started_at = perf_counter()
         try:

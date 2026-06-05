@@ -43,6 +43,7 @@ class Settings(BaseSettings):
     anilist_client_id: str = "dummy-anilist-id"
     anilist_client_secret: str = "dummy-anilist-secret"
     mal_client_id: str = "dummy-mal-id"
+    anikoto_sync_enabled: bool = False
 
     # Redis / Celery
     redis_url: str = "redis://localhost:6379/0"
