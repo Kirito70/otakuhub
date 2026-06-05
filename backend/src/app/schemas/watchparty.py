@@ -52,6 +52,32 @@ class WatchPartyListResponse(BaseModel):
     offset: int
 
 
+class WatchPartyDetailResponse(BaseModel):
+    """Watch party detail response with media, host, and RSVP info."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    group_id: UUID
+    host_user_id: UUID
+    host_username: str | None = None
+    host_display_name: str | None = None
+    media_id: UUID
+    media_title: str | None = None
+    media_cover: str | None = None
+    episode_number: int | None = None
+    title: str | None = None
+    scheduled_at: datetime
+    status: str
+    stream_url: str | None = None
+    sync_url: str | None = None
+    notes: str | None = None
+    created_at: datetime
+    updated_at: datetime
+    rsvp_summary: dict = Field(default_factory=lambda: {"attending": 0, "pending": 0, "declined": 0})
+    attendee_count: int = 0
+
+
 class WatchPartyRsvpRequest(BaseModel):
     """Payload to RSVP to a watch party."""
 

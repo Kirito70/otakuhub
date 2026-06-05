@@ -8,7 +8,7 @@ from sqlalchemy.exc import IntegrityError
 from datetime import UTC, datetime
 from uuid import UUID
 
-from src.app.models import GroupMember, WatchParty, WatchPartyRsvp
+from src.app.models import GroupMember, WatchParty, WatchPartyRsvp, MediaEntry, User
 from src.app.models.enums import PartyStatus
 from src.app.services.base_service import BaseService
 
@@ -277,3 +277,80 @@ class WatchPartyService(BaseService):
         )
         result = await self.db_session.exec(statement)
         return result.one_or_none() or 0
+
+    async def get_watch_party_detail(
+        self,
+        *,
+        party_id: UUID,
+        user_id: UUID,
+    ) -> dict:
+        """Get watch party detail with media title, host info, and RSVP summary.
+
+        Raises LookupError if party not found.
+        Raises PermissionError if user is not a member of the party's group.
+        """
+        # Fetch party joined with media and host user
+        statement = (
+            select(
+                WatchParty,
+                MediaEntry.title_romaji,
+                MediaEntry.title_english,
+                MediaEntry.cover_image_medium,
+                User.username,
+                User.display_name,
+            )
+            .join(MediaEntry, MediaEntry.id == WatchParty.media_id)
+            .join(User, User.id == WatchParty.host_user_id)
+            .where(
+                WatchParty.id == party_id,
+                WatchParty.deleted_at.is_(None),
+            )
+        )
+        result = await self.db_session.exec(statement)
+        row = result.one_or_none()
+
+        if row is None:
+            raise LookupError("Watch party not found")
+
+        party, title_romaji, title_english, cover_medium, host_username, host_display_name = row
+
+        # Check group membership
+        membership_stmt = select(GroupMember).where(
+            GroupMember.group_id == party.group_id,
+            GroupMember.user_id == user_id,
+        )
+        membership = (await self.db_session.exec(membership_stmt)).one_or_none()
+        if membership is None:
+            raise PermissionError("User is not a member of this group")
+
+        # Fetch RSVPs
+        rsvps = await self.get_rsvps_for_party(party_id)
+
+        # Build RSVP summary
+        rsvp_summary: dict[str, int] = {"attending": 0, "pending": 0, "declined": 0}
+        for rsvp in rsvps:
+            status_key = rsvp.status.value if hasattr(rsvp.status, "value") else str(rsvp.status)
+            if status_key in rsvp_summary:
+                rsvp_summary[status_key] += 1
+
+        return {
+            "id": party.id,
+            "group_id": party.group_id,
+            "host_user_id": party.host_user_id,
+            "host_username": host_username,
+            "host_display_name": host_display_name,
+            "media_id": party.media_id,
+            "media_title": title_english or title_romaji,
+            "media_cover": cover_medium,
+            "episode_number": party.episode_number,
+            "title": party.title,
+            "scheduled_at": party.scheduled_at,
+            "status": party.status.value if hasattr(party.status, "value") else str(party.status),
+            "stream_url": party.stream_url,
+            "sync_url": party.sync_url,
+            "notes": party.notes,
+            "created_at": party.created_at,
+            "updated_at": party.updated_at,
+            "rsvp_summary": rsvp_summary,
+            "attendee_count": rsvp_summary["attending"],
+        }

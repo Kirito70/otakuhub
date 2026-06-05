@@ -138,6 +138,14 @@
 | **GET** | `/api/v1/social/discussions/{media_id}` | Yes | `DiscussionsQuery { group_id?: UUID, limit?: int, offset?: int }` | `DiscussionListResponse { items: DiscussionResponse[], total: int, limit: int, offset: int }` | 401 |
 | **POST** | `/api/v1/social/discussions/{id}/replies` | Yes | `DiscussionReplyCreateRequest { body: string, has_spoilers?: bool, parent_reply_id?: UUID }` | `DiscussionReplyResponse` | 400 / 403 / 404 |
 
+## Watch Party Endpoints
+| Method | Path | Auth | Request Schema | Response Schema | Errors |
+|--------|------|------|----------------|----------------|--------|
+| **POST** | `/api/v1/watchparty` | Yes | `WatchPartyCreateRequest { group_id: UUID, media_id: UUID, scheduled_at: datetime, title?: string, episode_number?: int, stream_url?: string, sync_url?: string, notes?: string }` | `WatchPartyResponse` | 400 / 401 / 403 |
+| **GET** | `/api/v1/watchparty` | Yes | `WatchPartyListQuery { group_id?: UUID, limit?: int, offset?: int }` | `WatchPartyListResponse { items: WatchPartyResponse[], total: int, limit: int, offset: int }` | 401 / 403 |
+| **GET** | `/api/v1/watchparty/{party_id}` | Yes | – | `WatchPartyDetailResponse { id, group_id, host_user_id, host_username?, host_display_name?, media_id, media_title?, media_cover?, episode_number?, title?, scheduled_at, status, stream_url?, sync_url?, notes?, created_at, updated_at, rsvp_summary: { attending: int, pending: int, declined: int }, attendee_count: int }` | 401 / 403 / 404 |
+| **POST** | `/api/v1/watchparty/{party_id}/rsvp` | Yes | `WatchPartyRsvpRequest { status: "pending"\|"attending"\|"declined" }` | `WatchPartyRsvpResponse` | 401 / 403 / 404 |
+
 ### Sync job response notes
 - `SyncJob.status` uses: `running | completed | failed | partial`.
 - `error_log` should be structured JSON for retry tooling.

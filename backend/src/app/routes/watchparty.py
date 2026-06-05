@@ -9,7 +9,7 @@ from uuid import UUID
 from src.app.core.auth import get_current_user
 from src.app.database import get_db_session
 from src.app.models import User
-from src.app.schemas.watchparty import WatchPartyCreateRequest, WatchPartyListResponse, WatchPartyResponse
+from src.app.schemas.watchparty import WatchPartyCreateRequest, WatchPartyDetailResponse, WatchPartyListResponse, WatchPartyResponse
 from src.app.schemas.watchparty import WatchPartyRsvpRequest, WatchPartyRsvpResponse
 from src.app.services.watch_party_service import WatchPartyService
 
@@ -77,6 +77,26 @@ async def get_upcoming_watch_parties(
         limit=limit,
         offset=offset,
     )
+
+
+@router.get("/{party_id}", response_model=WatchPartyDetailResponse)
+async def get_watch_party_detail(
+    party_id: UUID,
+    watchparty_service: WatchPartyService = Depends(get_watch_party_service),
+    user: User = Depends(get_current_user),
+) -> WatchPartyDetailResponse:
+    """Phase 10.3 — get single watch party detail with RSVP summary."""
+    try:
+        detail = await watchparty_service.get_watch_party_detail(
+            party_id=party_id,
+            user_id=user.id,
+        )
+    except LookupError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except PermissionError as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from exc
+
+    return WatchPartyDetailResponse(**detail)
 
 
 @router.post("/{party_id}/rsvp", response_model=WatchPartyRsvpResponse)
