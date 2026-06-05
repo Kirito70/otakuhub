@@ -1,7 +1,4 @@
-export interface TokenPair {
-  accessToken: string
-  refreshToken: string
-}
+import type { TokenPair } from 'src/types/auth'
 
 export interface SecureStorage {
   getAccessToken(): Promise<string | null>

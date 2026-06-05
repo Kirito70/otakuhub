@@ -26,6 +26,8 @@ class FakeResult:
 @pytest.mark.asyncio
 async def test_media_service_repository_delegations(monkeypatch) -> None:
     session = MagicMock()
+    # get_related_media uses session.exec() directly (doesn't go through repo)
+    session.exec = AsyncMock(return_value=FakeResult(all_value=[]))
     svc = MediaService(session)
 
     repo = MagicMock()
@@ -127,7 +129,7 @@ async def test_media_service_delete_paths() -> None:
     session.commit = AsyncMock()
     svc = MediaService(session)
 
-    svc.get_media_by_id = AsyncMock(side_effect=[None, SimpleNamespace(deleted_at=None)])
+    # delete_media delegates to _media_repository.delete — mock the repo
+    svc._media_repository.delete = AsyncMock(side_effect=[False, True])
     assert await svc.delete_media(uuid4()) is False
     assert await svc.delete_media(uuid4()) is True
-    session.commit.assert_awaited_once()

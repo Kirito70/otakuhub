@@ -66,3 +66,39 @@ export interface CustomListEntriesReplaceRequest {
     note?: string
   }>
 }
+
+// -- Phase 5.3: History & Statistics --
+
+export interface ListEntryHistoryItem {
+  id: string
+  entry_id: string
+  media_id: string
+  event_type: string
+  old_status?: WatchStatus | null
+  new_status?: WatchStatus | null
+  old_progress?: number | null
+  new_progress?: number | null
+  old_score?: number | null
+  new_score?: number | null
+  note?: string | null
+  created_at: string
+}
+
+export interface UserListHistoryResponse {
+  items: ListEntryHistoryItem[]
+  total: number
+  limit: number
+}
+
+export interface ListStats {
+  total: number
+  watching: number
+  reading: number
+  completed: number
+  paused: number
+  dropped: number
+  plan_to_watch: number
+  plan_to_read: number
+  rewatching: number
+  rereading: number
+}

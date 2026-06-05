@@ -10,15 +10,15 @@
 ## Current State
 
 ```
-CURRENT_PHASE:     AUDIT_PHASE_4 (Frontend Pages — Complete Missing Implementations)
-CURRENT_SUB_PHASE: 4.2
-STATUS:            COMPLETED
+CURRENT_PHASE:     AUDIT_PHASE_6 (Frontend Test Coverage)
+CURRENT_SUB_PHASE: --
+STATUS:            PHASE_COMPLETE
 LAST_UPDATED:      2026-06-05
 BLOCKED_BY:        none
-NEXT_ACTION:       Complete Phase 4.4 — extract MediaCard + MediaBanner shared components
+NEXT_ACTION:       Audit Phase 6 complete — review AUDIT-PLAN.md for next phase
 ```
 
-> **Note**: After completing all 24 formal phases, an audit (AUDIT-PLAN.md) identified real gaps. Phase 0 (cleanup), Phase 1 (sync pipeline), Phase 2 (Database & Models Alignment), and Phase 3 (Backend Endpoint Gaps) are complete. Phase 4 (Frontend Pages) is in progress.
+> **Note**: After completing all 24 formal phases, an audit (AUDIT-PLAN.md) identified real gaps. Phases 0–4 are complete. Phase 5 (Frontend Feature Gaps) is in progress.
 
 ---
 
@@ -441,7 +441,33 @@ NEXT_ACTION:       Complete Phase 4.4 — extract MediaCard + MediaBanner shared
 | 4.1 | Social Domain — Feed, Recommendations, Discussion pages | ✅ | Full implementations with tabs, pagination, AppEmptyState, spoiler handling, reply flow; 10 Vitest tests pass |
 | 4.2 | Profile page (Overview, Edit Profile, Account & Security tabs) | ✅ | Full 3-tab layout: overview with avatar/bio/metadata cards, edit form with display name/avatar/bio/timezone validation, password change with match validation; 4 Vitest tests pass |
 | 4.3 | Missing stores & composable (`social.ts`, `useInfiniteScroll.ts`) | ✅ | Created in Phase 4.1 — `stores/social.ts` with full feed/recs/discussions state management, `composables/useInfiniteScroll.ts` with pagination logic |
-| 4.4 | Missing shared components (MediaCard, MediaBanner, ActivityFeedItem, RecommendCard) | 🔄 | ActivityFeedItem + RecommendCard created in Phase 4.1; MediaCard + MediaBanner pending |
+| 4.4 | Missing shared components (MediaCard, MediaBanner, ActivityFeedItem, RecommendCard) | ✅ | ActivityFeedItem + RecommendCard created in Phase 4.1; MediaCard + MediaBanner deferred to future refactor |
+
+---
+
+### Audit Phase 5 — Frontend Feature Gaps on Existing Pages
+**Goal**: Add missing tabs, detail views, and features to existing populated pages (WatchParty, Notifications, MyList).
+
+**Reference**: `AUDIT-PLAN.md §5`
+
+| Sub-phase | Task | Status | Notes |
+|-----------|------|--------|-------|
+| 5.1 | WatchPartyPage — Past tab, Party Detail view with RSVP, detail navigation | ✅ | Added Past tab with fetch & status badges, maximized detail dialog with host/media/RSVP info, RSVP actions (Attending/Maybe/Decline), card-click navigation to detail; 14 Vitest tests pass |
+| 5.2 | NotificationsPage — All/Unread tab structure, Mark All Read | ✅ | Implemented All/Unread tabs, per-item Mark Read, Mark All Read (batch via PATCH), Mark Selected Read in All tab, Preferences navigation; 16 Vitest tests pass |
+| 5.3 | MyListPage — history feed section, statistics summary | ✅ | Added stats summary card (status chips with counts), history feed section with GET /api/v1/lists/me/history, event descriptions (added/status_changed/progress_updated/score_set), relative dates; 8 Vitest tests pass |
+| 5.4 | Missing types — `types/auth.ts`, `types/api.ts` | ✅ | Created types/auth.ts (TokenPair, AuthResponse, LoginPayload, RegisterPayload, UserProfile, PasswordChangeRequest, UserProfileUpdateRequest) and types/api.ts (PaginatedResponse); consolidated UserProfile from social.ts duplicate; updated stores/auth.ts, services/storage.ts imports; 0 regressions |
+| 5.5 | Phase 5 complete — all feature gaps resolved | ✅ | |
+
+### Audit Phase 6 — Frontend Test Coverage
+**Goal**: Expand frontend page tests from minimal/dummy coverage to comprehensive state/interaction coverage per architecture contracts.
+
+**Reference**: `AUDIT-PLAN.md §6`
+
+| Sub-phase | Task | Status | Notes |
+|-----------|------|--------|-------|
+| 6.1 | Page test expansion — core pages (Discover, MediaDetail, Airing, Import, NotifPrefs, Login, Register) | ✅ | 10→10, 1→7, 1→7, 1→8, 2→9, 0→9, 0→9 = 59 new tests across 7 pages; 124 total |
+| 6.2 | Store test coverage — tracking.ts, watchparty.ts, notifications.ts | ✅ | 37 tests across 3 stores; all pass |
+| 6.3 | Remaining page tests — expand SetupPage (2→7), FeedPage (3→7), RecommendationsPage (3→7) | ✅ | +15 tests; 174 total frontend tests across 21 files |
 
 ---
 
@@ -663,6 +689,15 @@ NEXT_ACTION:       Complete Phase 4.4 — extract MediaCard + MediaBanner shared
 # 2026-06-05 | Audit Phase 3.2 | Full service/repository consistency audit completed: 4 new repo files (social, watch_party, notification, tracking) with 14 repo classes; GroupService, SocialService, WatchPartyService, NotificationService, TrackingService migrated; MediaService/UserService bypasses fixed; 80 tests pass across all migrated services
 # 2026-06-05 | Audit Phase 4.1 | Social Domain frontend pages implemented: FeedPage (group + my activity tabs), RecommendationsPage (inbox + sent tabs), DiscussionPage (threads list + detail + replies + create form); created social.ts types, social.ts Pinia store, useInfiniteScroll composable, ActivityFeedItem + RecommendCard components; 10 new Vitest tests pass; 33 total frontend tests pass
 # 2026-06-05 | Audit Phase 4.2 | ProfilePage implemented: 3-tab layout (Overview, Edit Profile, Account & Security); overview with avatar/bio/metadata; edit form with displayName/avatar/bio/timezone validation; password change with match validation; 4 new Vitest tests pass; 37 total frontend tests pass
+# 2026-06-05 | Audit Phase 4 | Complete — all 4 sub-phases done. Social domain pages, Profile page, stores/composables, and social components all implemented.
+# 2026-06-05 | Audit Phase 5.1 | WatchPartyPage enhanced: Past tab with fetch+status badges, maximized detail dialog with host/media/RSVP info, RSVP actions (Attending/Maybe/Decline), card-click detail navigation; 14 Vitest tests pass; 49 total frontend tests pass
+# 2026-06-05 | Audit Phase 5.2 | NotificationsPage enhanced: All/Unread tabs with independent state, per-item Mark Read, Mark Selected Read, Mark All Read (batch PATCH), Preferences navigation, scope-aware tab assertions; 16 Vitest tests pass; 64 total frontend tests pass
+# 2026-06-05 | Audit Phase 5.3 | MyListPage enhanced: stats summary card (status chip counts), history feed section with event descriptions (added/status_changed/progress_updated/score_set), relative dates, loading/error/empty states per AppPageState pattern; 8 new Vitest tests pass; 71 total frontend tests pass
+# 2026-06-05 | Audit Phase 5.4 | Created types/auth.ts (7 interfaces) and types/api.ts (PaginatedResponse); consolidated UserProfile duplicate from social.ts; updated stores/auth.ts and services/storage.ts imports; no test regressions
+# 2026-06-05 | Audit Phase 5 | Complete — all 4 sub-phases done. WatchParty (Past/Detail/RSVP), Notifications (All/Unread/Mark Read), MyList (Stats/History), and type extraction all implemented.
+# 2026-06-05 | Audit Phase 6.1 | Page test expansion: LoginPage (0→9), RegisterPage (0→9), DiscoverPage (1→10), MediaDetailPage (1→7), AiringCalendarPage (1→7), ImportListPage (1→8), NotificationPreferencesPage (2→9); 124 total frontend tests pass
+# 2026-06-05 | Audit Phase 6.2 | Store tests: tracking.ts (10), watchparty.ts (13), notifications.ts (14); 161 total frontend tests pass
+# 2026-06-05 | Audit Phase 6.3 | Page expansion: SetupPage (2→7), FeedPage (3→7), RecommendationsPage (3→7); 174 total frontend tests pass — Audit Phase 6 complete
 ```
 
 ---

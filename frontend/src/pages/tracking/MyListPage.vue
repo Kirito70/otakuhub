@@ -2,6 +2,23 @@
   <q-page class="q-pa-md">
     <div class="text-h6 q-mb-md">My List</div>
 
+    <!-- Phase 5.3: Statistics Summary -->
+    <q-card v-if="!isLoading && entries.length > 0" flat bordered class="q-mb-md">
+      <q-card-section horizontal class="q-pa-sm q-gutter-x-sm q-gutter-y-xs items-center justify-start wrap">
+        <q-chip
+          v-for="stat in statChips"
+          :key="stat.label"
+          :color="stat.color"
+          text-color="white"
+          size="sm"
+          dense
+          outline
+        >
+          {{ stat.label }}: {{ stat.count }}
+        </q-chip>
+      </q-card-section>
+    </q-card>
+
     <q-banner v-if="error" class="bg-red-1 text-red-9 q-mb-md" rounded>{{ error }}</q-banner>
 
     <q-tabs :model-value="activeStatus" align="left" dense active-color="primary" indicator-color="primary" class="text-capitalize">
@@ -21,7 +38,7 @@
       <q-spinner color="primary" size="34px" />
     </div>
 
-    <q-list v-else bordered separator>
+    <q-list v-else-if="currentItems.length > 0" bordered separator>
       <q-item v-for="entry in currentItems" :key="entry.id">
         <q-item-section avatar top>
           <q-avatar rounded size="52px">
@@ -46,7 +63,7 @@
       </q-item>
     </q-list>
 
-    <div v-if="!isLoading && currentItems.length === 0" class="text-grey-7 q-mt-md">No entries for this status yet.</div>
+    <div v-else class="text-grey-7 q-mt-md">No entries for this status yet.</div>
 
     <q-separator class="q-my-lg" />
 
@@ -92,17 +109,46 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
+
+    <!-- Phase 5.3: History Feed -->
+    <q-separator class="q-my-lg" />
+
+    <div class="text-subtitle1 q-mb-sm">Recent Activity</div>
+
+    <div v-if="historyIsLoading" class="row justify-center q-my-md">
+      <q-spinner color="primary" size="28px" />
+    </div>
+
+    <q-banner v-else-if="historyError" class="bg-red-1 text-red-9 q-mb-md" rounded>
+      {{ historyError }}
+      <template #action>
+        <q-btn flat dense color="red-9" label="Retry" @click="loadHistory" />
+      </template>
+    </q-banner>
+
+    <q-list v-else-if="historyItems.length > 0" bordered separator>
+      <q-item v-for="item in historyItems" :key="item.id">
+        <q-item-section>
+          <q-item-label>
+            <span class="text-weight-medium">{{ eventDescription(item) }}</span>
+          </q-item-label>
+          <q-item-label caption>{{ relativeDate(item.created_at) }}</q-item-label>
+        </q-item-section>
+      </q-item>
+    </q-list>
+
+    <div v-else class="text-grey-7 q-mt-sm">No recent activity.</div>
   </q-page>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import ProgressWidget from 'src/components/tracking/ProgressWidget.vue'
 import ScoreWidget from 'src/components/tracking/ScoreWidget.vue'
 import { useTrackingStore } from 'src/stores/tracking'
-import type { WatchStatus } from 'src/types/tracking'
+import type { ListEntryHistoryItem, WatchStatus } from 'src/types/tracking'
 
 const route = useRoute()
 const router = useRouter()
@@ -143,6 +189,74 @@ const currentItems = computed(() => trackingStore.byStatus[activeStatus.value] ?
 const isLoading = computed(() => trackingStore.isLoading)
 const error = computed(() => trackingStore.error)
 const customLists = computed(() => trackingStore.customLists)
+const entries = computed(() => trackingStore.entries)
+
+const stats = computed(() => trackingStore.stats)
+
+const statChips = computed(() => {
+  const s = stats.value
+  const chips: Array<{ label: string; count: number; color: string }> = []
+  const mapping: Array<{ key: keyof typeof s; label: string; color: string }> = [
+    { key: 'total', label: 'Total', color: 'primary' },
+    { key: 'watching', label: 'Watching', color: 'positive' },
+    { key: 'reading', label: 'Reading', color: 'info' },
+    { key: 'completed', label: 'Completed', color: 'accent' },
+    { key: 'paused', label: 'Paused', color: 'warning' },
+    { key: 'dropped', label: 'Dropped', color: 'negative' },
+    { key: 'plan_to_watch', label: 'Plan to Watch', color: 'grey' },
+    { key: 'plan_to_read', label: 'Plan to Read', color: 'grey' },
+    { key: 'rewatching', label: 'Rewatching', color: 'positive' },
+    { key: 'rereading', label: 'Rereading', color: 'info' },
+  ]
+  for (const m of mapping) {
+    if (s[m.key] > 0) {
+      chips.push({ label: m.label, count: s[m.key], color: m.color })
+    }
+  }
+  return chips
+})
+
+// History
+const historyItems = computed(() => trackingStore.history)
+const historyIsLoading = computed(() => trackingStore.historyIsLoading)
+const historyError = computed(() => trackingStore.historyError)
+
+function eventDescription(item: ListEntryHistoryItem): string {
+  switch (item.event_type) {
+    case 'added':
+      return 'Added to list'
+    case 'removed':
+      return 'Removed from list'
+    case 'status_changed': {
+      const from = item.old_status?.replaceAll('_', ' ') ?? 'none'
+      const to = item.new_status?.replaceAll('_', ' ') ?? 'none'
+      return `Status changed: ${from} → ${to}`
+    }
+    case 'progress_updated':
+      return `Progress updated: ${item.old_progress ?? 0} → ${item.new_progress ?? 0}`
+    case 'score_set':
+      return `Score set to ${item.new_score ?? 'unset'}`
+    default:
+      return item.event_type.replaceAll('_', ' ')
+  }
+}
+
+function relativeDate(dateStr: string): string {
+  const date = new Date(dateStr)
+  const now = new Date()
+  const diffMs = now.getTime() - date.getTime()
+  const diffMins = Math.floor(diffMs / 60000)
+  if (diffMins < 1) { return 'Just now' }
+  if (diffMins < 60) { return `${diffMins}m ago` }
+  const diffHours = Math.floor(diffMins / 60)
+  if (diffHours < 24) { return `${diffHours}h ago` }
+  const diffDays = Math.floor(diffHours / 24)
+  if (diffDays < 7) { return `${diffDays}d ago` }
+  return date.toLocaleDateString()
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const entriesAlias = entries
 
 function statusLabel(status: WatchStatus): string {
   return status.replaceAll('_', ' ')
@@ -159,6 +273,13 @@ async function onScoreChange(mediaId: string, score: number | null): Promise<voi
 function goToMedia(mediaId: string): void {
   router.push({ name: 'media-detail', params: { id: mediaId } }).catch(() => undefined)
 }
+
+async function loadHistory(): Promise<void> {
+  await trackingStore.fetchHistory(20)
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const entriesAlias2 = entries
 
 async function onCreateCustomList(): Promise<void> {
   if (!customListName.value.trim()) {
@@ -216,4 +337,9 @@ watch(
   },
   { immediate: true },
 )
+
+// Fetch history on mount
+onMounted(async () => {
+  await loadHistory()
+})
 </script>

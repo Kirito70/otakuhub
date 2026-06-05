@@ -8,7 +8,10 @@ import type {
   CustomListEntriesReplaceRequest,
   ListEntry,
   ListEntryCreate,
+  ListEntryHistoryItem,
+  ListStats,
   ListEntryUpdate,
+  UserListHistoryResponse,
   UserListResponse,
   WatchStatus,
 } from 'src/types/tracking'
@@ -86,6 +89,46 @@ export const useTrackingStore = defineStore('tracking', () => {
     return created
   }
 
+  // -- Phase 5.3: History & Statistics --
+
+  const history = ref<ListEntryHistoryItem[]>([])
+  const historyIsLoading = ref(false)
+  const historyError = ref<string | null>(null)
+
+  const stats = computed<ListStats>(() => {
+    const s: ListStats = {
+      total: 0,
+      watching: 0,
+      reading: 0,
+      completed: 0,
+      paused: 0,
+      dropped: 0,
+      plan_to_watch: 0,
+      plan_to_read: 0,
+      rewatching: 0,
+      rereading: 0,
+    }
+    for (const entry of entries.value) {
+      s.total++
+      s[entry.status]++
+    }
+    return s
+  })
+
+  async function fetchHistory(limit = 20): Promise<void> {
+    historyIsLoading.value = true
+    historyError.value = null
+    try {
+      const response = await api.get<UserListHistoryResponse>('/api/v1/lists/me/history', { params: { limit } })
+      history.value = response.data.items ?? []
+    } catch {
+      historyError.value = 'Failed to load history.'
+      history.value = []
+    } finally {
+      historyIsLoading.value = false
+    }
+  }
+
   async function replaceCustomListEntries(
     listId: string,
     payload: CustomListEntriesReplaceRequest,
@@ -98,11 +141,16 @@ export const useTrackingStore = defineStore('tracking', () => {
     customLists,
     isLoading,
     error,
+    history,
+    historyIsLoading,
+    historyError,
     byStatus,
+    stats,
     fetchMyList,
     addToList,
     updateEntry,
     createCustomList,
     replaceCustomListEntries,
+    fetchHistory,
   }
 })

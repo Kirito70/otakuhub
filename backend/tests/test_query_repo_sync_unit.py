@@ -60,6 +60,8 @@ async def test_query_builder_all_first_count_exists_paths() -> None:
             FakeResult(one_value=True),
         ]
     )
+    # exists() uses db_session.execute() (SQLAlchemy), not exec()
+    session.execute = AsyncMock(return_value=MagicMock(scalar=lambda: True))
 
     qb = QueryBuilder(User, session)
     qb = qb.filter(User.username == "demo").desc(User.created_at).limit(5).offset(1)
@@ -73,7 +75,8 @@ async def test_query_builder_all_first_count_exists_paths() -> None:
     assert first_row == 1
     assert total == 7
     assert exists is True
-    assert session.exec.await_count == 4
+    # .all(), .first(), .count() use exec; .exists() uses execute
+    assert session.exec.await_count == 3
 
 
 @pytest.mark.asyncio

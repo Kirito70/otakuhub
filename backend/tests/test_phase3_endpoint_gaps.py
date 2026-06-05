@@ -25,6 +25,7 @@ from src.app.main import app
 from tests.helpers import register_or_login_as_admin, ADMIN_USERNAME, ADMIN_PASSWORD
 
 _TEST_MEDIA_ID: str | None = None
+_SHARED_GROUP_ID: str | None = None
 
 
 def _admin_token(client: TestClient) -> str:
@@ -55,6 +56,71 @@ def _normal_user_headers(client: TestClient) -> dict[str, str]:
 
 def _admin_headers(client: TestClient) -> dict[str, str]:
     return {"Authorization": f"Bearer {_admin_token(client)}"}
+
+
+def _ensure_shared_group(client: TestClient) -> tuple[str, str]:
+    """Create a shared group if needed and return (group_id, invite_code)."""
+    global _SHARED_GROUP_ID
+    if _SHARED_GROUP_ID:
+        # Fetch group to get invite_code
+        resp = client.get(
+            f"/api/v1/groups/{_SHARED_GROUP_ID}",
+            headers=_admin_headers(client),
+        )
+        assert resp.status_code == 200, resp.text
+        return _SHARED_GROUP_ID, resp.json()["invite_code"]
+
+    admin_headers = _admin_headers(client)
+    resp = client.post(
+        "/api/v1/groups",
+        json={"name": "Phase3 Shared Group", "description": "Shared group for integration tests", "is_private": False},
+        headers=admin_headers,
+    )
+    assert resp.status_code == 201, resp.text
+    _SHARED_GROUP_ID = resp.json()["id"]
+    invite_code = resp.json()["invite_code"]
+    return _SHARED_GROUP_ID, invite_code
+
+
+def _user_token_with_group(client: TestClient, suffix: str) -> str:
+    """Create a user, add them to the shared group, return their token."""
+    token = _user_token(client, suffix)
+    _, invite_code = _ensure_shared_group(client)
+
+    # User joins via invite code
+    headers = {"Authorization": f"Bearer {token}"}
+    join_resp = client.post(
+        f"/api/v1/groups/join/{invite_code}",
+        headers=headers,
+    )
+    assert join_resp.status_code == 200, join_resp.text
+    return token
+
+
+def _user_headers_with_group(client: TestClient, suffix: str) -> dict[str, str]:
+    return {"Authorization": f"Bearer {_user_token_with_group(client, suffix)}"}
+
+
+def _create_notification_for_user(client: TestClient, user_id: str) -> None:
+    """Create a notification for a user via the service layer.
+    
+    Uses asyncio.run() with a new DB session connected to the same temp SQLite DB.
+    """
+    import asyncio
+    from uuid import UUID
+    from src.app.database import AsyncSessionLocal
+    from src.app.services.social_service import SocialService
+
+    async def _create():
+        async with AsyncSessionLocal() as session:
+            svc = SocialService(session)
+            await svc.create_notification(
+                user_id=UUID(user_id),
+                notification_type="system",
+                title="Test Notification",
+                body="This is a test notification for integration testing",
+            )
+    asyncio.run(_create())
 
 
 def _create_media(client: TestClient) -> str:
@@ -194,9 +260,9 @@ def test_media_delete_forbidden_for_normal_user() -> None:
 def test_delete_recommendation_by_sender() -> None:
     """The sender of a recommendation can soft-delete it."""
     with TestClient(app) as client:
-        # Create two users
-        token_a = _user_token(client, "sender")
-        token_b = _user_token(client, "recip")
+        # Create two users in the shared group
+        token_a = _user_token_with_group(client, "sender")
+        token_b = _user_token_with_group(client, "recip")
         media_id = _create_media(client)
 
         headers_a = {"Authorization": f"Bearer {token_a}"}
@@ -212,9 +278,7 @@ def test_delete_recommendation_by_sender() -> None:
             json={"to_user_id": recip_id, "media_id": media_id},
             headers=headers_a,
         )
-        # May fail if no shared group — if so, skip
-        if rec_resp.status_code != 201:
-            pytest.skip("No shared group between test users")
+        assert rec_resp.status_code == 201, rec_resp.text
 
         rec_id = rec_resp.json()["id"]
 
@@ -230,8 +294,8 @@ def test_delete_recommendation_by_sender() -> None:
 def test_delete_recommendation_forbidden_for_recipient() -> None:
     """Only the sender can delete a recommendation (not the recipient)."""
     with TestClient(app) as client:
-        token_a = _user_token(client, "sender2")
-        token_b = _user_token(client, "recip2")
+        token_a = _user_token_with_group(client, "sender2")
+        token_b = _user_token_with_group(client, "recip2")
         media_id = _create_media(client)
 
         headers_a = {"Authorization": f"Bearer {token_a}"}
@@ -245,8 +309,7 @@ def test_delete_recommendation_forbidden_for_recipient() -> None:
             json={"to_user_id": recip_id, "media_id": media_id},
             headers=headers_a,
         )
-        if rec_resp.status_code != 201:
-            pytest.skip("No shared group between test users")
+        assert rec_resp.status_code == 201, rec_resp.text
 
         rec_id = rec_resp.json()["id"]
 
@@ -273,18 +336,14 @@ def test_delete_recommendation_not_found() -> None:
 def test_delete_discussion_by_author() -> None:
     """The author of a discussion can soft-delete it."""
     with TestClient(app) as client:
-        token = _user_token(client, "discuss")
+        token = _user_token_with_group(client, "discuss")
         media_id = _create_media(client)
         headers = {"Authorization": f"Bearer {token}"}
 
-        me = client.get("/api/v1/users/me", headers=headers)
-        user_id = me.json()["id"]
-
-        # Get user's groups
+        # Get user's groups (now in shared group)
         groups = client.get("/api/v1/groups", headers=headers)
-        if groups.status_code != 200 or not groups.json().get("items"):
-            pytest.skip("User has no groups")
-
+        assert groups.status_code == 200, groups.text
+        assert groups.json().get("items"), "User should be in a group"
         group_id = groups.json()["items"][0]["id"]
 
         # Create discussion
@@ -297,8 +356,7 @@ def test_delete_discussion_by_author() -> None:
             },
             headers=headers,
         )
-        if disc_resp.status_code != 201:
-            pytest.skip("Could not create discussion")
+        assert disc_resp.status_code == 201, disc_resp.text
 
         disc_id = disc_resp.json()["id"]
 
@@ -314,17 +372,16 @@ def test_delete_discussion_by_author() -> None:
 def test_delete_discussion_forbidden_for_other_user() -> None:
     """Only the author can delete a discussion."""
     with TestClient(app) as client:
-        token_a = _user_token(client, "author1")
-        token_b = _user_token(client, "notauth")
+        token_a = _user_token_with_group(client, "author1")
+        token_b = _user_token_with_group(client, "notauth")
         media_id = _create_media(client)
 
         headers_a = {"Authorization": f"Bearer {token_a}"}
         headers_b = {"Authorization": f"Bearer {token_b}"}
 
         groups = client.get("/api/v1/groups", headers=headers_a)
-        if groups.status_code != 200 or not groups.json().get("items"):
-            pytest.skip("User has no groups")
-
+        assert groups.status_code == 200, groups.text
+        assert groups.json().get("items"), "User should be in a group"
         group_id = groups.json()["items"][0]["id"]
 
         disc_resp = client.post(
@@ -332,8 +389,7 @@ def test_delete_discussion_forbidden_for_other_user() -> None:
             json={"media_id": media_id, "group_id": group_id, "body": "Test"},
             headers=headers_a,
         )
-        if disc_resp.status_code != 201:
-            pytest.skip("Could not create discussion")
+        assert disc_resp.status_code == 201, disc_resp.text
 
         disc_id = disc_resp.json()["id"]
 
@@ -359,14 +415,13 @@ def test_delete_discussion_not_found() -> None:
 def test_get_watchparty_rsvps() -> None:
     """GET /watchparty/{party_id}/rsvps returns RSVP list."""
     with TestClient(app) as client:
-        token = _user_token(client, "rsvp")
+        token = _user_token_with_group(client, "rsvp")
         media_id = _create_media(client)
         headers = {"Authorization": f"Bearer {token}"}
 
         groups = client.get("/api/v1/groups", headers=headers)
-        if groups.status_code != 200 or not groups.json().get("items"):
-            pytest.skip("User has no groups")
-
+        assert groups.status_code == 200, groups.text
+        assert groups.json().get("items"), "User should be in a group"
         group_id = groups.json()["items"][0]["id"]
 
         # Create a watch party
@@ -382,8 +437,7 @@ def test_get_watchparty_rsvps() -> None:
             },
             headers=headers,
         )
-        if wp_resp.status_code != 201:
-            pytest.skip("Could not create watch party")
+        assert wp_resp.status_code == 201, wp_resp.text
 
         party_id = wp_resp.json()["id"]
 
@@ -413,15 +467,21 @@ def test_get_watchparty_rsvps_not_found() -> None:
 def test_delete_notification_owner() -> None:
     """A user can delete their own notification."""
     with TestClient(app) as client:
-        token = _user_token(client, "notif")
+        token = _user_token_with_group(client, "notif")
         headers = {"Authorization": f"Bearer {token}"}
+
+        # Create a notification for this user via the service layer
+        me = client.get("/api/v1/users/me", headers=headers)
+        user_id = me.json()["id"]
+        _create_notification_for_user(client, user_id)
 
         # Get existing notifications
         notifs = client.get("/api/v1/notifications", headers=headers)
-        if notifs.status_code != 200 or not notifs.json().get("items"):
-            pytest.skip("No notifications to delete")
+        assert notifs.status_code == 200, notifs.text
+        items = notifs.json().get("items", [])
+        assert len(items) > 0, "Notification should have been created"
 
-        notif_id = notifs.json()["items"][0]["id"]
+        notif_id = items[0]["id"]
 
         resp = client.delete(f"/api/v1/notifications/{notif_id}", headers=headers)
         assert resp.status_code == 200, resp.text
@@ -440,16 +500,22 @@ def test_delete_notification_not_found() -> None:
 def test_delete_notification_other_user() -> None:
     """A user cannot delete another user's notification."""
     with TestClient(app) as client:
-        token_a = _user_token(client, "owner1")
-        token_b = _user_token(client, "thief1")
+        token_a = _user_token_with_group(client, "owner1")
+        token_b = _user_token_with_group(client, "thief1")
 
         headers_a = {"Authorization": f"Bearer {token_a}"}
 
-        notifs = client.get("/api/v1/notifications", headers=headers_a)
-        if notifs.status_code != 200 or not notifs.json().get("items"):
-            pytest.skip("No notifications to test with")
+        # Create a notification for owner1
+        me = client.get("/api/v1/users/me", headers=headers_a)
+        user_id = me.json()["id"]
+        _create_notification_for_user(client, user_id)
 
-        notif_id = notifs.json()["items"][0]["id"]
+        notifs = client.get("/api/v1/notifications", headers=headers_a)
+        assert notifs.status_code == 200, notifs.text
+        items = notifs.json().get("items", [])
+        assert len(items) > 0, "Notification should have been created"
+
+        notif_id = items[0]["id"]
 
         headers_b = {"Authorization": f"Bearer {token_b}"}
         resp = client.delete(f"/api/v1/notifications/{notif_id}", headers=headers_b)

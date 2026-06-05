@@ -98,13 +98,14 @@ async def test_social_create_recommendation_for_shared_group_branches() -> None:
     with pytest.raises(ValueError):
         await svc.create_recommendation_for_shared_group(from_user, to_user, media_id, "m")
 
-    # duplicate
+    # duplicate — get_inbox uses .all()
+    duplicate_rec = SimpleNamespace(id=uuid4(), from_user_id=from_user, media_id=media_id)
     session = MagicMock()
     session.exec = AsyncMock(
         side_effect=[
             FakeResult(one_value=SimpleNamespace(id=to_user)),
             FakeResult(one_value=uuid4()),
-            FakeResult(one_value=SimpleNamespace(id=uuid4())),
+            FakeResult(all_value=[duplicate_rec]),
         ]
     )
     svc = SocialService(session)
@@ -211,13 +212,15 @@ async def test_social_reply_paths() -> None:
             parent_reply_id=uuid4(),
         )
 
-    # success
+    # success — get_for_discussion uses .all()
+    parent_reply_id = uuid4()
+    parent_reply = SimpleNamespace(id=parent_reply_id, discussion_id=discussion.id, deleted_at=None)
     session = MagicMock()
     session.exec = AsyncMock(
         side_effect=[
             FakeResult(one_value=discussion),
             FakeResult(one_value=SimpleNamespace(id=uuid4())),
-            FakeResult(one_value=SimpleNamespace(id=uuid4())),
+            FakeResult(all_value=[parent_reply]),
         ]
     )
     session.add = MagicMock()
@@ -225,7 +228,7 @@ async def test_social_reply_paths() -> None:
     session.refresh = AsyncMock()
     svc = SocialService(session)
     out = await svc.create_discussion_reply_for_group_member(
-        user_id=uuid4(), discussion_id=discussion.id, body="b", parent_reply_id=uuid4()
+        user_id=uuid4(), discussion_id=discussion.id, body="b", parent_reply_id=parent_reply_id
     )
     assert out is not None
 
@@ -259,6 +262,7 @@ async def test_social_notifications_and_preferences_paths() -> None:
     session.exec = AsyncMock(side_effect=[FakeResult(one_value=pref), FakeResult(one_value=None)])
     session.add = MagicMock()
     session.commit = AsyncMock()
+    session.refresh = AsyncMock()  # default-creation path calls refresh
     svc = SocialService(session)
     assert await svc.get_notification_preferences(uid) is pref
     out = await svc.get_notification_preferences(uid)

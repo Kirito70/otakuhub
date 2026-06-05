@@ -112,40 +112,6 @@ export interface DiscussionReplyCreateRequest {
   parent_reply_id?: string | null
 }
 
-/** Generic paginated response helper */
-export interface PaginatedResponse<T> {
-  items: T[]
-  total: number
-  limit: number
-  offset: number
-}
-
-/** User profile (for profile page) */
-export interface UserProfile {
-  id: string
-  username: string
-  display_name?: string | null
-  email: string
-  avatar_url?: string | null
-  bio?: string | null
-  timezone: string
-  is_active: boolean
-  created_at: string
-  updated_at: string
-}
-
-export interface UserProfileUpdateRequest {
-  display_name?: string | null
-  avatar_url?: string | null
-  bio?: string | null
-  timezone?: string | null
-}
-
-export interface PasswordChangeRequest {
-  current_password: string
-  new_password: string
-}
-
 /** User settings (theme/language/timezone) */
 export interface UserSettings {
   user_id: string

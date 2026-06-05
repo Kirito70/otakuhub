@@ -2,36 +2,8 @@ import axios from 'axios'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 
-import { secureStorage, type TokenPair } from 'src/services/storage'
-
-interface AuthResponse {
-  access_token: string
-  refresh_token: string
-}
-
-export interface UserProfile {
-  id: string
-  username: string
-  display_name: string | null
-  email: string
-  avatar_url: string | null
-  bio: string | null
-  timezone: string
-  is_active: boolean
-  created_at: string
-  updated_at: string
-}
-
-interface RegisterPayload {
-  username: string
-  email: string
-  password: string
-}
-
-interface LoginPayload {
-  username: string
-  password: string
-}
+import { secureStorage } from 'src/services/storage'
+import type { AuthResponse, LoginPayload, RegisterPayload, TokenPair, UserProfile } from 'src/types/auth'
 
 const authApi = axios.create({
   baseURL: process.env.API_BASE_URL,

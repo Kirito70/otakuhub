@@ -28,11 +28,15 @@ class FakeResult:
 @pytest.mark.asyncio
 async def test_notification_mark_notifications_as_read_updates_only_unread() -> None:
     user_id = uuid4()
-    n1 = SimpleNamespace(is_read=False, read_at=None)
-    n2 = SimpleNamespace(is_read=False, read_at=None)
+    n1 = SimpleNamespace(user_id=user_id, is_read=False, read_at=None)
+    n2 = SimpleNamespace(user_id=user_id, is_read=False, read_at=None)
 
     session = MagicMock()
-    session.exec = AsyncMock(return_value=FakeResult(all_value=[n1, n2]))
+    # mark_as_read uses .first() which calls .one_or_none()
+    session.exec = AsyncMock(side_effect=[
+        FakeResult(one_value=n1),
+        FakeResult(one_value=n2),
+    ])
     session.commit = AsyncMock()
 
     service = NotificationService(session)
@@ -44,7 +48,8 @@ async def test_notification_mark_notifications_as_read_updates_only_unread() -> 
     assert updated == 2
     assert n1.is_read is True and n2.is_read is True
     assert n1.read_at is not None and n2.read_at is not None
-    session.commit.assert_awaited_once()
+    # each mark_as_read commits individually
+    assert session.commit.await_count == 2
 
 
 @pytest.mark.asyncio
@@ -229,16 +234,16 @@ async def test_tracking_get_user_statistics_aggregates_counts() -> None:
     session = MagicMock()
     session.exec = AsyncMock(
         side_effect=[
-            FakeResult(one_value=5),
-            FakeResult(one_value=2),
-            FakeResult(one_value=9),
+            FakeResult(one_value=5),  # total
+            FakeResult(one_value=2),  # watching → in_progress_count
+            FakeResult(one_value=9),  # completed → completed_count
         ]
     )
 
     service = TrackingService(session)
     stats = await service.get_user_statistics(uuid4())
 
-    assert stats == {"completed_count": 5, "in_progress_count": 2, "total_count": 9}
+    assert stats == {"completed_count": 9, "in_progress_count": 2, "total_count": 5}
 
 
 @pytest.mark.asyncio
@@ -268,7 +273,8 @@ async def test_tracking_get_user_list_returns_all_rows() -> None:
 async def test_tracking_update_list_entry_not_found_returns_none() -> None:
     session = MagicMock()
     service = TrackingService(session)
-    service.get_user_list_entry = AsyncMock(return_value=None)
+    # update_list_entry calls self._entry_repo.get_by_user_and_media(), not self.get_user_list_entry()
+    service._entry_repo.get_by_user_and_media = AsyncMock(return_value=None)
 
     payload = SimpleNamespace(model_dump=lambda **kwargs: {"status": "completed"})
     out = await service.update_list_entry(uuid4(), uuid4(), payload)
@@ -278,10 +284,10 @@ async def test_tracking_update_list_entry_not_found_returns_none() -> None:
 
 @pytest.mark.asyncio
 async def test_tracking_update_list_entry_empty_changes_returns_entry() -> None:
-    entry = SimpleNamespace()
+    entry = SimpleNamespace(user_id=uuid4(), media_id=uuid4())
     session = MagicMock()
     service = TrackingService(session)
-    service.get_user_list_entry = AsyncMock(return_value=entry)
+    service._entry_repo.get_by_user_and_media = AsyncMock(return_value=entry)
 
     payload = SimpleNamespace(model_dump=lambda **kwargs: {})
     out = await service.update_list_entry(uuid4(), uuid4(), payload)
@@ -293,7 +299,7 @@ async def test_tracking_update_list_entry_empty_changes_returns_entry() -> None:
 async def test_tracking_delete_list_entry_not_found_false() -> None:
     session = MagicMock()
     service = TrackingService(session)
-    service.get_user_list_entry = AsyncMock(return_value=None)
+    service._entry_repo.get_by_user_and_media = AsyncMock(return_value=None)
 
     assert await service.delete_list_entry(uuid4(), uuid4()) is False
 
@@ -312,7 +318,7 @@ async def test_tracking_delete_list_entry_success(monkeypatch) -> None:
     monkeypatch.setattr("src.app.services.tracking_service.ListEntryHistory", FakeHistory)
 
     service = TrackingService(session)
-    service.get_user_list_entry = AsyncMock(return_value=entry)
+    service._entry_repo.get_by_user_and_media = AsyncMock(return_value=entry)
 
     assert await service.delete_list_entry(entry.user_id, entry.media_id) is True
     assert entry.deleted_at is not None
@@ -333,7 +339,8 @@ async def test_tracking_replace_custom_list_entries_no_list_returns_none() -> No
 
 @pytest.mark.asyncio
 async def test_tracking_replace_custom_list_entries_success() -> None:
-    custom_list = SimpleNamespace(updated_at=None)
+    user_id = uuid4()
+    custom_list = SimpleNamespace(updated_at=None, user_id=user_id)
     old_rows = [SimpleNamespace(), SimpleNamespace()]
     session = MagicMock()
     session.exec = AsyncMock(side_effect=[FakeResult(one_value=custom_list), FakeResult(all_value=old_rows)])
@@ -346,10 +353,11 @@ async def test_tracking_replace_custom_list_entries_success() -> None:
         entries=[SimpleNamespace(media_id=uuid4(), sort_order=1, note="x"), SimpleNamespace(media_id=uuid4(), sort_order=2, note=None)]
     )
 
-    out = await service.replace_custom_list_entries(uuid4(), uuid4(), payload)
+    out = await service.replace_custom_list_entries(user_id, uuid4(), payload)
     assert out == 2
     assert session.delete.await_count == 2
-    session.commit.assert_awaited_once()
+    # replace_entries commits (1) + service commits (1) = 2 total
+    assert session.commit.await_count == 2
 
 
 @pytest.mark.asyncio
@@ -373,7 +381,8 @@ async def test_watch_party_basic_crud_helpers() -> None:
 async def test_watch_party_delete_not_found_false() -> None:
     session = MagicMock()
     service = WatchPartyService(session)
-    service.get_watch_party = AsyncMock(return_value=None)
+    # delete_watch_party calls self._watch_party_repo.get_by_id(), not self.get_watch_party()
+    service._watch_party_repo.get_by_id = AsyncMock(return_value=None)
     assert await service.delete_watch_party(uuid4()) is False
 
 
@@ -383,11 +392,12 @@ async def test_watch_party_delete_success() -> None:
     session = MagicMock()
     session.commit = AsyncMock()
     service = WatchPartyService(session)
-    service.get_watch_party = AsyncMock(return_value=party)
+    service._watch_party_repo.get_by_id = AsyncMock(return_value=party)
+    service._watch_party_repo.soft_delete = AsyncMock(return_value=True)
 
     assert await service.delete_watch_party(uuid4()) is True
-    assert party.deleted_at is not None
-    session.commit.assert_awaited_once()
+    # soft_delete is mocked (repo responsibility), verify delegation
+    service._watch_party_repo.soft_delete.assert_awaited_once()
 
 
 @pytest.mark.asyncio
@@ -463,7 +473,9 @@ async def test_social_discussion_reply_parent_and_success_paths() -> None:
         )
 
     parent = SimpleNamespace(id=uuid4(), discussion_id=discussion_id, deleted_at=None)
-    session.exec = AsyncMock(side_effect=[FakeResult(one_value=discussion), FakeResult(one_value=membership), FakeResult(one_value=parent)])
+    # get_for_discussion uses .all() — need all_value, not one_value
+    session.exec = AsyncMock(side_effect=[FakeResult(one_value=discussion), FakeResult(one_value=membership), FakeResult(all_value=[parent])])
+    session.add = MagicMock()
     out = await service.create_discussion_reply_for_group_member(
         user_id=user_id,
         discussion_id=discussion_id,
@@ -488,9 +500,9 @@ async def test_social_create_recommendation_shared_group_errors_and_success() ->
     with pytest.raises(ValueError):
         await service.create_recommendation_for_shared_group(from_id, to_id, media_id, "msg")
 
-    # duplicate recommendation
-    existing = SimpleNamespace(id=uuid4())
-    session.exec = AsyncMock(side_effect=[FakeResult(one_value=recipient), FakeResult(one_value=uuid4()), FakeResult(one_value=existing)])
+    # duplicate recommendation — get_inbox uses .all()
+    existing_rec = SimpleNamespace(id=uuid4(), from_user_id=from_id, media_id=media_id)
+    session.exec = AsyncMock(side_effect=[FakeResult(one_value=recipient), FakeResult(one_value=uuid4()), FakeResult(all_value=[existing_rec])])
     with pytest.raises(ValueError):
         await service.create_recommendation_for_shared_group(from_id, to_id, media_id, "msg")
 

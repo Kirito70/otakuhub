@@ -117,10 +117,10 @@ async def test_watch_party_create_update_delete_paths() -> None:
     out = await svc.create_watch_party_for_group_member(host_user_id=uid, group_id=gid, media_id=mid, scheduled_at=now)
     assert out is not None
 
-    # update not found then success
+    # update not found then success — uses _watch_party_repo.get_by_id(), not self.get_watch_party()
     session = MagicMock()
     svc = WatchPartyService(session)
-    svc.get_watch_party = AsyncMock(side_effect=[None, SimpleNamespace(title="x")])
+    svc._watch_party_repo.get_by_id = AsyncMock(side_effect=[None, SimpleNamespace(title="x")])
     assert await svc.update_watch_party(uuid4(), {"title": "y"}) is None
     session.commit = AsyncMock()
     session.refresh = AsyncMock()
@@ -128,7 +128,8 @@ async def test_watch_party_create_update_delete_paths() -> None:
     assert updated.title == "y"
 
     # delete false then true
-    svc.get_watch_party = AsyncMock(side_effect=[None, SimpleNamespace(deleted_at=None)])
+    svc._watch_party_repo.get_by_id = AsyncMock(side_effect=[None, SimpleNamespace(deleted_at=None)])
+    svc._watch_party_repo.soft_delete = AsyncMock(return_value=True)
     assert await svc.delete_watch_party(uuid4()) is False
     assert await svc.delete_watch_party(uuid4()) is True
 
@@ -159,8 +160,9 @@ async def test_watch_party_rsvp_paths() -> None:
     assert out is not None
 
     # group member wrapper: not found, not member, success
+    # rsvp_to_watch_party_for_group_member calls self._watch_party_repo.get_by_id()
     svc = WatchPartyService(MagicMock())
-    svc.get_watch_party = AsyncMock(return_value=None)
+    svc._watch_party_repo.get_by_id = AsyncMock(return_value=None)
     with pytest.raises(LookupError):
         await svc.rsvp_to_watch_party_for_group_member(party_id=party_id, user_id=user_id, status="attending")
 
@@ -168,14 +170,14 @@ async def test_watch_party_rsvp_paths() -> None:
     session = MagicMock()
     session.exec = AsyncMock(return_value=FakeResult(one_value=None))
     svc = WatchPartyService(session)
-    svc.get_watch_party = AsyncMock(return_value=party)
+    svc._watch_party_repo.get_by_id = AsyncMock(return_value=party)
     with pytest.raises(PermissionError):
         await svc.rsvp_to_watch_party_for_group_member(party_id=party_id, user_id=user_id, status="attending")
 
     session = MagicMock()
     session.exec = AsyncMock(return_value=FakeResult(one_value=SimpleNamespace(id=uuid4())))
     svc = WatchPartyService(session)
-    svc.get_watch_party = AsyncMock(return_value=party)
+    svc._watch_party_repo.get_by_id = AsyncMock(return_value=party)
     svc.rsvp_to_watch_party = AsyncMock(return_value=SimpleNamespace(status="attending"))
     out = await svc.rsvp_to_watch_party_for_group_member(party_id=party_id, user_id=user_id, status="attending")
     assert out.status == "attending"
