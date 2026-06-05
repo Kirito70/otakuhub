@@ -88,6 +88,9 @@ frontend/src-electron/
 *.appimage
 *.exe
 
+# Debug scripts
+debug_*.py
+
 # Local environment files
 .env
 .env.*

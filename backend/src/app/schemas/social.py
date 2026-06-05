@@ -141,3 +141,12 @@ class DiscussionReplyResponse(BaseModel):
     has_spoilers: bool
     created_at: datetime
     updated_at: datetime
+
+
+class DiscussionReplyListResponse(BaseModel):
+    """Paginated discussion replies for a discussion thread."""
+
+    items: list[DiscussionReplyResponse]
+    total: int
+    limit: int
+    offset: int

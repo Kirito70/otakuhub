@@ -15,7 +15,7 @@ from src.app.config import settings
 from src.app.core.security import create_access_token, get_password_hash, needs_password_rehash, verify_password
 from src.app.models.refresh_token import RefreshToken
 from src.app.models.user import User
-from src.app.schemas.auth import LoginRequest, RefreshRequest, RegisterRequest, TokenResponse
+from src.app.schemas.auth import ChangePasswordRequest, LoginRequest, RefreshRequest, RegisterRequest, TokenResponse
 
 
 class AuthService:
@@ -177,6 +177,86 @@ class AuthService:
         if row and row.revoked_at is None:
             row.revoked_at = datetime.utcnow()
             await db.commit()
+
+
+    async def change_password(
+        self,
+        db: AsyncSession,
+        user: User,
+        payload: ChangePasswordRequest,
+    ) -> TokenResponse:
+        """Change the current user's password.
+
+        1. Verifies ``current_password`` against the stored hash.
+        2. Validates ``new_password`` matches ``new_password_confirm``.
+        3. Hashes and persists the new password.
+        4. Commits the password change.
+        5. Revokes all active refresh tokens (separate session to avoid
+           the new token being caught by the revocation query).
+        6. Issues a fresh access + refresh token pair.
+
+        The caller stays logged in; all other sessions are invalidated.
+        """
+        if not verify_password(payload.current_password, user.password_hash):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Current password is incorrect",
+            )
+
+        if payload.new_password != payload.new_password_confirm:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="New password and confirmation do not match",
+            )
+
+        if payload.current_password == payload.new_password:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="New password must be different from current password",
+            )
+
+        # Hash and persist the new password
+        user.password_hash = get_password_hash(payload.new_password)
+        user.updated_at = datetime.utcnow()
+
+        # Find and revoke all active tokens for this user
+        stmt = select(RefreshToken).where(
+            RefreshToken.user_id == user.id,
+            RefreshToken.revoked_at.is_(None),
+        )
+        rows = (await db.execute(stmt)).scalars().all()
+        now = datetime.utcnow()
+        for token_row in rows:
+            token_row.revoked_at = now
+
+        # Flush so the pending revocations hit the DB before we check
+        # whether any token with the new hash already exists
+        await db.flush()
+
+        # Issue a fresh token pair in the same session
+        access_token = create_access_token(str(user.id))
+        new_refresh = token_urlsafe(48)
+        new_hash = sha256(new_refresh.encode("utf-8")).hexdigest()
+
+        refresh_row = RefreshToken(
+            user_id=user.id,
+            token_hash=new_hash,
+            expires_at=datetime.utcnow() + timedelta(days=settings.refresh_token_expire_days),
+        )
+        db.add(refresh_row)
+        await db.commit()
+
+        return TokenResponse(
+            access_token=access_token,
+            refresh_token=new_refresh,
+            expires_in=settings.access_token_expire_minutes * 60,
+        )
+
+        return TokenResponse(
+            access_token=access_token,
+            refresh_token=new_refresh,
+            expires_in=settings.access_token_expire_minutes * 60,
+        )
 
 
 auth_service = AuthService()

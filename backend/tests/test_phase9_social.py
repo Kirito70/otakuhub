@@ -561,3 +561,127 @@ def test_phase9_recommendations_sent_empty_for_user_with_no_sent() -> None:
         body = resp.json()
         assert body["items"] == []
         assert body["total"] == 0
+
+
+def test_phase9_discussion_replies_requires_auth() -> None:
+    """Discussion replies endpoint requires authentication."""
+    with TestClient(app) as client:
+        res = client.get(f"/api/v1/social/discussions/{uuid4()}/replies")
+        assert res.status_code == 401
+
+
+def test_phase9_discussion_replies_not_found_for_random_uuid() -> None:
+    """A non-existent discussion returns 404."""
+    with TestClient(app) as client:
+        user = _register_and_login(client, "discreply_nf")
+        headers = {"Authorization": f"Bearer {user['access_token']}"}
+
+        res = client.get(f"/api/v1/social/discussions/{uuid4()}/replies", headers=headers)
+        assert res.status_code == 404, res.text
+
+
+def test_phase9_discussion_replies_returns_replies_for_group_member() -> None:
+    """A group member can see discussion replies."""
+    with TestClient(app) as client:
+        host = _register_and_login(client, "discreply_host")
+        member = _register_and_login(client, "discreply_member")
+        host_h = {"Authorization": f"Bearer {host['access_token']}"}
+        member_h = {"Authorization": f"Bearer {member['access_token']}"}
+
+        # Create a group
+        g_res = client.post(
+            "/api/v1/groups",
+            json={"name": "ReplyTestGroup", "description": "", "is_private": False},
+            headers=host_h,
+        )
+        assert g_res.status_code == 201, g_res.text
+        invite = g_res.json()["invite_code"]
+
+        # Join member
+        join_res = client.post(f"/api/v1/groups/join/{invite}", headers=member_h)
+        assert join_res.status_code == 200, join_res.text
+
+        # Get a media ID
+        media_id = _existing_media_id(client, host_h)
+
+        # Create discussion
+        d_res = client.post(
+            "/api/v1/social/discussions",
+            headers=host_h,
+            json={
+                "media_id": media_id,
+                "group_id": g_res.json()["id"],
+                "body": "What do you think?",
+            },
+        )
+        assert d_res.status_code == 201, d_res.text
+        discussion_id = d_res.json()["id"]
+
+        # Host creates a reply
+        r_res = client.post(
+            f"/api/v1/social/discussions/{discussion_id}/replies",
+            headers=host_h,
+            json={"body": "I think it's great!"},
+        )
+        assert r_res.status_code == 201, r_res.text
+
+        # Member fetches replies
+        res = client.get(
+            f"/api/v1/social/discussions/{discussion_id}/replies",
+            headers=member_h,
+        )
+        assert res.status_code == 200, res.text
+        body = res.json()
+        assert body["total"] >= 1
+        assert any("great" in r.get("body", "") for r in body["items"])
+        assert "items" in body
+
+
+def test_phase9_discussion_replies_empty_for_discussion_with_no_replies() -> None:
+    """A discussion with no replies returns empty list."""
+    with TestClient(app) as client:
+        user = _register_and_login(client, "discreply_empty")
+        h = {"Authorization": f"Bearer {user['access_token']}"}
+
+        # Create group
+        g_res = client.post(
+            "/api/v1/groups",
+            json={"name": "EmptyReplyGroup", "description": "", "is_private": False},
+            headers=h,
+        )
+        assert g_res.status_code == 201, g_res.text
+        group_id = g_res.json()["id"]
+
+        media_id = _existing_media_id(client, h)
+
+        # Create discussion
+        d_res = client.post(
+            "/api/v1/social/discussions",
+            headers=h,
+            json={"media_id": media_id, "group_id": group_id, "body": "Test"},
+        )
+        assert d_res.status_code == 201, d_res.text
+        disc_id = d_res.json()["id"]
+
+        res = client.get(f"/api/v1/social/discussions/{disc_id}/replies", headers=h)
+        assert res.status_code == 200, res.text
+        assert res.json()["items"] == []
+
+
+def test_phase9_media_relations_requires_auth() -> None:
+    """Media relations endpoint requires auth."""
+    with TestClient(app) as client:
+        res = client.get(f"/api/v1/media/{uuid4()}/relations")
+        assert res.status_code == 401
+
+
+def test_phase9_media_relations_empty_for_random_media() -> None:
+    """A random media UUID returns 200 with empty relations list."""
+    with TestClient(app) as client:
+        user = _register_and_login(client, "mediarel")
+        headers = {"Authorization": f"Bearer {user['access_token']}"}
+
+        res = client.get(f"/api/v1/media/{uuid4()}/relations", headers=headers)
+        assert res.status_code == 200, res.text
+        body = res.json()
+        assert body["items"] == []

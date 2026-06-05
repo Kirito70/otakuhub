@@ -82,3 +82,9 @@ class NotificationPreferencesUpdateRequest(BaseModel):
     telegram_chat_id: str | None = None
     email_enabled: bool | None = None
     push_enabled: bool | None = None
+
+
+class NotificationDeleteResponse(BaseModel):
+    """Response for deleting a notification."""
+
+    deleted: bool

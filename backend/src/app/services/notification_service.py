@@ -7,10 +7,13 @@ from typing import List, Optional
 from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlmodel import func, select
 
 from src.app.models import Notification, NotificationPreference
 from src.app.services.base_service import BaseService
+from src.app.repositories.notification_repository import (
+    NotificationRepository,
+    NotificationPreferenceRepository,
+)
 
 
 class NotificationService(BaseService):
@@ -18,6 +21,8 @@ class NotificationService(BaseService):
 
     def __init__(self, db_session: Optional[AsyncSession] = None):
         super().__init__(db_session)
+        self._notification_repo = NotificationRepository(self.db_session)
+        self._pref_repo = NotificationPreferenceRepository(self.db_session)
 
     async def get_user_notifications(
         self,
@@ -27,21 +32,11 @@ class NotificationService(BaseService):
         offset: int = 0,
     ) -> List[Notification]:
         """Get paginated notifications for current user."""
-        statement = (
-            select(Notification)
-            .where(Notification.user_id == user_id)
-            .order_by(Notification.created_at.desc())
-            .offset(offset)
-            .limit(limit)
-        )
-        result = await self.db_session.exec(statement)
-        return result.all()
+        return await self._notification_repo.get_for_user(user_id, limit=limit, offset=offset)
 
     async def count_user_notifications(self, *, user_id: UUID) -> int:
         """Count all notifications for current user."""
-        statement = select(func.count(Notification.id)).where(Notification.user_id == user_id)
-        result = await self.db_session.exec(statement)
-        return result.one_or_none() or 0
+        return await self._notification_repo.count_for_user(user_id)
 
     async def mark_notifications_as_read(
         self,
@@ -53,37 +48,28 @@ class NotificationService(BaseService):
         if not notification_ids:
             return 0
 
-        statement = select(Notification).where(
-            Notification.user_id == user_id,
-            Notification.id.in_(notification_ids),
-            Notification.is_read == False,  # noqa: E712
-        )
-        result = await self.db_session.exec(statement)
-        items = result.all()
+        count = 0
+        for nid in notification_ids:
+            if await self._notification_repo.mark_as_read(nid, user_id):
+                count += 1
+        return count
 
-        now = datetime.utcnow()
-        for item in items:
-            item.is_read = True
-            item.read_at = now
+    async def mark_all_notifications_as_read(self, *, user_id: UUID) -> int:
+        """Mark all of the current user's unread notifications as read."""
+        return await self._notification_repo.mark_all_as_read(user_id)
 
-        if items:
-            await self.db_session.commit()
-
-        return len(items)
+    async def delete_notification(
+        self,
+        *,
+        user_id: UUID,
+        notification_id: UUID,
+    ) -> bool:
+        """Delete a single notification by ID. Only the owner can delete."""
+        return await self._notification_repo.hard_delete(notification_id, user_id)
 
     async def get_notification_preferences(self, *, user_id: UUID) -> NotificationPreference:
         """Get current user's notification preferences, creating defaults if absent."""
-        statement = select(NotificationPreference).where(NotificationPreference.user_id == user_id)
-        result = await self.db_session.exec(statement)
-        preference = result.one_or_none()
-
-        if preference is None:
-            preference = NotificationPreference(user_id=user_id)
-            self.db_session.add(preference)
-            await self.db_session.commit()
-            await self.db_session.refresh(preference)
-
-        return preference
+        return await self._pref_repo.get_by_user_id(user_id)
 
     async def update_notification_preferences(
         self,
@@ -92,11 +78,9 @@ class NotificationService(BaseService):
         updates: dict[str, object],
     ) -> NotificationPreference:
         """Partially update current user's notification preferences."""
-        preference = await self.get_notification_preferences(user_id=user_id)
-
+        preference = await self._pref_repo.get_by_user_id(user_id)
         for key, value in updates.items():
             setattr(preference, key, value)
-
         preference.updated_at = datetime.utcnow()
         await self.db_session.commit()
         await self.db_session.refresh(preference)

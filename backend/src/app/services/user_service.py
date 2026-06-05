@@ -6,9 +6,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime
 from uuid import UUID
 
-from src.app.models import User
+from src.app.models import User, UserSettings
+from src.app.models.user_settings import UserSettings as UserSettingsModel
 from src.app.services.base_service import BaseService
-from src.app.schemas.user import UserProfile, UserSettings
+from src.app.schemas.user import UserProfile, UserSettingsResponse
 from src.app.core.security import get_password_hash
 from src.app.repositories.user_repository import UserRepository
 
@@ -38,11 +39,8 @@ class UserService(BaseService):
         return await self._user_repository.get_by_email(email)
 
     async def get_users(self, limit: int = 20, offset: int = 0) -> List[User]:
-        """Get list of users with pagination."""
-        # Note: This should be updated to use the repository's get_all method with pagination
-        statement = select(User).where(User.deleted_at.is_(None)).offset(offset).limit(limit)
-        result = await self.db_session.exec(statement)
-        return result.all()
+        """Get list of users with pagination (delegates to repository)."""
+        return await self._user_repository.get_all(limit=limit, offset=offset)
 
     async def create_user(self, user_data: Dict[str, Any]) -> User:
         """Create a new user."""
@@ -63,14 +61,8 @@ class UserService(BaseService):
         return await self._user_repository.update(user_id, user_data)
 
     async def delete_user(self, user_id: UUID) -> bool:
-        """Soft delete a user."""
-        user = await self.get_user_by_id(user_id)
-        if not user:
-            return False
-
-        user.deleted_at = datetime.utcnow()
-        await self.db_session.commit()
-        return True
+        """Soft delete a user (delegates to repository)."""
+        return await self._user_repository.delete(user_id)
 
     async def get_user_profile(self, user_id: UUID) -> Optional[UserProfile]:
         """Get user profile information."""
@@ -91,20 +83,32 @@ class UserService(BaseService):
             updated_at=user.updated_at,
         )
 
-    async def get_user_settings(self, user_id: UUID) -> Optional[UserSettings]:
-        """Get user settings."""
-        # Note: this would need a separate settings table or model
-        # Implementation depends on how settings are stored
-        return UserSettings(
-            user_id=user_id,
-            # Set defaults or fetch from DB if separate settings table exists
-        )
+    async def get_user_settings(self, user_id: UUID) -> Optional[UserSettingsModel]:
+        """Get user settings, creating defaults if absent."""
+        statement = select(UserSettingsModel).where(UserSettingsModel.user_id == user_id)
+        result = await self.db_session.exec(statement)
+        settings = result.one_or_none()
 
-    async def update_user_settings(self, user_id: UUID, settings_data: Dict[str, Any]) -> Optional[UserSettings]:
+        if settings is None:
+            settings = UserSettingsModel(user_id=user_id)
+            self.db_session.add(settings)
+            await self.db_session.commit()
+            await self.db_session.refresh(settings)
+
+        return settings
+
+    async def update_user_settings(self, user_id: UUID, settings_data: Dict[str, Any]) -> Optional[UserSettingsModel]:
         """Update user settings."""
-        # Implementation depends on how settings are stored
-        # This is a placeholder for now
-        return await self.get_user_settings(user_id)
+        settings = await self.get_user_settings(user_id)
+
+        for key, value in settings_data.items():
+            if hasattr(settings, key):
+                setattr(settings, key, value)
+
+        settings.updated_at = datetime.utcnow()
+        await self.db_session.commit()
+        await self.db_session.refresh(settings)
+        return settings
 
     async def get_users_in_group(self, group_id: UUID, limit: int = 20, offset: int = 0) -> List[User]:
         """Get users in a specific group."""

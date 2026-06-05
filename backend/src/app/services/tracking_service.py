@@ -6,11 +6,17 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional
 from uuid import UUID
 
-from sqlmodel import and_, func, select
+from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from src.app.models import CustomList, CustomListEntry, ListEntryHistory, MediaEntry, UserListEntry
 from src.app.services.base_service import BaseService
+from src.app.repositories.tracking_repository import (
+    UserListEntryRepository,
+    ListEntryHistoryRepository,
+    CustomListRepository,
+    CustomListEntryRepository,
+)
 from src.app.schemas.tracking import (
     CustomListCreate,
     CustomListEntriesReplaceRequest,
@@ -24,18 +30,14 @@ class TrackingService(BaseService):
 
     def __init__(self, db_session: Optional[AsyncSession] = None):
         super().__init__(db_session)
+        self._entry_repo = UserListEntryRepository(self.db_session)
+        self._history_repo = ListEntryHistoryRepository(self.db_session)
+        self._custom_list_repo = CustomListRepository(self.db_session)
+        self._custom_entry_repo = CustomListEntryRepository(self.db_session)
 
     async def get_user_list_entry(self, user_id: UUID, media_id: UUID) -> Optional[UserListEntry]:
         """Get a user's list entry for a specific media."""
-        statement = select(UserListEntry).where(
-            and_(
-                UserListEntry.user_id == user_id,
-                UserListEntry.media_id == media_id,
-                UserListEntry.deleted_at.is_(None),
-            )
-        )
-        result = await self.db_session.exec(statement)
-        return result.one_or_none()
+        return await self._entry_repo.get_by_user_and_media(user_id, media_id)
 
     async def get_user_list(
         self,
@@ -46,28 +48,28 @@ class TrackingService(BaseService):
         offset: int = 0,
     ) -> List[UserListEntry]:
         """Get user's list entries with optional filtering."""
-        statement = select(UserListEntry).where(
-            and_(
-                UserListEntry.user_id == user_id,
-                UserListEntry.deleted_at.is_(None),
-            )
-        )
-
-        if status:
-            statement = statement.where(UserListEntry.status == status)
-
         if media_type:
-            statement = statement.join(MediaEntry, MediaEntry.id == UserListEntry.media_id).where(
-                MediaEntry.media_type == media_type
+            # media_type filter requires a join — use raw query
+            statement = (
+                select(UserListEntry)
+                .join(MediaEntry, MediaEntry.id == UserListEntry.media_id)
+                .where(
+                    UserListEntry.user_id == user_id,
+                    UserListEntry.deleted_at.is_(None),
+                    MediaEntry.media_type == media_type,
+                )
             )
+            if status:
+                statement = statement.where(UserListEntry.status == status)
+            statement = statement.order_by(UserListEntry.updated_at.desc()).offset(offset).limit(limit)
+            result = await self.db_session.exec(statement)
+            return result.all()
 
-        statement = statement.order_by(UserListEntry.updated_at.desc()).offset(offset).limit(limit)
-        result = await self.db_session.exec(statement)
-        return result.all()
+        return await self._entry_repo.get_user_list(user_id, status=status, limit=limit, offset=offset)
 
     async def create_list_entry(self, user_id: UUID, entry_data: ListEntryCreate) -> UserListEntry:
         """Create a new list entry for the current user."""
-        existing_entry = await self.get_user_list_entry(user_id, entry_data.media_id)
+        existing_entry = await self._entry_repo.get_by_user_and_media(user_id, entry_data.media_id)
         if existing_entry:
             raise ValueError("Entry already exists for this user and media")
 
@@ -95,7 +97,7 @@ class TrackingService(BaseService):
 
     async def update_list_entry(self, user_id: UUID, media_id: UUID, entry_data: ListEntryUpdate) -> Optional[UserListEntry]:
         """Update a list entry by media ID for the current user."""
-        entry = await self.get_user_list_entry(user_id, media_id)
+        entry = await self._entry_repo.get_by_user_and_media(user_id, media_id)
         if not entry:
             return None
 
@@ -136,7 +138,7 @@ class TrackingService(BaseService):
 
     async def delete_list_entry(self, user_id: UUID, media_id: UUID) -> bool:
         """Soft delete a list entry by media ID for current user."""
-        entry = await self.get_user_list_entry(user_id, media_id)
+        entry = await self._entry_repo.get_by_user_and_media(user_id, media_id)
         if not entry:
             return False
 
@@ -158,78 +160,32 @@ class TrackingService(BaseService):
 
     async def get_list_entry_history(self, entry_id: UUID, limit: int = 20) -> List[ListEntryHistory]:
         """Get the history for a specific list entry."""
-        statement = (
-            select(ListEntryHistory)
-            .where(ListEntryHistory.entry_id == entry_id)
+        q = (
+            self._history_repo.query()
+            .filter(ListEntryHistory.entry_id == entry_id)
             .order_by(ListEntryHistory.created_at.desc())
             .limit(limit)
         )
-
-        result = await self.db_session.exec(statement)
-        return result.all()
+        return await q.all()
 
     async def get_user_activity_feed(self, user_id: UUID, limit: int = 20) -> List[ListEntryHistory]:
         """Get user's activity feed."""
-        statement = (
-            select(ListEntryHistory)
-            .where(ListEntryHistory.user_id == user_id)
-            .order_by(ListEntryHistory.created_at.desc())
-            .limit(limit)
-        )
-
-        result = await self.db_session.exec(statement)
-        return result.all()
+        return await self._history_repo.get_for_user(user_id, limit=limit)
 
     async def get_user_statistics(self, user_id: UUID) -> Dict[str, Any]:
         """Get user's tracking statistics."""
-        completed_stmt = (
-            select(func.count(UserListEntry.id))
-            .where(
-                and_(
-                    UserListEntry.user_id == user_id,
-                    UserListEntry.status == "completed",
-                    UserListEntry.deleted_at.is_(None),
-                )
-            )
-        )
-        completed_result = await self.db_session.exec(completed_stmt)
-        completed_count = completed_result.one_or_none() or 0
-
-        in_progress_stmt = (
-            select(func.count(UserListEntry.id))
-            .where(
-                and_(
-                    UserListEntry.user_id == user_id,
-                    UserListEntry.status.in_(["watching", "reading", "rewatching", "rereading"]),
-                    UserListEntry.deleted_at.is_(None),
-                )
-            )
-        )
-        in_progress_result = await self.db_session.exec(in_progress_stmt)
-        in_progress_count = in_progress_result.one_or_none() or 0
-
-        total_stmt = select(func.count(UserListEntry.id)).where(
-            and_(
-                UserListEntry.user_id == user_id,
-                UserListEntry.deleted_at.is_(None),
-            )
-        )
-        total_result = await self.db_session.exec(total_stmt)
-        total_count = total_result.one_or_none() or 0
-
+        stats = await self._entry_repo.get_statistics(user_id)
         return {
-            "completed_count": completed_count,
-            "in_progress_count": in_progress_count,
-            "total_count": total_count,
+            "completed_count": stats.get("completed", 0),
+            "in_progress_count": stats.get("watching", 0),
+            "total_count": stats.get("total", 0),
         }
 
     async def create_custom_list(self, user_id: UUID, payload: CustomListCreate) -> CustomList:
         """Create a custom list for the current user."""
-        custom_list = CustomList(user_id=user_id, **payload.model_dump())
-        self.db_session.add(custom_list)
-        await self.db_session.commit()
-        await self.db_session.refresh(custom_list)
-        return custom_list
+        data = payload.model_dump()
+        data["user_id"] = user_id
+        return await self._custom_list_repo.create(data)
 
     async def replace_custom_list_entries(
         self,
@@ -238,37 +194,18 @@ class TrackingService(BaseService):
         payload: CustomListEntriesReplaceRequest,
     ) -> Optional[int]:
         """Replace all entries in a custom list owned by current user."""
-        list_stmt = select(CustomList).where(
-            and_(
-                CustomList.id == list_id,
-                CustomList.user_id == user_id,
-                CustomList.deleted_at.is_(None),
-            )
-        )
-        list_result = await self.db_session.exec(list_stmt)
-        custom_list = list_result.one_or_none()
-        if not custom_list:
+        custom_list = await self._custom_list_repo.get_by_id(list_id)
+        if not custom_list or custom_list.user_id != user_id:
             return None
 
-        delete_stmt = select(CustomListEntry).where(CustomListEntry.list_id == list_id)
-        delete_result = await self.db_session.exec(delete_stmt)
-        for item in delete_result.all():
-            await self.db_session.delete(item)
-
-        for entry in payload.entries:
-            self.db_session.add(
-                CustomListEntry(
-                    list_id=list_id,
-                    media_id=entry.media_id,
-                    sort_order=entry.sort_order,
-                    note=entry.note,
-                )
-            )
-
+        await self._custom_entry_repo.replace_entries(
+            list_id,
+            [e.media_id for e in payload.entries],
+        )
         custom_list.updated_at = datetime.utcnow()
         await self.db_session.commit()
         return len(payload.entries)
 
     async def get_media_tracking_status(self, media_id: UUID, user_id: UUID) -> Optional[UserListEntry]:
         """Get current tracking status of a media for a specific user."""
-        return await self.get_user_list_entry(user_id=user_id, media_id=media_id)
+        return await self._entry_repo.get_by_user_and_media(user_id, media_id)

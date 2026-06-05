@@ -6,9 +6,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime
 from uuid import UUID
 
-from src.app.models import MediaEntry, MediaExternalIds, Genre, Studio, Tag, MediaGenre, MediaStudio, MediaTag, Episode
+from src.app.models import MediaEntry, MediaExternalIds, Genre, Studio, Tag, MediaGenre, MediaStudio, MediaTag, Episode, RelatedMedia
 from src.app.services.base_service import BaseService
-from src.app.schemas.media import MediaDetailResponse, AiringEpisodeItem, AiringResponse
+from src.app.schemas.media import MediaDetailResponse, AiringEpisodeItem, AiringResponse, RelatedMediaItem
 from src.app.repositories.media_repository import MediaRepository
 
 
@@ -111,11 +111,38 @@ class MediaService(BaseService):
             updated_at=media.updated_at,
         )
 
-    async def get_related_media(self, media_id: UUID, relation_type: Optional[str] = None) -> List[MediaEntry]:
-        """Get related media entries."""
-        # Note: This is a simplified placeholder - the actual implementation
-        # would need a proper relationship mapping
-        return []
+    async def get_related_media(
+        self,
+        media_id: UUID,
+        relation_type: Optional[str] = None,
+    ) -> List[RelatedMediaItem]:
+        """Get related media entries with relation type from the related_media table."""
+        statement = (
+            select(MediaEntry, RelatedMedia.relation_type)
+            .join(RelatedMedia, RelatedMedia.related_media_id == MediaEntry.id)
+            .where(
+                RelatedMedia.source_media_id == media_id,
+                MediaEntry.deleted_at.is_(None),
+            )
+        )
+        if relation_type is not None:
+            statement = statement.where(RelatedMedia.relation_type == relation_type)
+
+        statement = statement.order_by(RelatedMedia.created_at.asc())
+        result = await self.db_session.exec(statement)
+        rows = result.all()
+
+        return [
+            RelatedMediaItem(
+                id=media.id,
+                title_romaji=media.title_romaji,
+                title_english=media.title_english,
+                cover_image_medium=media.cover_image_medium,
+                media_type=media.media_type.value if hasattr(media.media_type, "value") else str(media.media_type),
+                relation_type=rt.value if hasattr(rt, "value") else str(rt),
+            )
+            for media, rt in rows
+        ]
 
     async def get_popular_media(self, media_type: Optional[str] = None, limit: int = 20) -> List[MediaEntry]:
         """Get popular media entries ordered by popularity."""
@@ -134,14 +161,8 @@ class MediaService(BaseService):
         return await self._media_repository.update(media_id, media_data)
 
     async def delete_media(self, media_id: UUID) -> bool:
-        """Soft delete a media entry."""
-        media = await self.get_media_by_id(media_id)
-        if not media:
-            return False
-
-        media.deleted_at = datetime.utcnow()
-        await self.db_session.commit()
-        return True
+        """Soft delete a media entry (delegates to repository)."""
+        return await self._media_repository.delete(media_id)
 
     async def get_by_external_id(self, external_id: int, external_source: str) -> Optional[MediaEntry]:
         """Get media by external ID and source."""

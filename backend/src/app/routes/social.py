@@ -9,10 +9,12 @@ from uuid import UUID
 from src.app.core.auth import get_current_user
 from src.app.database import get_db_session
 from src.app.models import User
+from src.app.schemas.common import DeleteResponse
 from src.app.schemas.social import (
     DiscussionCreateRequest,
     DiscussionListResponse,
     DiscussionReplyCreateRequest,
+    DiscussionReplyListResponse,
     DiscussionReplyResponse,
     DiscussionResponse,
     RecommendationCreateRequest,
@@ -202,6 +204,39 @@ async def get_discussions_for_media(
     )
 
 
+@router.get("/discussions/{discussion_id}/replies", response_model=DiscussionReplyListResponse)
+async def get_discussion_replies(
+    discussion_id: UUID,
+    limit: int = Query(default=50, ge=1, le=200),
+    offset: int = Query(default=0, ge=0),
+    social_service: SocialService = Depends(get_social_service),
+    user: User = Depends(get_current_user),
+) -> DiscussionReplyListResponse:
+    """Get paginated replies for a discussion thread (group-membership checked)."""
+    try:
+        items = await social_service.get_discussion_replies_for_user(
+            discussion_id=discussion_id,
+            user_id=user.id,
+            limit=limit,
+            offset=offset,
+        )
+        total = await social_service.count_discussion_replies_for_user(
+            discussion_id=discussion_id,
+            user_id=user.id,
+        )
+    except LookupError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except PermissionError as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from exc
+
+    return DiscussionReplyListResponse(
+        items=[DiscussionReplyResponse.model_validate(item) for item in items],
+        total=total,
+        limit=limit,
+        offset=offset,
+    )
+
+
 @router.post("/discussions/{discussion_id}/replies", response_model=DiscussionReplyResponse, status_code=201)
 async def create_discussion_reply(
     discussion_id: UUID,
@@ -224,3 +259,45 @@ async def create_discussion_reply(
         raise HTTPException(status_code=403, detail=str(exc)) from exc
 
     return DiscussionReplyResponse.model_validate(reply)
+
+
+@router.delete("/recommendations/{recommendation_id}", response_model=DeleteResponse)
+async def delete_recommendation(
+    recommendation_id: UUID,
+    social_service: SocialService = Depends(get_social_service),
+    user: User = Depends(get_current_user),
+) -> DeleteResponse:
+    """Soft delete a recommendation. Only the sender can delete."""
+    try:
+        deleted = await social_service.delete_recommendation(
+            recommendation_id=recommendation_id,
+            user_id=user.id,
+        )
+    except PermissionError as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from exc
+
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Recommendation not found")
+
+    return DeleteResponse(deleted=True)
+
+
+@router.delete("/discussions/{discussion_id}", response_model=DeleteResponse)
+async def delete_discussion(
+    discussion_id: UUID,
+    social_service: SocialService = Depends(get_social_service),
+    user: User = Depends(get_current_user),
+) -> DeleteResponse:
+    """Soft delete a discussion. Only the author can delete."""
+    try:
+        deleted = await social_service.delete_discussion(
+            discussion_id=discussion_id,
+            user_id=user.id,
+        )
+    except PermissionError as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from exc
+
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Discussion not found")
+
+    return DeleteResponse(deleted=True)

@@ -49,8 +49,21 @@ class MediaDetailResponse(BaseModel):
     updated_at: datetime
 
 
+class RelatedMediaItem(BaseModel):
+    """Related media entry with relation type label."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    title_romaji: str
+    title_english: str | None = None
+    cover_image_medium: str | None = None
+    media_type: str | None = None
+    relation_type: str
+
+
 class AiringEpisodeItem(BaseModel):
-    """A single airing episode with joined media metadata."""
+    """Single airing episode item with joined media metadata."""
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -72,3 +85,54 @@ class AiringResponse(BaseModel):
     total: int = 0
     limit: int = 20
     offset: int = 0
+
+
+class MediaCreateRequest(BaseModel):
+    """Payload for admin create media entry."""
+
+    title_romaji: str
+    title_english: Optional[str] = None
+    title_native: Optional[str] = None
+    media_type: str
+    format: Optional[str] = None
+    status: str = "not_yet_released"
+    synopsis: Optional[str] = None
+    cover_image_large: Optional[str] = None
+    cover_image_medium: Optional[str] = None
+    banner_image: Optional[str] = None
+    episode_count: Optional[int] = None
+    chapter_count: Optional[int] = None
+    volume_count: Optional[int] = None
+    duration_minutes: Optional[int] = None
+    season: Optional[str] = None
+    season_year: Optional[int] = None
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
+    is_adult: bool = False
+
+
+class MediaUpdateRequest(BaseModel):
+    """Payload for admin partial update of a media entry."""
+
+    title_romaji: Optional[str] = None
+    title_english: Optional[str] = None
+    title_native: Optional[str] = None
+    media_type: Optional[str] = None
+    format: Optional[str] = None
+    status: Optional[str] = None
+    synopsis: Optional[str] = None
+    cover_image_large: Optional[str] = None
+    cover_image_medium: Optional[str] = None
+    banner_image: Optional[str] = None
+    episode_count: Optional[int] = None
+    chapter_count: Optional[int] = None
+    volume_count: Optional[int] = None
+    duration_minutes: Optional[int] = None
+    average_score: Optional[float] = None
+    popularity: Optional[int] = None
+    trending: Optional[int] = None
+    season: Optional[str] = None
+    season_year: Optional[int] = None
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
+    is_adult: Optional[bool] = None

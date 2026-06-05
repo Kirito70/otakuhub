@@ -13,6 +13,17 @@ from src.app.models import (
     WatchParty, MediaEntry,
 )
 from src.app.services.base_service import BaseService
+from src.app.repositories.social_repository import (
+    RecommendationRepository,
+    DiscussionRepository,
+    DiscussionReplyRepository,
+    GroupActivityRepository,
+)
+from src.app.repositories.notification_repository import (
+    NotificationRepository,
+    NotificationPreferenceRepository,
+)
+from src.app.repositories.watch_party_repository import WatchPartyRepository
 
 
 class SocialService(BaseService):
@@ -20,16 +31,19 @@ class SocialService(BaseService):
 
     def __init__(self, db_session: Optional[AsyncSession] = None):
         super().__init__(db_session)
+        self._recommendation_repo = RecommendationRepository(self.db_session)
+        self._discussion_repo = DiscussionRepository(self.db_session)
+        self._discussion_reply_repo = DiscussionReplyRepository(self.db_session)
+        self._activity_repo = GroupActivityRepository(self.db_session)
+        self._notification_repo = NotificationRepository(self.db_session)
+        self._notification_pref_repo = NotificationPreferenceRepository(self.db_session)
+        self._watch_party_repo = WatchPartyRepository(self.db_session)
 
-    # Recommendations
+    # ── Recommendations ──────────────────────────────────────────────────
 
     async def get_user_recommendations(self, user_id: UUID, limit: int = 20) -> List[Recommendation]:
         """Get recommendations for a user."""
-        statement = select(Recommendation).where(Recommendation.to_user_id == user_id)
-        statement = statement.order_by(Recommendation.created_at.desc()).limit(limit)
-
-        result = await self.db_session.exec(statement)
-        return result.all()
+        return await self._recommendation_repo.get_inbox(user_id, limit=limit)
 
     async def get_user_recommendations_inbox(
         self,
@@ -39,16 +53,9 @@ class SocialService(BaseService):
         include_acknowledged: bool = True,
     ) -> List[Recommendation]:
         """Get paginated recommendation inbox for a user."""
-        statement = select(Recommendation).where(
-            Recommendation.to_user_id == user_id,
-            Recommendation.deleted_at.is_(None),
+        return await self._recommendation_repo.get_inbox(
+            user_id, limit=limit, offset=offset, include_acknowledged=include_acknowledged,
         )
-        if not include_acknowledged:
-            statement = statement.where(Recommendation.is_acknowledged == False)  # noqa: E712
-
-        statement = statement.order_by(Recommendation.created_at.desc()).offset(offset).limit(limit)
-        result = await self.db_session.exec(statement)
-        return result.all()
 
     async def count_user_recommendations_inbox(
         self,
@@ -56,15 +63,7 @@ class SocialService(BaseService):
         include_acknowledged: bool = True,
     ) -> int:
         """Count inbox recommendations for pagination metadata."""
-        statement = select(func.count(Recommendation.id)).where(
-            Recommendation.to_user_id == user_id,
-            Recommendation.deleted_at.is_(None),
-        )
-        if not include_acknowledged:
-            statement = statement.where(Recommendation.is_acknowledged == False)  # noqa: E712
-
-        result = await self.db_session.exec(statement)
-        return result.one_or_none() or 0
+        return await self._recommendation_repo.count_inbox(user_id, include_acknowledged=include_acknowledged)
 
     async def get_group_activity_feed(
         self,
@@ -73,38 +72,11 @@ class SocialService(BaseService):
         offset: int = 0,
     ) -> List[ListEntryHistory]:
         """Return recent list activity by members who share a group with the user."""
-        group_ids_stmt = select(GroupMember.group_id).where(GroupMember.user_id == user_id)
-
-        member_ids_stmt = (
-            select(GroupMember.user_id)
-            .where(GroupMember.group_id.in_(group_ids_stmt))
-            .where(GroupMember.user_id != user_id)
-            .distinct()
-        )
-
-        statement = (
-            select(ListEntryHistory)
-            .where(ListEntryHistory.user_id.in_(member_ids_stmt))
-            .order_by(ListEntryHistory.created_at.desc())
-            .offset(offset)
-            .limit(limit)
-        )
-        result = await self.db_session.exec(statement)
-        return result.all()
+        return await self._activity_repo.get_feed(user_id, limit=limit, offset=offset)
 
     async def count_group_activity_feed(self, user_id: UUID) -> int:
         """Count total feed items visible to user for pagination metadata."""
-        group_ids_stmt = select(GroupMember.group_id).where(GroupMember.user_id == user_id)
-        member_ids_stmt = (
-            select(GroupMember.user_id)
-            .where(GroupMember.group_id.in_(group_ids_stmt))
-            .where(GroupMember.user_id != user_id)
-            .distinct()
-        )
-
-        count_stmt = select(func.count(ListEntryHistory.id)).where(ListEntryHistory.user_id.in_(member_ids_stmt))
-        count_result = await self.db_session.exec(count_stmt)
-        return count_result.one_or_none() or 0
+        return await self._activity_repo.count_feed(user_id)
 
     async def get_user_sent_recommendations(
         self,
@@ -113,27 +85,11 @@ class SocialService(BaseService):
         offset: int = 0,
     ) -> List[Recommendation]:
         """Get paginated recommendations sent by a user (non-deleted)."""
-        statement = (
-            select(Recommendation)
-            .where(
-                Recommendation.from_user_id == user_id,
-                Recommendation.deleted_at.is_(None),
-            )
-            .order_by(Recommendation.created_at.desc())
-            .offset(offset)
-            .limit(limit)
-        )
-        result = await self.db_session.exec(statement)
-        return result.all()
+        return await self._recommendation_repo.get_sent(user_id, limit=limit, offset=offset)
 
     async def count_user_sent_recommendations(self, user_id: UUID) -> int:
         """Count sent recommendations for pagination metadata."""
-        statement = select(func.count(Recommendation.id)).where(
-            Recommendation.from_user_id == user_id,
-            Recommendation.deleted_at.is_(None),
-        )
-        result = await self.db_session.exec(statement)
-        return result.one_or_none() or 0
+        return await self._recommendation_repo.count_sent(user_id)
 
     async def create_recommendation(self, from_user_id: UUID, to_user_id: UUID,
                                   media_id: UUID, message: str) -> Recommendation:
@@ -183,15 +139,12 @@ class SocialService(BaseService):
         if shared_group is None:
             raise ValueError("Users must share at least one group")
 
-        existing_stmt = select(Recommendation).where(
-            Recommendation.from_user_id == from_user_id,
-            Recommendation.to_user_id == to_user_id,
-            Recommendation.media_id == media_id,
-            Recommendation.deleted_at.is_(None),
+        existing = await self._recommendation_repo.get_inbox(
+            to_user_id, limit=1, include_acknowledged=True,
         )
-        existing = (await self.db_session.exec(existing_stmt)).one_or_none()
-        if existing is not None:
-            raise ValueError("Recommendation already exists for this user and media")
+        for rec in existing:
+            if rec.from_user_id == from_user_id and rec.media_id == media_id:
+                raise ValueError("Recommendation already exists for this user and media")
 
         recommendation = Recommendation(
             from_user_id=from_user_id,
@@ -210,10 +163,7 @@ class SocialService(BaseService):
         user_id: UUID,
     ) -> Recommendation | None:
         """Mark a recommendation as acknowledged and return updated row."""
-        statement = select(Recommendation).where(Recommendation.id == recommendation_id)
-        result = await self.db_session.exec(statement)
-        recommendation = result.one_or_none()
-
+        recommendation = await self._recommendation_repo.get_by_id(recommendation_id)
         if not recommendation or recommendation.to_user_id != user_id:
             return None
 
@@ -223,20 +173,15 @@ class SocialService(BaseService):
         await self.db_session.refresh(recommendation)
         return recommendation
 
-    # Discussions
+    # ── Discussions ──────────────────────────────────────────────────────
 
     async def get_discussions(self, media_id: UUID, group_id: Optional[UUID] = None,
                             limit: int = 20, offset: int = 0) -> List[Discussion]:
         """Get discussions for a media item."""
-        statement = select(Discussion).where(Discussion.media_id == media_id)
-
+        q = self._discussion_repo.query().filter(Discussion.media_id == media_id)
         if group_id:
-            statement = statement.where(Discussion.group_id == group_id)
-
-        statement = statement.order_by(Discussion.created_at.desc()).offset(offset).limit(limit)
-
-        result = await self.db_session.exec(statement)
-        return result.all()
+            q = q.filter(Discussion.group_id == group_id)
+        return await q.order_by(Discussion.created_at.desc()).offset(offset).limit(limit).all()
 
     async def get_discussions_for_user_media(
         self,
@@ -248,20 +193,9 @@ class SocialService(BaseService):
         offset: int = 0,
     ) -> List[Discussion]:
         """Return discussions visible to a user for a media item."""
-        member_group_ids_stmt = select(GroupMember.group_id).where(GroupMember.user_id == user_id)
-
-        statement = select(Discussion).where(
-            Discussion.media_id == media_id,
-            Discussion.deleted_at.is_(None),
-            Discussion.group_id.in_(member_group_ids_stmt),
+        return await self._discussion_repo.get_for_media(
+            media_id, user_id, group_id=group_id, limit=limit, offset=offset,
         )
-
-        if group_id is not None:
-            statement = statement.where(Discussion.group_id == group_id)
-
-        statement = statement.order_by(Discussion.created_at.desc()).offset(offset).limit(limit)
-        result = await self.db_session.exec(statement)
-        return result.all()
 
     async def count_discussions_for_user_media(
         self,
@@ -271,27 +205,57 @@ class SocialService(BaseService):
         group_id: Optional[UUID] = None,
     ) -> int:
         """Count discussions visible to user for media pagination."""
-        member_group_ids_stmt = select(GroupMember.group_id).where(GroupMember.user_id == user_id)
-
-        statement = select(func.count(Discussion.id)).where(
-            Discussion.media_id == media_id,
-            Discussion.deleted_at.is_(None),
-            Discussion.group_id.in_(member_group_ids_stmt),
-        )
-
-        if group_id is not None:
-            statement = statement.where(Discussion.group_id == group_id)
-
-        result = await self.db_session.exec(statement)
-        return result.one_or_none() or 0
+        return await self._discussion_repo.count_for_media(media_id, user_id, group_id=group_id)
 
     async def get_discussion_replies(self, discussion_id: UUID, limit: int = 20) -> List[DiscussionReply]:
         """Get replies for a discussion."""
-        statement = select(DiscussionReply).where(DiscussionReply.discussion_id == discussion_id)
-        statement = statement.order_by(DiscussionReply.created_at.asc()).limit(limit)
+        return await self._discussion_reply_repo.get_for_discussion(discussion_id, limit=limit)
 
-        result = await self.db_session.exec(statement)
-        return result.all()
+    async def get_discussion_replies_for_user(
+        self,
+        *,
+        discussion_id: UUID,
+        user_id: UUID,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> List[DiscussionReply]:
+        """Get paginated replies if user is member of the discussion's group."""
+        discussion = await self._discussion_repo.get_by_id(discussion_id)
+        if discussion is None:
+            raise LookupError("Discussion not found")
+
+        membership_stmt = select(GroupMember).where(
+            GroupMember.group_id == discussion.group_id,
+            GroupMember.user_id == user_id,
+        )
+        membership = (await self.db_session.exec(membership_stmt)).one_or_none()
+        if membership is None:
+            raise PermissionError("User is not a member of this discussion group")
+
+        return await self._discussion_reply_repo.get_for_discussion(
+            discussion_id, limit=limit, offset=offset,
+        )
+
+    async def count_discussion_replies_for_user(
+        self,
+        *,
+        discussion_id: UUID,
+        user_id: UUID,
+    ) -> int:
+        """Count replies visible to a user for a discussion thread."""
+        discussion = await self._discussion_repo.get_by_id(discussion_id)
+        if discussion is None:
+            raise LookupError("Discussion not found")
+
+        membership_stmt = select(GroupMember).where(
+            GroupMember.group_id == discussion.group_id,
+            GroupMember.user_id == user_id,
+        )
+        membership = (await self.db_session.exec(membership_stmt)).one_or_none()
+        if membership is None:
+            raise PermissionError("User is not a member of this discussion group")
+
+        return await self._discussion_reply_repo.count_for_discussion(discussion_id)
 
     async def create_discussion(self, user_id: UUID, media_id: UUID, group_id: UUID,
                               title: str, body: str, has_spoilers: bool = False,
@@ -324,7 +288,7 @@ class SocialService(BaseService):
         episode_number: Optional[int] = None,
         chapter_number: Optional[float] = None,
     ) -> Discussion:
-        """Create discussion only when user belongs to group."""
+        """Create discussion only when user belongs to group and media exists."""
         membership_stmt = select(GroupMember).where(
             GroupMember.group_id == group_id,
             GroupMember.user_id == user_id,
@@ -332,6 +296,11 @@ class SocialService(BaseService):
         membership = (await self.db_session.exec(membership_stmt)).one_or_none()
         if membership is None:
             raise PermissionError("User is not a member of this group")
+
+        media_stmt = select(MediaEntry).where(MediaEntry.id == media_id)
+        media = (await self.db_session.exec(media_stmt)).one_or_none()
+        if media is None:
+            raise ValueError("Media not found yet; sync/seed required")
 
         discussion = Discussion(
             user_id=user_id,
@@ -379,11 +348,7 @@ class SocialService(BaseService):
         parent_reply_id: Optional[UUID] = None,
     ) -> DiscussionReply:
         """Create reply only if user can view the discussion's group."""
-        discussion_stmt = select(Discussion).where(
-            Discussion.id == discussion_id,
-            Discussion.deleted_at.is_(None),
-        )
-        discussion = (await self.db_session.exec(discussion_stmt)).one_or_none()
+        discussion = await self._discussion_repo.get_by_id(discussion_id)
         if discussion is None:
             raise LookupError("Discussion not found")
 
@@ -396,13 +361,9 @@ class SocialService(BaseService):
             raise PermissionError("User is not a member of this discussion group")
 
         if parent_reply_id is not None:
-            parent_stmt = select(DiscussionReply).where(
-                DiscussionReply.id == parent_reply_id,
-                DiscussionReply.discussion_id == discussion_id,
-                DiscussionReply.deleted_at.is_(None),
-            )
-            parent = (await self.db_session.exec(parent_stmt)).one_or_none()
-            if parent is None:
+            parent = await self._discussion_reply_repo.get_for_discussion(discussion_id)
+            parent_exists = any(p.id == parent_reply_id for p in parent)
+            if not parent_exists:
                 raise LookupError("Parent reply not found")
 
         reply = DiscussionReply(
@@ -417,34 +378,46 @@ class SocialService(BaseService):
         await self.db_session.refresh(reply)
         return reply
 
-    # Notifications
+    async def delete_recommendation(
+        self,
+        recommendation_id: UUID,
+        user_id: UUID,
+    ) -> bool:
+        """Soft delete a recommendation. Only the sender can delete."""
+        recommendation = await self._recommendation_repo.get_by_id(recommendation_id)
+        if not recommendation:
+            return False
+
+        if recommendation.from_user_id != user_id:
+            raise PermissionError("Only the sender can delete this recommendation")
+
+        return await self._recommendation_repo.soft_delete(recommendation_id)
+
+    async def delete_discussion(
+        self,
+        discussion_id: UUID,
+        user_id: UUID,
+    ) -> bool:
+        """Soft delete a discussion. Only the author can delete."""
+        discussion = await self._discussion_repo.get_by_id(discussion_id)
+        if not discussion:
+            return False
+
+        if discussion.user_id != user_id:
+            raise PermissionError("Only the author can delete this discussion")
+
+        return await self._discussion_repo.soft_delete(discussion_id)
+
+    # ── Notifications ────────────────────────────────────────────────────
 
     async def get_user_notifications(self, user_id: UUID, limit: int = 20,
                                    is_read: Optional[bool] = None) -> List[Notification]:
         """Get notifications for a user."""
-        statement = select(Notification).where(Notification.user_id == user_id)
-
-        if is_read is not None:
-            statement = statement.where(Notification.is_read == is_read)
-
-        statement = statement.order_by(Notification.created_at.desc()).limit(limit)
-
-        result = await self.db_session.exec(statement)
-        return result.all()
+        return await self._notification_repo.get_for_user(user_id, limit=limit, is_read=is_read)
 
     async def mark_notification_as_read(self, notification_id: UUID, user_id: UUID) -> bool:
         """Mark a notification as read."""
-        statement = select(Notification).where(Notification.id == notification_id)
-        result = await self.db_session.exec(statement)
-        notification = result.one_or_none()
-
-        if not notification or notification.user_id != user_id:
-            return False
-
-        notification.is_read = True
-        notification.read_at = datetime.utcnow()
-        await self.db_session.commit()
-        return True
+        return await self._notification_repo.mark_as_read(notification_id, user_id)
 
     async def create_notification(self, user_id: UUID, notification_type: str,
                                 title: str, body: str,
@@ -468,37 +441,19 @@ class SocialService(BaseService):
 
     async def get_notification_preferences(self, user_id: UUID) -> NotificationPreference:
         """Get user's notification preferences."""
-        statement = select(NotificationPreference).where(NotificationPreference.user_id == user_id)
-        result = await self.db_session.exec(statement)
-        preference = result.one_or_none()
-
-        # If no preferences exist, return default ones
-        if not preference:
-            preference = NotificationPreference(user_id=user_id)
-            self.db_session.add(preference)
-            await self.db_session.commit()
-
-        return preference
+        return await self._notification_pref_repo.get_by_user_id(user_id)
 
     async def update_notification_preferences(self, user_id: UUID,
                                            preferences: Dict[str, Any]) -> NotificationPreference:
         """Update user's notification preferences."""
-        statement = select(NotificationPreference).where(NotificationPreference.user_id == user_id)
-        result = await self.db_session.exec(statement)
-        preference = result.one_or_none()
-
-        if not preference:
-            preference = NotificationPreference(user_id=user_id)
-            self.db_session.add(preference)
-
+        pref = await self._notification_pref_repo.get_by_user_id(user_id)
         for key, value in preferences.items():
-            setattr(preference, key, value)
-
+            setattr(pref, key, value)
         await self.db_session.commit()
-        await self.db_session.refresh(preference)
-        return preference
+        await self.db_session.refresh(pref)
+        return pref
 
-    # Watch Parties
+    # ── Watch Parties ────────────────────────────────────────────────────
 
     async def get_user_watch_parties(self, user_id: UUID, limit: int = 20) -> List[Dict[str, Any]]:
         """Get user's upcoming watch parties visible through shared group membership."""

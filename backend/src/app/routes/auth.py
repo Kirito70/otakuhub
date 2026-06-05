@@ -5,7 +5,14 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from typing import Annotated
 
 from src.app.database import get_db_session
-from src.app.schemas.auth import LoginRequest, RefreshRequest, RegisterRequest, TokenResponse, LogoutResponse
+from src.app.schemas.auth import (
+    ChangePasswordRequest,
+    LoginRequest,
+    RefreshRequest,
+    RegisterRequest,
+    TokenResponse,
+    LogoutResponse,
+)
 from src.app.schemas.user import UserProfile
 from src.app.services.auth_service import auth_service
 from src.app.core.auth import get_current_user
@@ -55,3 +62,17 @@ async def logout(
 ):
     await auth_service.logout(db, refresh_request.refresh_token)
     return LogoutResponse(success=True)
+
+
+@router.post("/change-password", response_model=TokenResponse)
+async def change_password(
+    payload: ChangePasswordRequest,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: User = Depends(get_current_user),
+):
+    """Change the authenticated user's password.
+
+    Validates the current password, revokes all existing refresh tokens,
+    and issues a fresh token pair so the current session survives.
+    """
+    return await auth_service.change_password(db, current_user, payload)

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from uuid import UUID
+
 from fastapi import APIRouter, Depends
 from sqlmodel.ext.asyncio.session import AsyncSession
 
@@ -11,12 +13,27 @@ from src.app.models import User
 from src.app.schemas.sync import SyncImportRequest, SyncImportResponse
 from src.app.services.sync_service import SyncService
 
+try:
+    from src.app.workers.sync_tasks import import_user_list_task
+except Exception:
+    import_user_list_task = None  # Celery not available
+
 router = APIRouter(prefix="/sync", tags=["sync"])
 
 
 def get_sync_service(db: AsyncSession = Depends(get_db_session)) -> SyncService:
     """Get SyncService instance with request-scoped DB session."""
     return SyncService(db)
+
+
+def _enqueue_import_task(user_id: UUID, provider: str, username: str | None) -> None:
+    """Enqueue a Celery import task if available."""
+    if import_user_list_task is not None:
+        import_user_list_task.delay(
+            user_id=str(user_id),
+            provider=provider,
+            username=username or "",
+        )
 
 
 @router.post("/import/anilist", response_model=SyncImportResponse, status_code=202)
@@ -30,13 +47,14 @@ async def import_anilist_list(
         job_type="user_import_anilist",
         user_id=user.id,
     )
+    _enqueue_import_task(user_id=user.id, provider="anilist", username=payload.username)
     return SyncImportResponse(
         job_id=job.id,
         provider="anilist",
         status=job.status,
         job_type=job.job_type,
         started_at=job.started_at,
-        message="AniList import job created",
+        message="AniList import job created and task enqueued",
     )
 
 
@@ -51,11 +69,12 @@ async def import_mal_list(
         job_type="user_import_mal",
         user_id=user.id,
     )
+    _enqueue_import_task(user_id=user.id, provider="mal", username=payload.username)
     return SyncImportResponse(
         job_id=job.id,
         provider="mal",
         status=job.status,
         job_type=job.job_type,
         started_at=job.started_at,
-        message="MAL import job created",
+        message="MAL import job created and task enqueued",
     )

@@ -78,6 +78,18 @@ class WatchPartyDetailResponse(BaseModel):
     attendee_count: int = 0
 
 
+class WatchPartyUpdateRequest(BaseModel):
+    """Payload to update a watch party."""
+
+    title: str | None = None
+    scheduled_at: datetime | None = None
+    episode_number: int | None = None
+    stream_url: str | None = None
+    sync_url: str | None = None
+    notes: str | None = None
+    status: str | None = None
+
+
 class WatchPartyRsvpRequest(BaseModel):
     """Payload to RSVP to a watch party."""
 
@@ -94,3 +106,10 @@ class WatchPartyRsvpResponse(BaseModel):
     status: RsvpStatus
     responded_at: datetime | None = None
     created_at: datetime
+
+
+class WatchPartyRsvpListResponse(BaseModel):
+    """Paginated RSVP list for a watch party."""
+
+    items: list[WatchPartyRsvpResponse]
+    total: int

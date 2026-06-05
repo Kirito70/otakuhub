@@ -95,6 +95,7 @@
 | **GET** | `/api/v1/media/popular` | Yes | – | `MediaListResponse` | – |
 | **GET** | `/api/v1/media/trending` | Yes | – | `MediaListResponse` | – |
 | **GET** | `/api/v1/media/airing` | Yes | `AiringRequest { start_date?: string, end_date?: string, media_type?: string, limit?: int, offset?: int }` | `AiringResponse { items: AiringEpisodeItem[], total: int, limit: int, offset: int }` | 400 Bad request |
+| **GET** | `/api/v1/media/{media_id}/relations` | Yes | – | `List[RelatedMediaItem { id, media_id, title_romaji, title_english?, cover_image_medium?, media_type, relation_type }]` | 401 / 404 |
 
 ## Tracking Endpoints
 | Method | Path | Auth | Request Schema | Response Schema | Errors |
@@ -137,6 +138,16 @@
 | **POST** | `/api/v1/social/discussions` | Yes | `DiscussionCreateRequest { media_id: UUID, group_id: UUID, title?: string, body: string, has_spoilers?: bool, episode_number?: int, chapter_number?: float }` | `DiscussionResponse` | 400 / 403 |
 | **GET** | `/api/v1/social/discussions/{media_id}` | Yes | `DiscussionsQuery { group_id?: UUID, limit?: int, offset?: int }` | `DiscussionListResponse { items: DiscussionResponse[], total: int, limit: int, offset: int }` | 401 |
 | **POST** | `/api/v1/social/discussions/{id}/replies` | Yes | `DiscussionReplyCreateRequest { body: string, has_spoilers?: bool, parent_reply_id?: UUID }` | `DiscussionReplyResponse` | 400 / 403 / 404 |
+| **GET** | `/api/v1/social/discussions/{discussion_id}/replies` | Yes | `RepliesQuery { limit?: int, offset?: int }` | `DiscussionReplyListResponse { items: DiscussionReplyResponse[], total: int, limit: int, offset: int }` | 401 / 403 / 404 |
+
+## Notification Endpoints
+| Method | Path | Auth | Request Schema | Response Schema | Errors |
+|--------|------|------|----------------|----------------|--------|
+| **GET** | `/api/v1/notifications` | Yes | `NotifQuery { is_read?: bool, limit?: int, offset?: int }` | `NotificationListResponse { items: NotificationItem[], total: int, limit: int, offset: int }` | 401 |
+| **POST** | `/api/v1/notifications/mark-read` | Yes | `NotificationMarkReadRequest { ids: UUID[] }` | `NotificationMarkReadResponse { marked_count: int, message: string }` | 400 / 401 |
+| **POST** | `/api/v1/notifications/mark-all-read` | Yes | – | `NotificationMarkReadResponse { marked_count: int, message: string }` | 401 |
+| **GET** | `/api/v1/notifications/preferences` | Yes | – | `NotificationPreferencesResponse` | 401 |
+| **PATCH** | `/api/v1/notifications/preferences` | Yes | `NotificationPreferencesUpdate { new_episode?: bool, new_chapter?: bool, friend_activity?: bool, recommendations?: bool, watch_party_invite?: bool, watch_party_reminder?: bool, discord_webhook?: string, telegram_chat_id?: string, email_enabled?: bool, push_enabled?: bool }` | `NotificationPreferencesResponse` | 400 / 401 |
 
 ## Watch Party Endpoints
 | Method | Path | Auth | Request Schema | Response Schema | Errors |

@@ -437,3 +437,158 @@ def test_phase10_watchparty_past_returns_403_for_non_member_group_scope() -> Non
         outsider_headers = {"Authorization": f"Bearer {outsider['access_token']}"}
         res = client.get(f"/api/v1/watchparty/past?group_id={group_id}", headers=outsider_headers)
         assert res.status_code == 403, res.text
+
+
+# --- Watch Party Update (PATCH /{party_id}) ---
+
+
+def test_phase10_watchparty_update_requires_auth() -> None:
+    with TestClient(app) as client:
+        res = client.patch(f"/api/v1/watchparty/{uuid4()}", json={"title": "x"})
+        assert res.status_code == 401
+
+
+def test_phase10_watchparty_update_updates_party() -> None:
+    with TestClient(app) as client:
+        host = _register_and_login(client, "wpartyupd_host")
+        member = _register_and_login(client, "wpartyupd_mem")
+        host_h = {"Authorization": f"Bearer {host['access_token']}"}
+        member_h = {"Authorization": f"Bearer {member['access_token']}"}
+
+        media_id = _get_seeded_media_id(client, host_h)
+
+        g_res = client.post(
+            "/api/v1/groups",
+            json={"name": "WpUpdGroup", "description": "", "is_private": False},
+            headers=host_h,
+        )
+        assert g_res.status_code == 201, g_res.text
+        group_id = g_res.json()["id"]
+
+        future = (datetime.now(UTC) + timedelta(days=1)).isoformat()
+        p_res = client.post(
+            "/api/v1/watchparty",
+            json={"group_id": group_id, "media_id": media_id, "scheduled_at": future, "title": "Original"},
+            headers=host_h,
+        )
+        assert p_res.status_code == 201, p_res.text
+        party_id = p_res.json()["id"]
+
+        # Update
+        upd = client.patch(
+            f"/api/v1/watchparty/{party_id}",
+            json={"title": "Updated Title", "notes": "New notes"},
+            headers=host_h,
+        )
+        assert upd.status_code == 200, upd.text
+        body = upd.json()
+        assert body["title"] == "Updated Title"
+        assert body["notes"] == "New notes"
+
+
+def test_phase10_watchparty_non_host_cannot_update() -> None:
+    with TestClient(app) as client:
+        host = _register_and_login(client, "wpnoupd_host")
+        member = _register_and_login(client, "wpnoupd_mem")
+        host_h = {"Authorization": f"Bearer {host['access_token']}"}
+        member_h = {"Authorization": f"Bearer {member['access_token']}"}
+
+        media_id = _get_seeded_media_id(client, host_h)
+
+        g_res = client.post(
+            "/api/v1/groups",
+            json={"name": "WpNoUpdGroup", "description": "", "is_private": False},
+            headers=host_h,
+        )
+        assert g_res.status_code == 201, g_res.text
+        group_id = g_res.json()["id"]
+        invite = g_res.json()["invite_code"]
+
+        client.post(f"/api/v1/groups/join/{invite}", headers=member_h)
+
+        future = (datetime.now(UTC) + timedelta(days=1)).isoformat()
+        p_res = client.post(
+            "/api/v1/watchparty",
+            json={"group_id": group_id, "media_id": media_id, "scheduled_at": future, "title": "Original"},
+            headers=host_h,
+        )
+        assert p_res.status_code == 201, p_res.text
+        party_id = p_res.json()["id"]
+
+        # Non-host tries to update
+        upd = client.patch(
+            f"/api/v1/watchparty/{party_id}",
+            json={"title": "Hacked"},
+            headers=member_h,
+        )
+        assert upd.status_code == 403, upd.text
+
+
+def test_phase10_watchparty_delete_requires_auth() -> None:
+    with TestClient(app) as client:
+        res = client.delete(f"/api/v1/watchparty/{uuid4()}")
+        assert res.status_code == 401
+
+
+def test_phase10_watchparty_delete_soft_deletes() -> None:
+    with TestClient(app) as client:
+        host = _register_and_login(client, "wpdel_host")
+        host_h = {"Authorization": f"Bearer {host['access_token']}"}
+
+        media_id = _get_seeded_media_id(client, host_h)
+
+        g_res = client.post(
+            "/api/v1/groups",
+            json={"name": "WpDelGroup", "description": "", "is_private": False},
+            headers=host_h,
+        )
+        assert g_res.status_code == 201, g_res.text
+        group_id = g_res.json()["id"]
+
+        future = (datetime.now(UTC) + timedelta(days=1)).isoformat()
+        p_res = client.post(
+            "/api/v1/watchparty",
+            json={"group_id": group_id, "media_id": media_id, "scheduled_at": future, "title": "ToDelete"},
+            headers=host_h,
+        )
+        assert p_res.status_code == 201, p_res.text
+        party_id = p_res.json()["id"]
+
+        del_res = client.delete(f"/api/v1/watchparty/{party_id}", headers=host_h)
+        assert del_res.status_code == 204
+
+        get_res = client.get(f"/api/v1/watchparty/{party_id}", headers=host_h)
+        assert get_res.status_code == 404
+
+
+def test_phase10_watchparty_non_host_cannot_delete() -> None:
+    with TestClient(app) as client:
+        host = _register_and_login(client, "wpnodelete_host")
+        member = _register_and_login(client, "wpnodelete_mem")
+        host_h = {"Authorization": f"Bearer {host['access_token']}"}
+        member_h = {"Authorization": f"Bearer {member['access_token']}"}
+
+        media_id = _get_seeded_media_id(client, host_h)
+
+        g_res = client.post(
+            "/api/v1/groups",
+            json={"name": "WpNoDelGroup", "description": "", "is_private": False},
+            headers=host_h,
+        )
+        assert g_res.status_code == 201, g_res.text
+        group_id = g_res.json()["id"]
+        invite = g_res.json()["invite_code"]
+
+        client.post(f"/api/v1/groups/join/{invite}", headers=member_h)
+
+        future = (datetime.now(UTC) + timedelta(days=1)).isoformat()
+        p_res = client.post(
+            "/api/v1/watchparty",
+            json={"group_id": group_id, "media_id": media_id, "scheduled_at": future, "title": "ToDelete"},
+            headers=host_h,
+        )
+        assert p_res.status_code == 201, p_res.text
+        party_id = p_res.json()["id"]
+
+        del_res = client.delete(f"/api/v1/watchparty/{party_id}", headers=member_h)
+        assert del_res.status_code == 403

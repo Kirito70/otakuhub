@@ -126,6 +126,12 @@ class SyncService(BaseService):
         result = await self.db_session.exec(statement)
         return result.all()
 
+    async def get_sync_job_by_id(self, job_id: UUID) -> Optional[SyncJob]:
+        """Get a single sync job by ID."""
+        statement = select(SyncJob).where(SyncJob.id == job_id)
+        result = await self.db_session.exec(statement)
+        return result.one_or_none()
+
     async def get_recent_external_ids(self, external_id_type: str, limit: int = 50) -> List[MediaExternalIds]:
         """Get recent external IDs from a specific provider."""
         statement = select(MediaExternalIds).where(

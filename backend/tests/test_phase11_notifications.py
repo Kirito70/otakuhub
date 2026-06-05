@@ -147,3 +147,31 @@ def test_phase11_notification_preferences_patch_updates_fields() -> None:
         assert persisted["watch_party_reminder"] is False
         assert persisted["email_enabled"] is True
         assert persisted["telegram_chat_id"] == "123456"
+
+
+def test_phase11_mark_all_read_requires_auth() -> None:
+    with TestClient(app) as client:
+        res = client.post("/api/v1/notifications/mark-all-read")
+        assert res.status_code == 401
+
+
+def test_phase11_mark_all_read_returns_zero_when_no_unread() -> None:
+    with TestClient(app) as client:
+        user = _register_and_login(client, "markreadempty")
+        headers = {"Authorization": f"Bearer {user['access_token']}"}
+
+        res = client.post("/api/v1/notifications/mark-all-read", headers=headers)
+        assert res.status_code == 200, res.text
+        body = res.json()
+        assert body["updated_count"] == 0
+
+
+def test_phase11_mark_all_read_returns_success() -> None:
+    with TestClient(app) as client:
+        user = _register_and_login(client, "markread")
+        headers = {"Authorization": f"Bearer {user['access_token']}"}
+
+        res = client.post("/api/v1/notifications/mark-all-read", headers=headers)
+        assert res.status_code == 200, res.text
+        body = res.json()
+        assert isinstance(body["updated_count"], int)

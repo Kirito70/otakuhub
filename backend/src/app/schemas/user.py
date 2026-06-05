@@ -56,3 +56,47 @@ class PublicUserProfile(BaseModel):
     bio: Optional[str] = None
     timezone: str = "UTC"
     created_at: datetime
+
+
+class AdminUserResponse(BaseModel):
+    """User summary for admin listing (includes email)."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    username: str
+    display_name: Optional[str] = None
+    email: str
+    is_active: bool
+    is_admin: bool
+    created_at: datetime
+    updated_at: datetime
+
+
+class UserListResponse(BaseModel):
+    """Paginated list of users (admin)."""
+
+    items: list[AdminUserResponse]
+    total: int
+    limit: int
+    offset: int
+
+
+class UserSettingsResponse(BaseModel):
+    """User settings response."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    user_id: UUID
+    theme: str = "system"
+    language: str = "en"
+    timezone: str = "UTC"
+    updated_at: Optional[datetime] = None
+
+
+class UserSettingsUpdateRequest(BaseModel):
+    """Payload for updating user settings."""
+
+    theme: Optional[str] = None
+    language: Optional[str] = None
+    timezone: Optional[str] = None

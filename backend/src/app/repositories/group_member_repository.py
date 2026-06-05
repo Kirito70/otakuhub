@@ -3,7 +3,7 @@
 from typing import List
 from uuid import UUID
 
-from sqlmodel import select
+from sqlmodel import select, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.app.models import GroupMember
@@ -36,7 +36,12 @@ class GroupMemberRepository(BaseRepository[GroupMember]):
 
     async def is_member(self, group_id: UUID, user_id: UUID) -> bool:
         """Check if a user is a member of a specific group."""
-        return await self.query().filter(GroupMember.group_id == group_id, GroupMember.user_id == user_id).exists()
+        return await (
+            self.query()
+            .filter(GroupMember.group_id == group_id)
+            .filter(GroupMember.user_id == user_id)
+            .exists()
+        )
 
     async def add_member(self, group_id: UUID, user_id: UUID, role: str = "member") -> GroupMember:
         """Create a new ``GroupMember`` row.

@@ -7,7 +7,14 @@ from datetime import datetime
 
 from src.app.services.media_service import MediaService
 from src.app.services.user_service import UserService
-from src.app.schemas.media import MediaDetailResponse, AiringResponse
+from src.app.schemas.media import (
+    MediaCreateRequest,
+    MediaDetailResponse,
+    MediaUpdateRequest,
+    AiringResponse,
+    RelatedMediaItem,
+)
+from src.app.schemas.common import DeleteResponse
 from src.app.core.auth import get_current_user
 from src.app.models import User
 
@@ -22,6 +29,55 @@ def get_media_service():
 def get_user_service():
     """Get UserService instance."""
     return UserService()
+
+def require_admin(user: User = Depends(get_current_user)) -> User:
+    """Ensure current user has admin privileges."""
+    if not user.is_admin:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    return user
+
+@router.post("/media", response_model=MediaDetailResponse, status_code=201)
+async def create_media(
+    payload: MediaCreateRequest,
+    media_service: MediaService = Depends(get_media_service),
+    _: User = Depends(require_admin),
+):
+    """Admin: Create a new media entry."""
+    media = await media_service.create_media(payload.model_dump())
+    # Fetch full detail for response
+    detail = await media_service.get_media_detail(media.id)
+    if not detail:
+        raise HTTPException(status_code=500, detail="Failed to create media entry")
+    return detail
+
+
+@router.patch("/media/{media_id:uuid}", response_model=MediaDetailResponse)
+async def update_media(
+    media_id: UUID,
+    payload: MediaUpdateRequest,
+    media_service: MediaService = Depends(get_media_service),
+    _: User = Depends(require_admin),
+):
+    """Admin: Update a media entry."""
+    media = await media_service.update_media(media_id, payload.model_dump(exclude_unset=True))
+    if not media:
+        raise HTTPException(status_code=404, detail="Media not found")
+    detail = await media_service.get_media_detail(media.id)
+    if not detail:
+        raise HTTPException(status_code=404, detail="Media not found")
+    return detail
+
+
+@router.delete("/media/{media_id:uuid}", response_model=DeleteResponse)
+async def delete_media(
+    media_id: UUID,
+    media_service: MediaService = Depends(get_media_service),
+    _: User = Depends(require_admin),
+):
+    """Admin: Soft delete a media entry."""
+    deleted = await media_service.delete_media(media_id)
+    return DeleteResponse(deleted=deleted)
+
 
 @router.get("/media/{media_id:uuid}", response_model=MediaDetailResponse)
 async def get_media_detail(
@@ -126,3 +182,18 @@ async def get_airing_calendar(
         limit=limit,
         offset=offset,
     )
+
+
+@router.get("/media/{media_id}/relations")
+async def get_media_relations(
+    media_id: UUID,
+    relation_type: str | None = Query(default=None, description="Filter by relation type (sequel, prequel, etc.)"),
+    media_service: MediaService = Depends(get_media_service),
+    user: User = Depends(get_current_user),
+):
+    """Get related media entries with relation type labels."""
+    items = await media_service.get_related_media(
+        media_id=media_id,
+        relation_type=relation_type,
+    )
+    return {"items": items, "total": len(items)}

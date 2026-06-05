@@ -8,7 +8,12 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from src.app.core.auth import get_current_user
 from src.app.database import get_db_session
 from src.app.models import User
+from fastapi import HTTPException
+from uuid import UUID
+
+from src.app.schemas.common import DeleteResponse
 from src.app.schemas.notification import (
+    NotificationDeleteResponse,
     NotificationListResponse,
     NotificationMarkReadRequest,
     NotificationMarkReadResponse,
@@ -63,6 +68,16 @@ async def mark_notifications_read(
     return NotificationMarkReadResponse(updated_count=updated_count)
 
 
+@router.post("/mark-all-read", response_model=NotificationMarkReadResponse)
+async def mark_all_notifications_read(
+    notification_service: NotificationService = Depends(get_notification_service),
+    user: User = Depends(get_current_user),
+) -> NotificationMarkReadResponse:
+    """Phase 11.6 — mark all of the current user's unread notifications as read."""
+    updated_count = await notification_service.mark_all_notifications_as_read(user_id=user.id)
+    return NotificationMarkReadResponse(updated_count=updated_count)
+
+
 @router.get("/preferences", response_model=NotificationPreferencesResponse)
 async def get_notification_preferences(
     notification_service: NotificationService = Depends(get_notification_service),
@@ -85,3 +100,20 @@ async def patch_notification_preferences(
         updates=payload.model_dump(exclude_unset=True),
     )
     return NotificationPreferencesResponse.model_validate(prefs)
+
+
+@router.delete("/{notification_id}", response_model=NotificationDeleteResponse)
+async def delete_notification(
+    notification_id: UUID,
+    notification_service: NotificationService = Depends(get_notification_service),
+    user: User = Depends(get_current_user),
+) -> NotificationDeleteResponse:
+    """Delete a single notification. Only the owner can delete."""
+    deleted = await notification_service.delete_notification(
+        user_id=user.id,
+        notification_id=notification_id,
+    )
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Notification not found")
+
+    return NotificationDeleteResponse(deleted=True)

@@ -51,3 +51,17 @@ class LogoutResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     success: bool = True
+
+
+class ChangePasswordRequest(BaseModel):
+    """Payload for ``POST /auth/change-password``.
+
+    The user must provide their current password for verification,
+    and confirm the new password by typing it twice.
+    """
+
+    model_config = ConfigDict(from_attributes=True)
+
+    current_password: str = Field(..., min_length=1)
+    new_password: constr(min_length=8)
+    new_password_confirm: constr(min_length=8)

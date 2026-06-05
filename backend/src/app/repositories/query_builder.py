@@ -186,10 +186,11 @@ class QueryBuilder(Generic[ModelType]):
     async def exists(self) -> bool:
         """Check if any records match the query."""
         self._apply_conditions()
-        # Create a simple exists query
-        exists_statement = select(func.exists(self._statement))
-        result = await self.db_session.exec(exists_statement)
-        return result.one_or_none() or False
+        # Use .exists() on the select statement for cross-dialect compatibility
+        # (func.exists() wraps in scalar subquery which fails on SQLite)
+        exists_statement = select(self._statement.exists())
+        result = await self.db_session.execute(exists_statement)
+        return result.scalar() or False
 
     def with_deleted(self) -> 'QueryBuilder[ModelType]':
         """Return a clone that includes soft‑deleted rows.

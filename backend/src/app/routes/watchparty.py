@@ -10,7 +10,7 @@ from src.app.core.auth import get_current_user
 from src.app.database import get_db_session
 from src.app.models import User
 from src.app.schemas.watchparty import WatchPartyCreateRequest, WatchPartyDetailResponse, WatchPartyListResponse, WatchPartyResponse
-from src.app.schemas.watchparty import WatchPartyRsvpRequest, WatchPartyRsvpResponse
+from src.app.schemas.watchparty import WatchPartyRsvpListResponse, WatchPartyRsvpRequest, WatchPartyRsvpResponse, WatchPartyUpdateRequest
 from src.app.services.watch_party_service import WatchPartyService
 
 router = APIRouter(prefix="/watchparty", tags=["watchparty"])
@@ -108,6 +108,61 @@ async def get_past_watch_parties(
         limit=limit,
         offset=offset,
     )
+
+
+@router.patch("/{party_id}", response_model=WatchPartyResponse)
+async def update_watch_party(
+    party_id: UUID,
+    payload: WatchPartyUpdateRequest,
+    watchparty_service: WatchPartyService = Depends(get_watch_party_service),
+    user: User = Depends(get_current_user),
+) -> WatchPartyResponse:
+    """Update a watch party. Only the host can update."""
+    updates = payload.model_dump(exclude_unset=True)
+    party = await watchparty_service.update_watch_party(party_id, updates, user_id=user.id)
+    if party is None:
+        existing = await watchparty_service.get_watch_party(party_id)
+        if existing is None:
+            raise HTTPException(status_code=404, detail="Watch party not found")
+        raise HTTPException(status_code=403, detail="Only the host can update the watch party")
+    return WatchPartyResponse.model_validate(party)
+
+
+@router.delete("/{party_id}", status_code=204)
+async def delete_watch_party(
+    party_id: UUID,
+    watchparty_service: WatchPartyService = Depends(get_watch_party_service),
+    user: User = Depends(get_current_user),
+) -> None:
+    """Soft-delete a watch party. Only the host can delete."""
+    deleted = await watchparty_service.delete_watch_party(party_id, user_id=user.id)
+    if not deleted:
+        existing = await watchparty_service.get_watch_party(party_id)
+        if existing is None:
+            raise HTTPException(status_code=404, detail="Watch party not found")
+        raise HTTPException(status_code=403, detail="Only the host can delete the watch party")
+
+
+@router.get("/{party_id}/rsvps", response_model=WatchPartyRsvpListResponse)
+async def get_watch_party_rsvps(
+    party_id: UUID,
+    watchparty_service: WatchPartyService = Depends(get_watch_party_service),
+    user: User = Depends(get_current_user),
+) -> WatchPartyRsvpListResponse:
+    """Get all RSVPs for a watch party (group-membership checked)."""
+    try:
+        detail = await watchparty_service.get_watch_party_detail(
+            party_id=party_id,
+            user_id=user.id,
+        )
+    except LookupError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except PermissionError as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from exc
+
+    rsvps = await watchparty_service.get_rsvps_for_party(party_id)
+    items = [WatchPartyRsvpResponse.model_validate(r) for r in rsvps]
+    return WatchPartyRsvpListResponse(items=items, total=len(items))
 
 
 @router.get("/{party_id}", response_model=WatchPartyDetailResponse)

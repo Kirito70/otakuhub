@@ -10,15 +10,15 @@
 ## Current State
 
 ```
-CURRENT_PHASE:     AUDIT_PHASE_2 (Database & Models Alignment)
-CURRENT_SUB_PHASE: 2.6
-STATUS:            PHASE_COMPLETE
-LAST_UPDATED:      2026-06-04
+CURRENT_PHASE:     AUDIT_PHASE_3 (Backend Endpoint Gaps)
+CURRENT_SUB_PHASE: 3.2
+STATUS:            COMPLETED
+LAST_UPDATED:      2026-06-05
 BLOCKED_BY:        none
-NEXT_ACTION:       Review AUDIT-PLAN.md Phase 3 (Backend Endpoint Gaps)
+NEXT_ACTION:       Mark phase complete, update docs/api-spec.md with new endpoints, then advance to next audit phase
 ```
 
-> **Note**: After completing all 24 formal phases, an audit (AUDIT-PLAN.md) identified real gaps. Phase 0 (cleanup), Phase 1 (sync pipeline), and Phase 2 (Database & Models Alignment) are now complete. Phases 3+ pending.
+> **Note**: After completing all 24 formal phases, an audit (AUDIT-PLAN.md) identified real gaps. Phase 0 (cleanup), Phase 1 (sync pipeline), and Phase 2 (Database & Models Alignment) are now complete. Phase 3 (Backend Endpoint Gaps) is in progress.
 
 ---
 
@@ -411,6 +411,26 @@ NEXT_ACTION:       Review AUDIT-PLAN.md Phase 3 (Backend Endpoint Gaps)
 
 ---
 
+### Audit Phase 3 — Backend Endpoint Gaps
+**Goal**: Implement missing CRUD endpoints across all routers, fix the FK validation pre-existing failures, and document all endpoints.
+
+**Reference**: `AUDIT-PLAN.md §3`
+
+| Sub-phase | Task | Status | Notes |
+|-----------|------|--------|-------|
+| 3.1a | **Admin Sync routes** — `POST /admin/sync/seed`, `POST /admin/sync/weekly-refresh`, `GET /admin/sync/jobs`, `GET /admin/sync/jobs/{job_id}` with Celery enqueue fallback | ✅ | 4 integration tests added |
+| 3.1b | **Groups CRUD** — `PATCH /groups/{id}`, `DELETE /groups/{id}`, `DELETE /groups/{id}/members/{user_id}`, `PATCH /groups/{id}/members/{user_id}/role` | ✅ | 11 integration tests added |
+| 3.1c | **Watchparty PATCH/DELETE** — Authorization-gated update and soft-delete | ✅ | 6 integration tests added |
+| 3.1d | **Password Change** — `POST /auth/change-password` with current password verification, old token revocation, fresh token issuance | ✅ | 6 integration tests added |
+| 3.1e | **FK Validation Fixes** — Explicit `MediaEntry` existence checks in watch party + discussion create endpoints | ✅ | 2 pre-existing failures fixed (283 passed, 1 pre-existing mock failure remains) |
+| 3.1f | **Documentation** — `docs/api-spec.md` updated: Notification endpoints, Discussion Replies, Related Media, Admin Sync routes | ✅ | |
+| 3.1g | Remaining endpoints (media CRUD, social DELETE, admin user list/delete, user settings, notification delete, watchparty RSVPs) | ✅ | Implemented + 17 integration tests pass after `BaseService.db_session` session-caching fix |
+| 3.2 | Service/Repository pattern consistency audit | ✅ | Orphaned GroupRepository wired; 4 new repos (social, watch_party, notification, tracking); SocialService, WatchPartyService, NotificationService, TrackingService migrated; MediaService.delete/get_users/delete bypasses fixed; `BaseService.db_session` caching bug fixed; QueryBuilder.exists() SQLite fix; 80 tests pass |
+| 3.3 | `get_related_media()` stub — implement real DB query | ✅ | Already a real DB query with relation type labels and `deleted_at` filter |
+| 3.4 | User settings stubs — create table or add columns | ✅ | `user_settings` table created, `get_user_settings()`/`update_user_settings()` wired with auto-create defaults |
+
+---
+
 ## Completion Log
 
 > Add a line here every time a sub-phase is completed.
@@ -615,6 +635,18 @@ NEXT_ACTION:       Review AUDIT-PLAN.md Phase 3 (Backend Endpoint Gaps)
 # 2026-06-03 | Audit Phase 1.6 | Implemented import_user_list_task and process_new_episodes_task with real async logic
 # 2026-06-03 | Audit Phase 1.7 | Completed — 206 tests pass, 2 pre-existing failures remain (media_id FK validation)
 # 2026-06-04 | Audit Phase 2.0 | Design complete — ADR 077 covers UUID v7, Full-Text Search, Alembic migration system, PostgreSQL default config, and constraint alignment
+# 2026-06-05 | Audit Phase 3 | Started Audit Phase 3 (Backend Endpoint Gaps) implementation
+# 2026-06-05 | Audit Phase 3.1a | Added admin sync routes: POST seed, POST weekly-refresh, GET jobs list, GET job detail with Celery enqueue fallback
+# 2026-06-05 | Audit Phase 3.1b | Added groups CRUD: PATCH, DELETE, member removal, role change endpoints with 11 integration tests
+# 2026-06-05 | Audit Phase 3.1c | Added authorization-gated watchparty PATCH/DELETE with 6 integration tests
+# 2026-06-05 | Audit Phase 3.1d | Added POST /auth/change-password with current password verification, token revocation, and fresh token issuance with 6 integration tests
+# 2026-06-05 | Audit Phase 3.1e | Fixed 2 pre-existing FK validation failures in watch party and discussion create endpoints (283 passed, 1 remaining mock failure)
+# 2026-06-05 | Audit Phase 3.1f | Updated docs/api-spec.md with Notification Endpoints, Discussion Replies, Related Media, and Admin Sync routes documentation
+# 2026-06-05 | Audit Phase 3.1g | Added media CRUD (POST/PATCH/DELETE), social DELETE, admin user list/delete, notification delete, watchparty RSVPs, user settings — 17 integration tests
+# 2026-06-05 | Audit Phase 3.3 | Confirmed get_related_media() is a real DB query with relation type labels (not a stub)
+# 2026-06-05 | Audit Phase 3.4 | Confirmed user_settings table exists with real get/update operations (not a stub)
+# 2026-06-05 | Bugfix | Fixed BaseService.db_session session-caching bug — property created new AsyncSessionLocal() on every call instead of caching it, causing all write operations to commit on a different session than the one tracking object changes
+# 2026-06-05 | Audit Phase 3.2 | Full service/repository consistency audit completed: 4 new repo files (social, watch_party, notification, tracking) with 14 repo classes; GroupService, SocialService, WatchPartyService, NotificationService, TrackingService migrated; MediaService/UserService bypasses fixed; 80 tests pass across all migrated services
 ```
 
 ---
@@ -627,7 +659,7 @@ NEXT_ACTION:       Review AUDIT-PLAN.md Phase 3 (Backend Endpoint Gaps)
 # Format: [OPEN/RESOLVED] Phase X.Y — description
 [RESOLVED] Phase 13.3 — Backend pytest runtime verified via backend .venv and tests passed
 [RESOLVED] Phase 7.10 — Android SDK configured; Capacitor Android release build succeeds
-[OPEN] Pre-existing — watchparty + discussion create endpoints don't validate media_id FK (return 201 instead of 400)
+[RESOLVED] Audit Phase 3.1e — watchparty + discussion create endpoints now validate media_id FK (return 400 for unknown media)
 ```
 
 ---
