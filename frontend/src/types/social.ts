@@ -146,18 +146,18 @@ export interface PasswordChangeRequest {
   new_password: string
 }
 
-/** User settings */
+/** User settings (theme/language/timezone) */
 export interface UserSettings {
   user_id: string
-  new_episode: boolean
-  new_chapter: boolean
-  friend_activity: boolean
-  recommendations: boolean
-  watch_party_invite: boolean
-  watch_party_reminder: boolean
-  discord_webhook?: string | null
-  telegram_chat_id?: string | null
-  email_enabled: boolean
-  push_enabled: boolean
+  theme: string
+  language: string
+  timezone: string
+  created_at: string
   updated_at: string
+}
+
+export interface UserSettingsUpdateRequest {
+  theme?: string
+  language?: string
+  timezone?: string
 }
