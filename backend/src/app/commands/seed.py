@@ -7,7 +7,12 @@ import logging
 from time import perf_counter
 
 import typer
+from sqlalchemy import func
+from sqlmodel import select
 
+from src.app.database import AsyncSessionLocal
+from src.app.models.media_source_episode import MediaSourceEpisode
+from src.app.models.media_source_mapping import MediaSourceMapping
 from src.app.sync.entrypoints import run_seed_all, run_seed_source
 from src.app.sync.observability import build_log_payload, duration_ms_since
 
@@ -15,10 +20,33 @@ app = typer.Typer(name="seed", help="Data seed commands")
 logger = logging.getLogger(__name__)
 
 
+async def _provider_counts() -> dict[str, int]:
+    async with AsyncSessionLocal() as session:
+        total_mappings = (await session.exec(select(func.count()).select_from(MediaSourceMapping))).one()
+        total_episodes = (await session.exec(select(func.count()).select_from(MediaSourceEpisode))).one()
+        matched = (await session.exec(select(func.count()).select_from(MediaSourceMapping).where(MediaSourceMapping.mapping_status == "matched"))).one()
+        unmatched = (await session.exec(select(func.count()).select_from(MediaSourceMapping).where(MediaSourceMapping.mapping_status == "unmatched"))).one()
+        linked = (await session.exec(select(func.count()).select_from(MediaSourceMapping).where(MediaSourceMapping.media_id.is_not(None)))).one()
+        return {
+            "mappings": int(total_mappings),
+            "episodes": int(total_episodes),
+            "matched": int(matched),
+            "unmatched": int(unmatched),
+            "linked_to_media_entries": int(linked),
+        }
+
+
+async def _execute_source(*, source: str, **kwargs: object) -> tuple[dict[str, object], dict[str, int] | None, dict[str, int] | None]:
+    is_provider_source = source in {"anikoto_full_catalog", "anikoto_recent_refresh"}
+    before = await _provider_counts() if is_provider_source and not kwargs.get("dry_run") else None
+    result = await run_seed_source(source=source, **kwargs)
+    after = await _provider_counts() if is_provider_source and not kwargs.get("dry_run") else None
+    return result, before, after
+
 
 def _execute_and_print(*, source: str, **kwargs: object) -> None:
     started_at = perf_counter()
-    result = asyncio.run(run_seed_source(source=source, **kwargs))
+    result, before_counts, after_counts = asyncio.run(_execute_source(source=source, **kwargs))
     logger.info(
         "seed_command_completed",
         extra=build_log_payload(
@@ -35,6 +63,24 @@ def _execute_and_print(*, source: str, **kwargs: object) -> None:
         f"source={result['source']} job_id={result['job_id']} status={result['status']} "
         f"processed_items={result['processed_items']} failed_items={result['failed_items']}"
     )
+    if source in {"anikoto_full_catalog", "anikoto_recent_refresh"}:
+        if kwargs.get("dry_run"):
+            typer.echo("provider_tables=dry_run_no_rows_written")
+            typer.echo("note=MegaPlay/Anikoto rows are stored in media_source_mappings and media_source_episodes, not media_entries")
+        elif before_counts is not None and after_counts is not None:
+            typer.echo(
+                "provider_tables="
+                f"media_source_mappings {before_counts['mappings']}->{after_counts['mappings']} "
+                f"(+{after_counts['mappings'] - before_counts['mappings']}), "
+                f"media_source_episodes {before_counts['episodes']}->{after_counts['episodes']} "
+                f"(+{after_counts['episodes'] - before_counts['episodes']})"
+            )
+            typer.echo(
+                "provider_match_status="
+                f"matched={after_counts['matched']} unmatched={after_counts['unmatched']} "
+                f"linked_to_media_entries={after_counts['linked_to_media_entries']}"
+            )
+            typer.echo("note=MegaPlay/Anikoto catalog IDs are provider rows; media_entries is canonical AniList/anime-offline metadata")
 
 
 @app.command("anime-offline")

@@ -51,6 +51,7 @@
 - **2026-06-04 (Phase 2.5)**: Explicit `UniqueConstraint` declarations added to `user_list_entry` and `recommendation` models. See ADR 077.
 - **2026-06-05 (Urgent source-provider design)**: Add source-provider registry design for Anikoto/MegaPlay and future playback providers. `media_external_ids` remains canonical metadata cross-reference; provider-specific series and episode IDs are stored in `media_source_mappings` and `media_source_episodes`. See ADR 078.
 - **2026-06-06 (ADR 078 implementation)**: Implemented `media_source_mappings` and `media_source_episodes` via Alembic revision `002`; no raw media segment URLs are stored and AniList remains canonical cross-reference key.
+- **2026-06-06 (Payload + streaming storage)**: Added `source_payload` (JSONB) and `source_titles` (JSONB) to `media_source_mappings` for full API response archival and structured multilingual titles. Renamed `embed_path` → `embed_url` (VARCHAR(2048)) on `media_source_episodes`, added `embed_urls` (JSONB) for all language→URL mappings, `source_payload` (JSONB) for raw episode payload, and `details_synced_at` per Alembic revision `003`. See full provider payload plan.
 
 ## PostgreSQL Extensions Required
 
@@ -187,7 +188,9 @@ CREATE TABLE media_source_mappings (
     source_url            VARCHAR(2048),             -- provider detail/catalog URL when safe to store
     source_title          VARCHAR(500),              -- title exactly as returned by provider
     source_title_normalized VARCHAR(500),            -- lower/unaccent/punctuation-stripped matching key
-    source_payload_hash   VARCHAR(64),               -- detects provider payload changes without storing raw payload by default
+    source_payload_hash   VARCHAR(64),               -- SHA-256 hash for change detection
+    source_payload        JSONB,                     -- full raw API response for this series/mapping
+    source_titles         JSONB,                     -- structured multilingual titles extracted from provider
     mapping_status        VARCHAR(20)  NOT NULL DEFAULT 'matched', -- matched|unmatched|ignored|stale
     match_confidence      NUMERIC(5,2) NOT NULL DEFAULT 100.00,
     is_streaming_enabled  BOOLEAN      NOT NULL DEFAULT FALSE,
@@ -213,6 +216,8 @@ Rationale:
 - `source` + `source_media_id` is the provider conflict key.
 - `media_id` is nullable so uncertain Anikoto rows do not create duplicate canonical media entries.
 - `mapping_status` and `match_confidence` support manual reconciliation.
+- `source_payload` stores the complete raw provider API response for archival and inspection — any provider-specific fields that lack dedicated columns are preserved here.
+- `source_titles` stores structured multilingual title variants (romaji, native, alternative, english, all) extracted from the provider's often-comma-separated title fields.
 - `details_synced_at` and `last_seen_at` support daily recent refresh and stale detection.
 
 ### `media_source_episodes` (ADR 078)
@@ -229,7 +234,10 @@ CREATE TABLE media_source_episodes (
     episode_number        NUMERIC(8,2) NOT NULL,
     title                 VARCHAR(500),
     language              VARCHAR(20)  NOT NULL DEFAULT 'sub', -- sub|dub|raw|unknown
-    embed_path            VARCHAR(512),                -- provider path only; no raw media URLs
+    embed_url             VARCHAR(2048),               -- full safe MegaPlay embed URL for this language
+    embed_urls            JSONB,                       -- all language→URL mappings from provider (e.g. {"sub": "https://...", "dub": "https://..."})
+    source_payload        JSONB,                       -- full raw API episode response
+    details_synced_at     TIMESTAMPTZ,                 -- when episode detail was last fetched
     is_available          BOOLEAN      NOT NULL DEFAULT TRUE,
     first_seen_at         TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
     last_seen_at          TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
@@ -247,7 +255,8 @@ CREATE INDEX idx_media_source_episodes_available ON media_source_episodes (sourc
 Rationale:
 - Supports Anikoto `episode_embed_id` and future providers with episode-level IDs.
 - `language` allows sub/dub rows to differ without overloading one ID field.
-- `embed_path` stores only provider path/template data needed for approved embeds, never extracted raw stream URLs.
+- `embed_url` stores the full safe MegaPlay embed URL for the current row's language; `embed_urls` stores the complete language→URL mapping from the source API.
+- `details_synced_at` and `last_seen_at` support daily recent refresh and stale detection.
 
 ### `genres`
 ```sql
@@ -702,7 +711,7 @@ CREATE INDEX idx_sync_jobs_status ON sync_jobs (status) WHERE status = 'running'
 | `media_entries` | All anime/manga/manhwa | ~30,000 seeded, grows weekly |
 | `media_external_ids` | Cross-reference IDs | 1:1 with media_entries |
 | `media_source_mappings` | Provider/source series IDs and availability mappings | 0–N per media title |
-| `media_source_episodes` | Provider/source episode IDs by language | 0–N per mapped source title |
+| `media_source_episodes` | Provider/source episode IDs with streaming URLs and payloads by language | 0–N per mapped source title |
 | `genres` | Genre lookup | ~50 |
 | `studios` | Studio lookup | ~1,000 |
 | `tags` | Tag lookup | ~600 |

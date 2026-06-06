@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import datetime
 from uuid import UUID
 
 from sqlmodel import select
@@ -15,7 +15,7 @@ from src.app.schemas.source_provider import SourceEpisodeUpsert, SourceMappingUp
 
 
 def utc_now() -> datetime:
-    return datetime.now(UTC)
+    return datetime.utcnow()
 
 
 class SourceMappingRepository(BaseRepository[MediaSourceMapping]):

@@ -16,12 +16,19 @@ from src.app.services.sync_service import SyncService
 from src.app.schemas.source_provider import AnikotoFullSyncRequest, AnikotoRecentSyncRequest, JobEnqueueResponse
 
 try:
-    from src.app.workers.sync_tasks import anikoto_full_catalog_task, anikoto_recent_refresh_task, seed_database_task, weekly_refresh_task
+    from src.app.workers.sync_tasks import (
+        anikoto_full_catalog_task,
+        anikoto_recent_refresh_task,
+        megaplay_verify_availability_task,
+        seed_database_task,
+        weekly_refresh_task,
+    )
 except Exception:
     seed_database_task = None
     weekly_refresh_task = None
     anikoto_full_catalog_task = None
     anikoto_recent_refresh_task = None
+    megaplay_verify_availability_task = None
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -210,6 +217,32 @@ async def admin_trigger_megaplay_recent(
 ) -> JobEnqueueResponse:
     """ADR 078 — enqueue recent MegaPlay provider refresh via Anikoto discovery."""
     return await admin_trigger_anikoto_recent(payload=payload, _=current_user)
+
+
+@router.post("/sync/providers/megaplay/verify", response_model=JobEnqueueResponse, status_code=202)
+async def admin_trigger_megaplay_verify(
+    _: User = Depends(require_admin),
+) -> JobEnqueueResponse:
+    """Probe MegaPlay embed URLs to verify they still resolve."""
+    if megaplay_verify_availability_task is not None:
+        try:
+            result = megaplay_verify_availability_task.delay()
+            return JobEnqueueResponse(
+                job_id=str(result.id),
+                job_type="megaplay_verify_availability",
+                status="queued",
+                message="MegaPlay availability verification enqueued",
+            )
+        except Exception as exc:
+            import logging
+            logging.getLogger(__name__).warning("MegaPlay verify could not be enqueued", exc_info=exc)
+            return JobEnqueueResponse(
+                job_id="",
+                job_type="megaplay_verify_availability",
+                status="unavailable",
+                message="MegaPlay availability verification could not be enqueued",
+            )
+    return JobEnqueueResponse(job_id="", job_type="megaplay_verify_availability", status="unavailable", message="Celery worker not available")
 
 
 @router.get("/sync/jobs", response_model=SyncJobsResponse)

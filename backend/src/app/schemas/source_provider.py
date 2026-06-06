@@ -18,6 +18,8 @@ class SourceMappingUpsert(BaseModel):
     source_title: str | None = None
     source_title_normalized: str | None = None
     source_payload_hash: str | None = None
+    source_payload: dict | None = None
+    source_titles: dict | None = None
     mapping_status: str = "matched"
     match_confidence: Decimal = Decimal("100.00")
     is_streaming_enabled: bool = False
@@ -36,7 +38,10 @@ class SourceEpisodeUpsert(BaseModel):
     episode_number: Decimal
     title: str | None = None
     language: str = "sub"
-    embed_path: str | None = None
+    embed_url: str | None = None
+    embed_urls: dict | None = None
+    source_payload: dict | None = None
+    details_synced_at: datetime | None = None
     is_available: bool = True
 
 
@@ -50,6 +55,8 @@ class SourceMappingResponse(BaseModel):
     source_title: str | None
     mapping_status: str
     match_confidence: Decimal
+    source_payload: dict | None = None
+    source_titles: dict | None = None
     is_streaming_enabled: bool
     has_sub: bool
     has_dub: bool

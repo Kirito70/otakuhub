@@ -70,7 +70,7 @@ IDs are stored in `media_source_mappings` and `media_source_episodes`, not in
 | MangaDex REST | ~5 req/s global | 4 req/s | asyncio.sleep(0.25) between calls |
 | MAL API v2 | ~1 req/s (unofficial) | 0.8 req/s | Sleep 1.25s between calls |
 | Jikan v4 | 60 req/min | 50 req/min | Token bucket |
-| Anikoto API | 60 req / 120 sec / IP | 45 req / 120 sec | Backend-only client; bounded recent refresh; retry 429 using headers/backoff |
+| Anikoto API | 60 req / 120 sec / IP | 45 req / 120 sec | Backend-only client; bounded recent refresh; retry 429 using headers/backoff; dynamic adaptation via X-RateLimit-* headers; 403 treated as retryable (transient ban) |
 
 ## AniList Batch Math
 - 29,000 entries ÷ 50 IDs/query = 580 queries needed
@@ -268,11 +268,11 @@ Do not create duplicate `media_entries` from Anikoto-only data unless a canonica
 
 ### Implementation boundaries
 
-- `external/anikoto_client.py`: HTTP client, server-side only, timeout/backoff/rate limit handling.
-- `sync/sources/anikoto.py`: source adapter for full catalog and recent refresh modes.
-- `external/megaplay_client.py`: safe MegaPlay embed path/url builder for Anikoto `episode_embed_id` values.
-- source mapping repository: upserts `media_source_mappings` and `media_source_episodes`.
-- sync service: matching policy, confidence thresholds, and progress reporting.
+- `external/anikoto_client.py`: HTTP client, server-side only, timeout/backoff/rate limit handling. Reads `X-RateLimit-*` headers for dynamic bucket tuning; treats 403 as retryable with exponential backoff (the API docs note 403 can be a transient ban from aggressive traffic).
+- `sync/sources/anikoto.py`: source adapter for full catalog and recent refresh modes. Catches `AnikotoRateLimitError` in the page loop with `Retry-After` sleep; after `detail_retry_cutoff` consecutive 429s on detail fetches, degrades gracefully to list-level data only for remaining items.
+- `external/megaplay_client.py`: safe MegaPlay embed URL builder (`safe_embed_url`) and path builder (`safe_embed_path` legacy). Validates MegaPlay host, allowed path prefixes, and blocks raw media segment markers (.m3u8, .mp4, /hls/, etc.).
+- source mapping repository: upserts `media_source_mappings` and `media_source_episodes` with full provider payloads (`source_payload` JSONB), structured multilingual titles (`source_titles` JSONB), and streaming options (`embed_url`, `embed_urls` JSONB).
+- sync service: matching policy, confidence thresholds, source_payload archival, multilingual title extraction, and progress reporting.
 - Celery: schedules/retries jobs and updates `sync_jobs`.
 - frontend: no direct Anikoto/MegaPlay calls.
 
@@ -290,7 +290,9 @@ Full Anikoto sync should be admin-triggered via API/CLI because it can require m
 
 - create a `sync_jobs` row with `job_type='anikoto_full_catalog'`;
 - page through recent/catalog listing with bounded `per_page`;
-- call detail endpoint per new/changed series;
+- call detail endpoint per new/changed series with rate-limited concurrency (`max_detail_concurrency`, default 3);
+- persist full detail payloads as `source_payload` JSONB, structured titles as `source_titles` JSONB, and streaming options as `embed_url`/`embed_urls`;
+- set `details_synced_at` on both mapping and episode rows;
 - persist progress after each page/batch;
 - mark stale source mappings not seen in the latest full sync;
 - end with `completed`, `partial`, or `failed`.

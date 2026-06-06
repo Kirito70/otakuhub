@@ -9,6 +9,7 @@ import typer
 from src.app.workers.sync_tasks import (
     anikoto_full_catalog_task,
     anikoto_recent_refresh_task,
+    megaplay_verify_availability_task,
     seed_database_task,
     weekly_refresh_task,
 )
@@ -114,6 +115,16 @@ def enqueue_anikoto_recent(
         dry_run=dry_run,
     )
     typer.echo(f"✓ Anikoto recent refresh enqueued: {result.id}")
+
+
+@app.command("megaplay-verify")
+def enqueue_megaplay_verify(
+    limit: int = typer.Option(50, "--limit", min=1, max=200),
+    dry_run: bool = typer.Option(False, "--dry-run"),
+) -> None:
+    """Probe MegaPlay embed URLs to verify they still resolve."""
+    result = megaplay_verify_availability_task.delay(limit=limit, dry_run=dry_run)
+    typer.echo(f"✓ MegaPlay availability verification enqueued: {result.id}")
 
 
 @app.command("megaplay-recent")

@@ -1,11 +1,11 @@
 """Provider/source series mapping model (ADR 078)."""
 
-from datetime import UTC, datetime
+from datetime import datetime
 from decimal import Decimal
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 from uuid import UUID
 
-from sqlalchemy import UniqueConstraint, text
+from sqlalchemy import JSON, Column, UniqueConstraint, text
 from sqlmodel import Field, Index, Relationship, SQLModel
 
 from src.app.core.uuid7 import generate_uuid7
@@ -15,7 +15,9 @@ if TYPE_CHECKING:
 
 
 def utc_now() -> datetime:
-    return datetime.now(UTC)
+    # Existing SQLModel mappings use naive UTC datetimes with asyncpg. Keep the
+    # provider models consistent to avoid offset-aware/naive binding errors.
+    return datetime.utcnow()
 
 
 class MediaSourceMapping(SQLModel, table=True):
@@ -32,6 +34,8 @@ class MediaSourceMapping(SQLModel, table=True):
     source_title: str | None = Field(default=None, max_length=500)
     source_title_normalized: str | None = Field(default=None, max_length=500)
     source_payload_hash: str | None = Field(default=None, max_length=64)
+    source_payload: dict[str, Any] | None = Field(default=None, sa_column=Column(JSON))
+    source_titles: dict[str, Any] | None = Field(default=None, sa_column=Column(JSON))
     mapping_status: str = Field(default="matched", nullable=False, max_length=20)
     match_confidence: Decimal = Field(default=Decimal("100.00"), nullable=False, max_digits=5, decimal_places=2)
     is_streaming_enabled: bool = Field(default=False, nullable=False)

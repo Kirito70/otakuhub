@@ -1,11 +1,11 @@
 """Provider/source episode ID model (ADR 078)."""
 
-from datetime import UTC, datetime
+from datetime import datetime
 from decimal import Decimal
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 from uuid import UUID
 
-from sqlalchemy import UniqueConstraint, text
+from sqlalchemy import JSON, Column, UniqueConstraint, text
 from sqlmodel import Field, Index, Relationship, SQLModel
 
 from src.app.core.uuid7 import generate_uuid7
@@ -15,7 +15,9 @@ if TYPE_CHECKING:
 
 
 def utc_now() -> datetime:
-    return datetime.now(UTC)
+    # Existing SQLModel mappings use naive UTC datetimes with asyncpg. Keep the
+    # provider models consistent to avoid offset-aware/naive binding errors.
+    return datetime.utcnow()
 
 
 class MediaSourceEpisode(SQLModel, table=True):
@@ -32,7 +34,10 @@ class MediaSourceEpisode(SQLModel, table=True):
     episode_number: Decimal = Field(nullable=False, max_digits=8, decimal_places=2)
     title: str | None = Field(default=None, max_length=500)
     language: str = Field(default="sub", nullable=False, max_length=20)
-    embed_path: str | None = Field(default=None, max_length=512)
+    embed_url: str | None = Field(default=None, max_length=2048)
+    embed_urls: dict[str, Any] | None = Field(default=None, sa_column=Column(JSON))
+    source_payload: dict[str, Any] | None = Field(default=None, sa_column=Column(JSON))
+    details_synced_at: datetime | None = Field(default=None)
     is_available: bool = Field(default=True, nullable=False)
     first_seen_at: datetime = Field(default_factory=utc_now, nullable=False)
     last_seen_at: datetime = Field(default_factory=utc_now, nullable=False)

@@ -214,6 +214,100 @@ def anikoto_recent_refresh_task(
         _retry_or_raise(self, exc)
 
 
+@celery_app.task(bind=True, name="sync.megaplay_verify_availability", max_retries=2)
+def megaplay_verify_availability_task(self, *, limit: int = 50, dry_run: bool = False) -> dict[str, Any]:
+    """Probe MegaPlay embed URLs to verify they still resolve.
+
+    Fetches recently-synced ``media_source_episodes`` that have an
+    ``embed_url`` set, performs a lightweight HEAD (or GET fallback) request,
+    and updates ``is_available`` accordingly.
+
+    Uses a conservative rate limiter (10 req / 60 s) to avoid overwhelming the
+    embed host.
+    """
+    logger.info("Starting MegaPlay availability verification task")
+    started_at = perf_counter()
+
+    async def _run() -> dict[str, Any]:
+        from src.app.database import AsyncSessionLocal
+        from src.app.external.megaplay_client import MegaPlayAvailabilityClient
+        from src.app.models.media_source_episode import MediaSourceEpisode
+        from src.app.repositories.source_provider_repository import SourceEpisodeRepository
+        from src.app.schemas.source_provider import SourceEpisodeUpsert
+
+        async with AsyncSessionLocal() as session:
+            repo = SourceEpisodeRepository(session)
+            client = MegaPlayAvailabilityClient()
+
+            # Fetch episodes that have an embed_url and were recently synced
+            stmt = (
+                select(MediaSourceEpisode)
+                .where(MediaSourceEpisode.embed_url.isnot(None))
+                .where(MediaSourceEpisode.last_seen_at >= (datetime.now(UTC) - timedelta(days=7)))
+                .where(MediaSourceEpisode.deleted_at.is_(None))
+                .order_by(MediaSourceEpisode.last_seen_at.desc())
+                .limit(limit)
+            )
+            result = await session.execute(stmt)
+            episodes = result.scalars().all()
+
+            checked = 0
+            available = 0
+            unavailable = 0
+
+            for ep in episodes:
+                if dry_run:
+                    checked += 1
+                    if ep.is_available:
+                        available += 1
+                    else:
+                        unavailable += 1
+                    continue
+
+                is_ok = await client.check_url(ep.embed_url)
+                if is_ok != ep.is_available:
+                    await repo.upsert(
+                        SourceEpisodeUpsert(
+                            mapping_id=ep.mapping_id,
+                            media_id=ep.media_id,
+                            episode_id=ep.episode_id,
+                            source=ep.source,
+                            source_episode_id=ep.source_episode_id,
+                            episode_number=ep.episode_number,
+                            title=ep.title,
+                            language=ep.language,
+                            embed_url=ep.embed_url,
+                            is_available=is_ok,
+                        )
+                    )
+                checked += 1
+                if is_ok:
+                    available += 1
+                else:
+                    unavailable += 1
+
+            logger.info(
+                "MegaPlay availability check completed: %d checked, %d available, %d unavailable",
+                checked, available, unavailable,
+            )
+            return {
+                "checked": checked,
+                "available": available,
+                "unavailable": unavailable,
+            }
+
+    try:
+        result = asyncio.run(_run())
+        return _with_task_metadata(
+            {**result, "status": "completed"},
+            task_name="sync.megaplay_verify_availability",
+            started_at=started_at,
+        )
+    except Exception as exc:
+        logger.error("MegaPlay availability verification failed: %s", exc)
+        _retry_or_raise(self, exc)
+
+
 @celery_app.task(name="sync.daily_refresh_compose")
 def daily_refresh_compose_task() -> dict[str, Any]:
     """Compose daily refresh flow from existing shared sync tasks only."""
@@ -225,6 +319,7 @@ def daily_refresh_compose_task() -> dict[str, Any]:
     ]
     if settings.anikoto_sync_enabled:
         signatures.append(_immutable_signature(anikoto_recent_refresh_task))
+    signatures.append(_immutable_signature(megaplay_verify_availability_task))
     workflow = chain(*signatures)
     async_result = workflow.apply_async()
     return {
