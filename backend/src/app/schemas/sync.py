@@ -27,3 +27,19 @@ class SyncImportResponse(BaseModel):
     job_type: str
     started_at: datetime
     message: str
+
+
+class SyncJobStatusResponse(BaseModel):
+    """Job status returned to the user for their own import jobs."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str
+    job_type: str
+    status: str
+    total_items: int | None = None
+    processed_items: int = 0
+    failed_items: int = 0
+    error_log: str | None = None
+    started_at: str
+    completed_at: str | None = None

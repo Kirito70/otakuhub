@@ -102,3 +102,28 @@ export interface ListStats {
   rewatching: number
   rereading: number
 }
+
+// -- Phase 18.8/18.9: Import List --
+
+export interface SyncImportResponse {
+  job_id: string
+  provider: string
+  status: string
+  job_type: string
+  started_at: string
+  message: string
+}
+
+export interface SyncJobDetail {
+  id: string
+  job_type: string
+  status: 'running' | 'completed' | 'failed' | 'partial'
+  total_items: number | null
+  processed_items: number
+  failed_items: number
+  error_log: string | null
+  started_at: string
+  completed_at: string | null
+}
+
+export type Provider = 'anilist' | 'mal'

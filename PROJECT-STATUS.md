@@ -10,12 +10,12 @@
 ## Current State
 
 ```
-CURRENT_PHASE:     AUDIT_PHASE_RESUME_PENDING
-CURRENT_SUB_PHASE: ADR_078_SOURCE_PROVIDER_ID_REGISTRY
-STATUS:            IMPLEMENTED_AND_VERIFIED
-LAST_UPDATED:      2026-06-06
+CURRENT_PHASE:     18
+CURRENT_SUB_PHASE: 18.10
+STATUS:            COMPLETED
+LAST_UPDATED:      2026-06-08
 BLOCKED_BY:        none
-NEXT_ACTION:       Resume paused audit phase progression after ADR 078 source-provider sync implementation
+NEXT_ACTION:       Advance to Phase 19 (Social Frontend Pages) or audit phase progression
 ```
 
 > **Note**: After completing all 24 formal phases, an audit (AUDIT-PLAN.md) identified real gaps. Phases 0–4 are complete. Phase 5 (Frontend Feature Gaps) is in progress.
@@ -317,9 +317,9 @@ NEXT_ACTION:       Resume paused audit phase progression after ADR 078 source-pr
 | 18.5 | My List — Plan to Watch/Read tab | ✅ | Added ADR 052 + plan-list transition/prioritization/fallback contract |
 | 18.6 | My List — Custom Lists tab | ✅ | Added ADR 053 + custom-list CRUD/reorder/fallback contract |
 | 18.7 | Airing Calendar page | ✅ | Added ADR 054 + airing timezone/pagination/navigation contract |
-| 18.8 | Import List — AniList tab | ⏳ | Import trigger, job status, user feedback |
-| 18.9 | Import List — MAL tab | ⏳ | Provider-specific validation and feedback |
-| 18.10 | Tracking page tests | ⏳ | Core interaction and validation coverage |
+| 18.8 | Import List — AniList tab | ✅ | Added ImportListPage with provider-specific validation, job polling (3s), status display (running/completed/failed/partial), error mapping (400/429/generic) |
+| 18.9 | Import List — MAL tab | ✅ | AniList+MAL tabs with distinct validation rules (AniList: alphanumeric+`-`+`_`, 3–20; MAL: alphanumeric+`_`, 3–16); both call same backend import flow |
+| 18.10 | Tracking page tests | ✅ | 21 tests for ImportListPage: rendering, API routing, error mapping, loading states, job polling, status display, reset flow, validation rules |
 
 ### Phase 19 — Social Frontend Pages
 **Goal**: Deliver complete social experience with clear tab boundaries and spoiler-safe UX.
@@ -708,6 +708,11 @@ NEXT_ACTION:       Resume paused audit phase progression after ADR 078 source-pr
 
 > List anything that is blocking progress. Remove when resolved.
 
+# 2026-06-08 | Phase 18.8 | Import List — AniList tab: ImportListPage with provider-specific validation, job polling (3s), status display (running/completed/failed/partial), error mapping (400/429/generic)
+# 2026-06-08 | Phase 18.9 | Import List — MAL tab: AniList+MAL tabs with distinct validation rules; both call same backend import flow; backend added GET /api/v1/sync/jobs/{job_id} user-facing endpoint
+# 2026-06-08 | Phase 18.10 | Tracking page tests: 21 tests for ImportListPage — rendering, API routing, error mapping, loading states, job polling, status display, reset flow, validation rules
+# 2026-06-08 | Phase 18 | Tracking frontend pages fully implemented (18.1–18.10); 187 frontend tests, 324 backend tests passing
+# 2026-06-08 | .gitignore fixed (removed overbroad `env.*` rule); alembic/env.py now load_dotenv() for .env without manual env var; committed to version control
 ```
 # Format: [OPEN/RESOLVED] Phase X.Y — description
 [RESOLVED] Phase 13.3 — Backend pytest runtime verified via backend .venv and tests passed

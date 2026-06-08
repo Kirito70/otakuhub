@@ -4,13 +4,13 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from src.app.core.auth import get_current_user
 from src.app.database import get_db_session
 from src.app.models import User
-from src.app.schemas.sync import SyncImportRequest, SyncImportResponse
+from src.app.schemas.sync import SyncImportRequest, SyncImportResponse, SyncJobStatusResponse
 from src.app.services.sync_service import SyncService
 
 try:
@@ -77,4 +77,29 @@ async def import_mal_list(
         job_type=job.job_type,
         started_at=job.started_at,
         message="MAL import job created and task enqueued",
+    )
+
+
+@router.get("/jobs/{job_id}", response_model=SyncJobStatusResponse)
+async def get_sync_job_status(
+    job_id: UUID,
+    sync_service: SyncService = Depends(get_sync_service),
+    user: User = Depends(get_current_user),
+) -> SyncJobStatusResponse:
+    """Get the status of an import sync job scoped to the current user."""
+    job = await sync_service.get_sync_job_by_id(job_id)
+    if job is None:
+        raise HTTPException(status_code=404, detail="Sync job not found")
+    if job.user_id != user.id and not user.is_admin:
+        raise HTTPException(status_code=403, detail="Not authorized to view this job")
+    return SyncJobStatusResponse(
+        id=str(job.id),
+        job_type=job.job_type,
+        status=job.status,
+        total_items=job.total_items,
+        processed_items=job.processed_items or 0,
+        failed_items=job.failed_items or 0,
+        error_log=job.error_log,
+        started_at=str(job.started_at),
+        completed_at=str(job.completed_at) if job.completed_at else None,
     )
