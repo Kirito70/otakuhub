@@ -14,6 +14,9 @@ export interface MediaDetail {
   average_score?: number | null
   cover_image_large?: string | null
   banner_image?: string | null
+  season_year?: number | null
+  episode_count?: number | null
+  genres?: string[] | null
 }
 
 function normalizeDetail(raw: unknown): MediaDetail | null {
@@ -38,6 +41,9 @@ function normalizeDetail(raw: unknown): MediaDetail | null {
     average_score: (item.average_score as number | null | undefined) ?? null,
     cover_image_large: (item.cover_image_large as string | null | undefined) ?? null,
     banner_image: (item.banner_image as string | null | undefined) ?? null,
+    season_year: (item.season_year as number | null | undefined) ?? null,
+    episode_count: (item.episode_count as number | null | undefined) ?? null,
+    genres: (item.genres as string[] | null | undefined) ?? null,
   }
 }
 

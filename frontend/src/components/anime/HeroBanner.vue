@@ -32,6 +32,21 @@
         <div v-if="score !== null" class="hero-score-row">
           <ScoreRing :score="score" :size="56" />
         </div>
+        <div class="hero-actions">
+          <button class="btn-play" @click="$emit('play')">
+            <span class="play-icon">▶</span>
+            Play
+          </button>
+          <button class="btn-secondary" @click="$emit('add-list')">
+            + List
+          </button>
+          <button class="btn-icon" @click="$emit('like')" title="Like">
+            ♡
+          </button>
+          <button class="btn-icon" @click="$emit('share')" title="Share">
+            ↗
+          </button>
+        </div>
         <div class="hero-synopsis">
           <p
             :class="{
@@ -88,6 +103,10 @@ const props = withDefaults(defineProps<HeroBannerProps>(), {
 
 defineEmits<{
   'synopsis-toggle': []
+  play: []
+  'add-list': []
+  like: []
+  share: []
 }>()
 
 const posterError = ref(false)
@@ -233,6 +252,74 @@ function onPosterError() {
 
       .hero-score-row {
         margin: $space-2 0;
+      }
+
+      .hero-actions {
+        display: flex;
+        gap: $space-3;
+        align-items: center;
+        margin: $space-3 0;
+
+        .btn-play {
+          display: flex;
+          align-items: center;
+          gap: $space-2;
+          padding: $space-3 $space-6;
+          border-radius: $radius-md;
+          border: none;
+          background: $accent-primary;
+          color: white;
+          font-size: $font-size-md;
+          font-weight: 700;
+          cursor: pointer;
+          transition: all $transition;
+
+          .play-icon {
+            font-size: $font-size-lg;
+          }
+
+          &:hover {
+            background: lighten($accent-primary, 8%);
+            box-shadow: 0 0 16px rgba($accent-primary, 0.4);
+          }
+        }
+
+        .btn-secondary {
+          padding: $space-3 $space-4;
+          border-radius: $radius-md;
+          border: $border-subtle;
+          background: rgba(255, 255, 255, 0.08);
+          color: $text-primary;
+          font-size: $font-size-sm;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all $transition;
+
+          &:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: $accent-primary;
+          }
+        }
+
+        .btn-icon {
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+          border: $border-subtle;
+          background: rgba(255, 255, 255, 0.08);
+          color: $text-secondary;
+          font-size: $font-size-lg;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: all $transition;
+
+          &:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: $text-primary;
+          }
+        }
       }
 
       .hero-synopsis {

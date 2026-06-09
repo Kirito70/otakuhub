@@ -5,6 +5,7 @@ from uuid import UUID
 
 from sqlmodel import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import joinedload
 
 from src.app.models import (
     UserListEntry, ListEntryHistory, CustomList, CustomListEntry,
@@ -31,14 +32,34 @@ class UserListEntryRepository(BaseRepository[UserListEntry]):
         self,
         user_id: UUID,
         status: Optional[str] = None,
+        statuses: Optional[str] = None,
         limit: int = 50,
         offset: int = 0,
     ) -> List[UserListEntry]:
-        """Get a user's list entries with optional status filter and pagination."""
+        """Get a user's list entries with optional status filter and pagination.
+
+        Args:
+            user_id: The user's UUID.
+            status: Single status filter (legacy).
+            statuses: Comma-separated status list (e.g. "watching,reading").
+            limit: Maximum number of results.
+            offset: Number of results to skip.
+        """
         q = self.query().filter(UserListEntry.user_id == user_id)
         if status is not None:
             q = q.filter(UserListEntry.status == status)
-        return await q.order_by(UserListEntry.updated_at.desc()).offset(offset).limit(limit).all()
+        if statuses is not None:
+            status_list = [s.strip() for s in statuses.split(",") if s.strip()]
+            if status_list:
+                q = q.filter(UserListEntry.status.in_(status_list))
+        return await (
+            q
+            .options(joinedload(UserListEntry.media))
+            .order_by(UserListEntry.updated_at.desc())
+            .offset(offset)
+            .limit(limit)
+            .all()
+        )
 
     async def count_user_list(self, user_id: UUID, status: Optional[str] = None) -> int:
         """Count a user's list entries with optional status filter."""

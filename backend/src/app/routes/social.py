@@ -38,12 +38,16 @@ def get_social_service(db: AsyncSession = Depends(get_db_session)) -> SocialServ
 async def get_social_feed(
     limit: int = Query(default=50, ge=1, le=200),
     offset: int = Query(default=0, ge=0),
+    media_type: str | None = Query(default=None, description="Filter by media type: anime, manga, manhwa, etc."),
     social_service: SocialService = Depends(get_social_service),
     user: User = Depends(get_current_user),
 ) -> SocialFeedResponse:
-    """Phase 9.1 — group activity feed from shared-group members."""
-    items = await social_service.get_group_activity_feed(user_id=user.id, limit=limit, offset=offset)
-    total = await social_service.count_group_activity_feed(user_id=user.id)
+    """Phase 9.1 — group activity feed from shared-group members.
+    Optionally filter by ``media_type`` (e.g. ``anime``, ``manga``)."""
+    items = await social_service.get_group_activity_feed(
+        user_id=user.id, limit=limit, offset=offset, media_type=media_type,
+    )
+    total = await social_service.count_group_activity_feed(user_id=user.id, media_type=media_type)
 
     return SocialFeedResponse(
         items=[SocialFeedItemResponse.model_validate(item) for item in items],

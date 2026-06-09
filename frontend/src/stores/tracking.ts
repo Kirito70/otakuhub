@@ -82,6 +82,15 @@ export const useTrackingStore = defineStore('tracking', () => {
     }
   }
 
+  async function getEntryByMedia(mediaId: string): Promise<ListEntry | null> {
+    try {
+      const response = await api.get<ListEntry>(`/api/v1/lists/entries/${mediaId}`)
+      return response.data
+    } catch {
+      return null
+    }
+  }
+
   async function createCustomList(payload: CustomListCreate): Promise<CustomList> {
     const response = await api.post<CustomList>('/api/v1/lists/custom', payload)
     const created = response.data
@@ -149,6 +158,7 @@ export const useTrackingStore = defineStore('tracking', () => {
     fetchMyList,
     addToList,
     updateEntry,
+    getEntryByMedia,
     createCustomList,
     replaceCustomListEntries,
     fetchHistory,

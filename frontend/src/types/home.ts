@@ -9,12 +9,17 @@ export interface HomeSection<T = MediaItem> {
 
 export interface HomePageState {
   spotlight: HomeSection
-  continueWatching: HomeSection
+  continueWatching: HomeSection<ContinueWatchingItem>
   trending: HomeSection
   recentUpdates: HomeSection
   newReleases: HomeSection
   friendActivity: HomeSection<FriendActivityItem>
   genres: HomeSection<GenreItem>
+}
+
+export interface ContinueWatchingItem extends MediaItem {
+  progress: number
+  totalEpisodes: number | null
 }
 
 export interface FriendActivityItem {

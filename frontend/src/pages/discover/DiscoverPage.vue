@@ -66,13 +66,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed, onMounted, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
 import AppPageState from 'src/components/AppPageState.vue'
 import { useMediaSearch } from 'src/composables/useMediaSearch'
 
 const router = useRouter()
+const route = useRoute()
 const query = ref('')
 const mediaType = ref<string | undefined>(undefined)
 
@@ -93,6 +94,16 @@ async function onSearch(): Promise<void> {
     page: 1,
   })
 }
+
+// Support genre pre-filter from navigation (Phase 27.5)
+onMounted(() => {
+  const genre = route.query.genre as string | undefined
+  if (genre) {
+    // Set the genre as the initial query label, executing search by genre
+    query.value = genre
+    search({ genres: [genre], page: 1 })
+  }
+})
 
 function goToMedia(id: string): void {
   router.push({ name: 'media-detail', params: { id } }).catch(() => undefined)

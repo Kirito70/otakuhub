@@ -55,12 +55,26 @@
     <div class="home-content">
       <!-- Continue Watching -->
       <section class="section" v-if="showContinueWatching">
-        <SectionHeader title="Continue Watching" />
+        <SectionHeader title="Continue Watching">
+          <template #actions>
+            <button class="see-all-btn" @click="goToList">See All</button>
+          </template>
+        </SectionHeader>
         <div class="carousel-horizontal">
           <AnimeCard
             v-for="item in store.continueWatching.items"
             :key="item.id"
-            v-bind="item"
+            :id="item.id"
+            :title="item.title"
+            :coverImage="item.coverImage"
+            :mediaType="item.mediaType"
+            :format="item.format"
+            :score="item.score"
+            :year="item.year"
+            :episodeCount="item.episodeCount"
+            :status="item.status"
+            :progress="item.progress"
+            :totalEpisodes="item.totalEpisodes"
             :isNew="false"
             @click="goToMedia(item.id)"
           />
@@ -108,13 +122,18 @@
       </section>
 
       <!-- Friends Activity -->
-      <section class="section" v-if="showFriendActivity">
+      <section class="section">
         <SectionHeader title="Friends Watching" />
         <FriendActivityRow
           :items="store.friendActivity.items"
           :loading="store.friendActivity.isLoading"
           :error="store.friendActivity.error"
+          :activeFilter="store.friendActivityFilter"
+          :hasMore="store.friendActivityHasMore"
+          :filterLoading="store.friendActivity.isLoading"
           @item-click="goToMedia"
+          @filter-change="store.setFriendActivityFilter($event)"
+          @load-more="store.loadMoreFriendActivity()"
         />
       </section>
 
@@ -156,7 +175,6 @@ let heroTimer: ReturnType<typeof setInterval> | undefined
 const showHero = computed(() => store.spotlight.items.length > 0)
 const showContinueWatching = computed(() => store.continueWatching.items.length > 0)
 const showRecentUpdates = computed(() => store.recentUpdates.items.length > 0)
-const showFriendActivity = computed(() => store.friendActivity.items.length > 0)
 
 // Auto-rotate hero every 6 seconds
 function startHeroRotation(): void {
@@ -181,6 +199,10 @@ function goToMedia(id: string): void {
 
 function searchByGenre(slug: string): void {
   router.push({ name: 'discover', query: { genre: slug } })
+}
+
+function goToList(): void {
+  router.push('/list')
 }
 
 function truncate(text: string, max: number): string {
@@ -402,6 +424,24 @@ onBeforeUnmount(() => {
 
 .section {
   margin-bottom: $space-8;
+}
+
+.see-all-btn {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: $text-secondary;
+  font-size: $font-size-xs;
+  font-weight: 600;
+  padding: $space-1 $space-3;
+  border-radius: $radius-md;
+  cursor: pointer;
+  transition: all $transition;
+
+  &:hover {
+    border-color: $accent-primary;
+    color: $accent-primary;
+    background: rgba($accent-primary, 0.1);
+  }
 }
 
 .carousel-horizontal {

@@ -20,6 +20,7 @@ const routes: RouteRecordRaw[] = [
     children: [
       { path: '', name: 'home', component: () => import('pages/HomePage.vue'), meta: { requiresAuth: true } },
       { path: 'discover', name: 'discover', component: () => import('pages/discover/DiscoverPage.vue'), meta: { requiresAuth: true } },
+      { path: 'search', name: 'search', component: () => import('pages/discover/SearchResultsPage.vue'), meta: { requiresAuth: true } },
       { path: 'media/:id', name: 'media-detail', component: () => import('pages/media/MediaDetailPage.vue'), meta: { requiresAuth: true } },
       {
         path: 'list',

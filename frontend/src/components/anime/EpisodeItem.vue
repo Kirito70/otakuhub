@@ -20,6 +20,7 @@
       <span class="episode-number">Episode {{ episodeNumber }}</span>
       <h4 class="episode-title text-truncate">{{ title || 'Episode ' + episodeNumber }}</h4>
       <div class="episode-meta">
+        <span v-if="language" class="episode-lang" :class="language">{{ language === 'sub' ? 'SUB' : 'DUB' }}</span>
         <span v-if="durationMinutes" class="episode-duration">{{ durationMinutes }} min</span>
         <span v-if="airDate" class="episode-date">{{ formatDate(airDate) }}</span>
       </div>
@@ -37,6 +38,8 @@ export interface EpisodeItemProps {
   thumbnailUrl: string | null
   durationMinutes: number | null
   airDate: string | null
+  language?: 'sub' | 'dub' | null
+  hasSources?: boolean
   isWatched?: boolean
   isSelected?: boolean
 }
@@ -44,6 +47,8 @@ export interface EpisodeItemProps {
 withDefaults(defineProps<EpisodeItemProps>(), {
   isWatched: false,
   isSelected: false,
+  language: null,
+  hasSources: true,
 })
 
 defineEmits<{
@@ -171,6 +176,24 @@ function formatDate(dateStr: string): string {
       gap: $space-3;
       font-size: $font-size-xs;
       color: $text-muted;
+      align-items: center;
+
+      .episode-lang {
+        padding: 1px 6px;
+        border-radius: $radius-sm;
+        font-weight: 700;
+        font-size: 10px;
+
+        &.sub {
+          background: rgba($accent-primary, 0.2);
+          color: $accent-primary;
+        }
+
+        &.dub {
+          background: rgba($accent-warm, 0.2);
+          color: $accent-warn;
+        }
+      }
     }
   }
 

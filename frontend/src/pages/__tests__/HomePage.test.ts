@@ -25,7 +25,7 @@ vi.mock('src/components/home/GenrePills.vue', () => ({
   default: { template: '<div class="mock-genres"><slot /></div>' },
 }))
 vi.mock('src/components/home/SectionHeader.vue', () => ({
-  default: { template: '<div class="mock-section-header">{{ title }}</div>', props: ['title'] },
+  default: { template: '<div class="mock-section-header">{{ title }}<slot name="actions" /></div>', props: ['title'] },
 }))
 
 // Mock router
@@ -35,6 +35,7 @@ const mockRouter = createRouter({
     { path: '/', name: 'home', component: { template: '<div>Home</div>' } },
     { path: '/media/:id', name: 'media-detail', component: { template: '<div>Detail</div>' } },
     { path: '/discover', name: 'discover', component: { template: '<div>Discover</div>' } },
+    { path: '/list', name: 'my-list', component: { template: '<div>My List</div>' } },
   ],
 })
 
@@ -103,8 +104,98 @@ describe('HomePage', () => {
     expect(wrapper.text()).not.toContain('Recently Updated')
   })
 
-  it('does not render friend activity when empty', async () => {
+  it('renders Friends Watching section always (no v-if)', async () => {
     const wrapper = await createWrapper()
-    expect(wrapper.text()).not.toContain('Friends Watching')
+    // The Friends Watching section is always rendered with its header;
+    // the component handles empty/error states internally.
+    expect(wrapper.text()).toContain('Friends Watching')
+    expect(wrapper.find('.mock-activity').exists()).toBe(true)
+  })
+
+  it('renders Continue Watching section when items exist', async () => {
+    const pinia = createPinia()
+    setActivePinia(pinia)
+    const store = useHomeStore()
+    store.continueWatching = {
+      title: 'Continue Watching',
+      items: [
+        {
+          id: 'cw-1',
+          title: 'Attack on Titan',
+          coverImage: 'https://example.com/cover.jpg',
+          mediaType: 'anime',
+          format: 'TV',
+          score: 9.0,
+          year: 2013,
+          episodeCount: 25,
+          status: 'releasing',
+          progress: 12,
+          totalEpisodes: 25,
+        },
+      ],
+      isLoading: false,
+      error: null,
+    }
+
+    const HomePage = (await import('../HomePage.vue')).default
+    const wrapper = mount(HomePage, {
+      global: {
+        plugins: [pinia, mockRouter],
+        stubs: {
+          'q-page': { template: '<div class="q-page"><slot /></div>' },
+        },
+      },
+    })
+
+    expect(wrapper.text()).toContain('Continue Watching')
+    expect(wrapper.text()).toContain('See All')
+    // AnimeCard is mocked — verify the mock card rendered
+    expect(wrapper.find('.mock-anime-card').exists()).toBe(true)
+  })
+
+  it('renders See All button in Continue Watching section when items exist', async () => {
+    const pinia = createPinia()
+    setActivePinia(pinia)
+    const store = useHomeStore()
+    store.continueWatching = {
+      title: 'Continue Watching',
+      items: [
+        {
+          id: 'cw-1',
+          title: 'One Piece',
+          coverImage: null,
+          mediaType: 'anime',
+          format: 'TV',
+          score: null,
+          year: null,
+          episodeCount: null,
+          status: 'releasing',
+          progress: 5,
+          totalEpisodes: null,
+        },
+      ],
+      isLoading: false,
+      error: null,
+    }
+
+    const HomePage = (await import('../HomePage.vue')).default
+    const wrapper = mount(HomePage, {
+      global: {
+        plugins: [pinia, mockRouter],
+        stubs: {
+          'q-page': { template: '<div class="q-page"><slot /></div>' },
+        },
+      },
+    })
+
+    const seeAllBtn = wrapper.find('.see-all-btn')
+    expect(seeAllBtn.exists()).toBe(true)
+    expect(seeAllBtn.text()).toBe('See All')
+
+    // Click See All should navigate to /list
+    await seeAllBtn.trigger('click')
+    // Wait for async navigation
+    await new Promise((r) => setTimeout(r, 0))
+    expect(mockRouter.currentRoute.value.path).toBe('/list')
   })
 })

@@ -46,7 +46,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { usePlayerListener } from 'src/composables/usePlayerListener'
 import PlayerError from './PlayerError.vue'
 import PlayerControls from './PlayerControls.vue'
@@ -83,11 +83,18 @@ const emit = defineEmits<{
 const containerRef = ref<HTMLDivElement | null>(null)
 const iframeRef = ref<HTMLIFrameElement | null>(null)
 
-const { isPlayerReady, isPlaying, currentTime, error: listenerError } = usePlayerListener({
+const { isPlayerReady, isPlaying, currentTime, error: listenerError, lastEvent } = usePlayerListener({
   iframeRef,
 })
 
 const computedError = computed(() => props.error ?? listenerError.value)
+
+// Watch for player ending and emit Vue event
+watch(lastEvent, (evt) => {
+  if (evt?.type === 'ended') {
+    emit('ended')
+  }
+})
 
 function toggleFullscreen() {
   if (!containerRef.value) return

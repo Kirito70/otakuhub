@@ -70,13 +70,18 @@ class SocialService(BaseService):
         user_id: UUID,
         limit: int = 50,
         offset: int = 0,
+        media_type: str | None = None,
     ) -> List[ListEntryHistory]:
         """Return recent list activity by members who share a group with the user."""
-        return await self._activity_repo.get_feed(user_id, limit=limit, offset=offset)
+        return await self._activity_repo.get_feed(user_id, limit=limit, offset=offset, media_type=media_type)
 
-    async def count_group_activity_feed(self, user_id: UUID) -> int:
+    async def count_group_activity_feed(
+        self,
+        user_id: UUID,
+        media_type: str | None = None,
+    ) -> int:
         """Count total feed items visible to user for pagination metadata."""
-        return await self._activity_repo.count_feed(user_id)
+        return await self._activity_repo.count_feed(user_id, media_type=media_type)
 
     async def get_user_sent_recommendations(
         self,

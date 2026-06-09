@@ -10,7 +10,9 @@
           aria-label="Menu"
           @click="leftDrawerOpen = !leftDrawerOpen"
         />
-        <q-toolbar-title>OtakuHub</q-toolbar-title>
+        <span class="toolbar-brand">OtakuHub</span>
+        <SearchBar class="toolbar-search" />
+        <q-space />
         <q-btn flat dense round :icon="isDark ? 'dark_mode' : 'light_mode'" aria-label="Toggle theme" @click="toggleDarkMode" />
       </q-toolbar>
     </q-header>
@@ -177,6 +179,7 @@ import { useQuasar } from 'quasar'
 import { useRoute, useRouter } from 'vue-router'
 import type { RouteLocationRaw } from 'vue-router'
 
+import SearchBar from 'src/components/home/SearchBar.vue'
 import { useTheme } from 'src/composables/useTheme'
 import { useAuthStore } from 'src/stores/auth'
 
@@ -276,3 +279,26 @@ async function onLogout(): Promise<void> {
   router.push({ name: 'login' }).catch(() => undefined)
 }
 </script>
+
+<style scoped lang="scss">
+.toolbar-brand {
+  font-weight: 700;
+  font-size: 18px;
+  white-space: nowrap;
+  margin-right: 8px;
+}
+
+.toolbar-search {
+  flex: 1;
+  max-width: 420px;
+}
+
+@media (max-width: 599px) {
+  .toolbar-brand {
+    display: none;
+  }
+  .toolbar-search {
+    max-width: none;
+  }
+}
+</style>

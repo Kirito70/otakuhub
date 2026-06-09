@@ -43,6 +43,7 @@ class TrackingService(BaseService):
         self,
         user_id: UUID,
         status: Optional[str] = None,
+        statuses: Optional[str] = None,
         media_type: Optional[str] = None,
         limit: int = 20,
         offset: int = 0,
@@ -61,11 +62,15 @@ class TrackingService(BaseService):
             )
             if status:
                 statement = statement.where(UserListEntry.status == status)
+            if statuses:
+                status_list = [s.strip() for s in statuses.split(",") if s.strip()]
+                if status_list:
+                    statement = statement.where(UserListEntry.status.in_(status_list))
             statement = statement.order_by(UserListEntry.updated_at.desc()).offset(offset).limit(limit)
             result = await self.db_session.exec(statement)
             return result.all()
 
-        return await self._entry_repo.get_user_list(user_id, status=status, limit=limit, offset=offset)
+        return await self._entry_repo.get_user_list(user_id, status=status, statuses=statuses, limit=limit, offset=offset)
 
     async def create_list_entry(self, user_id: UUID, entry_data: ListEntryCreate) -> UserListEntry:
         """Create a new list entry for the current user."""

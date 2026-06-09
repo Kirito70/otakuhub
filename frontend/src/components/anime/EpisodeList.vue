@@ -10,6 +10,18 @@
       </button>
     </div>
 
+    <div class="episode-filter-bar">
+      <button
+        v-for="f in languageFilterOptions"
+        :key="f.value"
+        class="filter-pill"
+        :class="{ active: selectedLanguageFilter === f.value }"
+        @click="$emit('language-filter', f.value)"
+      >
+        {{ f.label }}
+      </button>
+    </div>
+
     <div v-if="loading" class="episode-list-skeleton">
       <div v-for="n in 5" :key="n" class="skeleton-row">
         <div class="skeleton-thumb"></div>
@@ -60,29 +72,47 @@ interface EpisodeListProps {
   selectedEpisodeNumber?: number | null
   totalCount: number
   sortOrder?: 'asc' | 'desc'
+  selectedLanguageFilter?: 'all' | 'sub' | 'dub'
 }
 
 const props = withDefaults(defineProps<EpisodeListProps>(), {
   watchedEpisodeNumbers: () => [],
   selectedEpisodeNumber: null,
   sortOrder: 'asc',
+  selectedLanguageFilter: 'all',
 })
+
+const languageFilterOptions = [
+  { label: 'All', value: 'all' as const },
+  { label: 'SUB', value: 'sub' as const },
+  { label: 'DUB', value: 'dub' as const },
+]
 
 defineEmits<{
   select: [episodeNumber: number]
   play: [episodeNumber: number]
   retry: []
   'toggle-sort': []
+  'language-filter': [filter: 'all' | 'sub' | 'dub']
 }>()
 
 const sortedItems = computed(() => {
-  const sorted = [...props.items]
-  if (props.sortOrder === 'desc') {
-    sorted.sort((a, b) => b.episodeNumber - a.episodeNumber)
-  } else {
-    sorted.sort((a, b) => a.episodeNumber - b.episodeNumber)
+  let filtered = [...props.items]
+
+  // Apply language filter
+  if (props.selectedLanguageFilter === 'sub') {
+    filtered = filtered.filter((e) => e.language === 'sub')
+  } else if (props.selectedLanguageFilter === 'dub') {
+    filtered = filtered.filter((e) => e.language === 'dub')
   }
-  return sorted
+
+  // Apply sort
+  if (props.sortOrder === 'desc') {
+    filtered.sort((a, b) => b.episodeNumber - a.episodeNumber)
+  } else {
+    filtered.sort((a, b) => a.episodeNumber - b.episodeNumber)
+  }
+  return filtered
 })
 </script>
 
@@ -144,6 +174,35 @@ const sortedItems = computed(() => {
       border: none;
       border-radius: $radius-md;
       cursor: pointer;
+    }
+  }
+
+  .episode-filter-bar {
+    display: flex;
+    gap: $space-2;
+    margin-bottom: $space-4;
+
+    .filter-pill {
+      padding: $space-1 $space-3;
+      border-radius: 999px;
+      border: $border-subtle;
+      background: none;
+      color: $text-secondary;
+      font-size: $font-size-xs;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all $transition;
+
+      &:hover {
+        border-color: $accent-primary;
+        color: $accent-primary;
+      }
+
+      &.active {
+        background: $accent-primary;
+        border-color: $accent-primary;
+        color: white;
+      }
     }
   }
 

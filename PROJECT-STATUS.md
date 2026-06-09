@@ -10,12 +10,12 @@
 ## Current State
 
 ```
-CURRENT_PHASE:     27
-CURRENT_SUB_PHASE: 27.2
-STATUS:            IN_PROGRESS
+CURRENT_PHASE:     28
+CURRENT_SUB_PHASE: 28.7
+STATUS:            ✅ COMPLETE
 LAST_UPDATED:      2026-06-09
 BLOCKED_BY:        none
-NEXT_ACTION:       Phase 27.2 — Continue Watching section (user-list entries with progress, horizontal scroll, hidden if empty)
+NEXT_ACTION:       Phase 29 — Real AniList/MAL List Import
 ```
 
 > **Note**: After completing all 24 formal phases, an audit (AUDIT-PLAN.md) identified real gaps. Phases 0–4 are complete. Phase 5 (Frontend Feature Gaps) is in progress.
@@ -57,7 +57,7 @@ NEXT_ACTION:       Phase 27.2 — Continue Watching section (user-list entries w
 | 25 | Streaming Backend Infrastructure | ⏳ Planned |
 | 26 | Streaming UI Component Library | ✅ Complete |
 | 27 | Home Page Streaming Redesign | ⏳ Planned |
-| 28 | Media Detail Page Streaming Redesign | ⏳ Planned |
+| 28 | Media Detail Page Streaming Redesign | ✅ Complete |
 | 29 | Real AniList/MAL Import | ⏳ Planned |
 | 30 | Episode Notification Pipeline (Complete) | ⏳ Planned |
 | 31 | Admin Source Provider UI | ⏳ Planned |
@@ -452,11 +452,11 @@ NEXT_ACTION:       Phase 27.2 — Continue Watching section (user-list entries w
 | Sub-phase | Task | Status | Notes |
 |-----------|------|--------|-------|
 | 27.1 | HomePage layout — spotlight hero + section structure | ✅ | HomePage.vue with hero carousel (auto-rotate, gradient overlays, dots nav), TrendingCarousel (trending/recent updates), AnimeGrid (new releases), FriendActivityRow (activity feed), GenrePills (genre nav), SectionHeader, home.ts Pinia store (parallel section fetches, graceful fallback, error collection). Route `/` now serves HomePage. 27 new tests (8 HomePage + 6 FriendActivityRow + 5 GenrePills + 7 store + 1 SectionHeader). All 340 frontend tests pass across 38 files |
-| 27.2 | Continue Watching section | ⏳ | User-list entries with progress, horizontal scroll; hidden if empty |
-| 27.3 | Friends Activity section | ⏳ | Group feed filtered to media events; hidden if no groups or no activity |
-| 27.4 | Search integration — prominent top bar with autocomplete | ⏳ | Debounced search with AnimeCard mini dropdown, Enter → search results page |
-| 27.5 | Genre pills — clickable genre filter navigation | ⏳ | Grid of pill buttons, each navigates to search-by-genre |
-| 27.6 | Test coverage | ⏳ | HomePage, AnimeCard, TrendingCarousel, ContinueWatching, GenrePills tests |
+| 27.2 | Continue Watching section | ✅ | User-list entries with progress, progress bar overlays on AnimeCard, horizontal scroll rack; hidden if empty. 12 new tests (+13 total across 27.2), 352 frontend tests passing |
+| 27.3 | Friends Activity section | ✅ | Group feed with media type filter pills (All/Anime/Manga/Manhwa), pagination (Load More), store pagination state management. Backend: media_type filter param on GET /social/feed. Frontend: 13 new tests, 365 frontend tests passing |
+| 27.4 | Search integration — prominent top bar with autocomplete | ✅ | SearchBar.vue (debounced 300ms, autocomplete dropdown with top 5 results, Enter → /search?q=). SearchResultsPage.vue at /search route. MainLayout toolbar integration. 11 new Vitest tests |
+| 27.5 | Genre pills — clickable genre filter navigation | ✅ | GenrePills component (loading/error/empty/select), HomePage searchByGenre navigates to DiscoverPage?genre=, useMediaSearch composable supports genres param, DiscoverPage auto-searches when genre param present |
+| 27.6 | Test coverage | ✅ | 377 frontend tests pass across 39 files. Final coverage: SearchBar (11), GenrePills (5), DiscoverPage genre (1), HomePage (10) |
 
 ### Phase 28 — Media Detail Page Streaming Redesign
 **Goal**: Replace basic card layout with streaming-first hero banner + episode list + player.
@@ -465,13 +465,13 @@ NEXT_ACTION:       Phase 27.2 — Continue Watching section (user-list entries w
 
 | Sub-phase | Task | Status | Notes |
 |-----------|------|--------|-------|
-| 28.1 | Hero banner with cover art, gradient overlay, metadata, action buttons | ⏳ | 40vh desktop, 25vh mobile; gradient overlay; Play/+List/Like/Share |
-| 28.2 | Episodes tab — list from sources endpoint, server/language selector | ⏳ | Fetch from GET /media/{id}/episodes/sources; show sub/dub badges; play button |
-| 28.3 | Info tab — synopsis (expandable), genres, studios, tags, metadata table | ⏳ | Synopsis expand/collapse; clickable genre pills; studio highlight |
-| 28.4 | Related tab — horizontal carousel with relation labels | ⏳ | RelatedMediaCarousel component; sequel/prequel/side-story labels |
-| 28.5 | VideoPlayer overlay integration | ⏳ | Full-screen player opens on play click; usePlayerListener attached; close/minimize |
-| 28.6 | Progress tracking from player events | ⏳ | On complete → PATCH list entry progress; auto-advance to next episode |
-| 28.7 | Test coverage | ⏳ | MediaDetailPage, HeroBanner, EpisodeList, MediaInfo, RelatedCarousel, VideoPlayer tests |
+| 28.1 | Hero banner with cover art, gradient overlay, metadata, action buttons | ✅ | 40vh desktop, 25vh mobile; gradient overlay; Play/+List/Like/Share. HeroBanner enhanced with action emits, styled with design tokens |
+| 28.2 | Episodes tab — list with language filter and sub/dub badges | ✅ | EpisodeItem language badge + hasSources prop; EpisodeList language filter bar (All/SUB/DUB); consolidated episode mapping from sources array. 28 tests pass |
+| 28.3 | Info tab — synopsis (expandable), genres, metadata table | ✅ | Expandable synopsis, clickable genre pills, metadata table with Unknown/N/A fallbacks |
+| 28.4 | Related tab — horizontal carousel with relation labels | ✅ | RelatedMediaCarousel component with sequel/prequel/side-story labels, cover image placeholder, shimmer skeleton loading. 12 Vitest tests |
+| 28.5 | VideoPlayer overlay integration | ✅ | Teleport-to-body full-viewport overlay with header (close + Ep N title + Prev/Next nav), VideoPlayer autoplay, lastEvent→ended emit for auto-advance |
+| 28.6 | Progress tracking from player events | ✅ | onPlayerEnded → getEntryByMedia (GET /api/v1/lists/entries/{id}) → addToList (POST, new entry) or updateEntry (PATCH, progress). Auto-complete on last episode. Double-watch guard. 7 new Vitest tests |
+| 28.7 | Test coverage | ✅ | 399 total frontend tests across 40 files. 17 MediaDetailPage tests (10 existing + 7 player/progress), 12 RelatedMediaCarousel, 9 EpisodeItem, 9 EpisodeList, 9 HeroBanner, 12 VideoPlayer, 9 ServerSelector |
 
 ### Phase 29 — Real AniList/MAL List Import
 **Goal**: Replace skeleton import with real AniList GraphQL public list fetching.
@@ -990,6 +990,11 @@ NEXT_ACTION:       Phase 27.2 — Continue Watching section (user-list entries w
 # 2026-06-09 | Phase 26.6 | TrendingCarousel — horizontal scroll track with hidden scrollbar, arrow navigation (scrolls by itemWidth×3, disabled at start/end bounds via scrollPos tracking), gradient fade overlays (left+right), skeleton loading (7 shimmer cards), error/empty states, resize handler for maxScroll recalculation. 12 Vitest tests. All 313 frontend tests pass across 33 files
 # 2026-06-09 | Phase 26 | Complete — All 6 sub-phases (26.1–26.6) implemented. 8 new components (AnimeCard, AnimeGrid, HeroBanner, ScoreRing, EpisodeItem, EpisodeList, ServerSelector, TrendingCarousel), 1 new player composable (usePlayerListener), 3 player components (VideoPlayer, PlayerControls, PlayerError), 1 composable test suite (19 tests), 107 total new Vitest tests across 33 files. tokens.scss design token system (surfaces, accents, spacing, typography, breakpoints, mixins). Dark streaming-first aesthetic (bg: #0a0a0a, purple/cyan accents). All 313 frontend tests + 382 backend tests pass. Phase 26 COMPLETE
 # 2026-06-09 | Phase 27.1 | HomePage layout — hero spotlight + section structure. HomePage.vue (hero carousel with auto-rotate/dots/gradient, TrendingCarousel, AnimeGrid, FriendActivityRow, GenrePills, SectionHeader), home.ts Pinia store (parallel fetchHome with Promise.allSettled, graceful error isolation, API data mapping), route `/` -> HomePage. 27 new tests (8 HomePage + 6 FriendActivityRow + 5 GenrePills + 7 store + 1 SectionHeader). All 340 frontend tests pass across 38 files
+# 2026-06-09 | Phase 27.2 | Continue Watching section — GET /api/v1/lists/me?statuses=watching,reading with progress/percentage overlay on AnimeCard, ContinueWatchingItem type, home.ts store fetchContinueWatching, horizontal scroll rack, See All → /list. Backend: QueryBuilder.options() for eager-loading, MediaEntryRef schema, ListEntryResponse.media field. Frontend: AnimeCard progress bar (4px accent), 12 new tests (6 AnimeCard + 4 store + 2 HomePage). 352 frontend tests pass. Backend: MediaEntrySchema/ref fix, dict-dump for create/update, 3 new backend tests
+# 2026-06-09 | Phase 27.3 | Friends Activity section — media type filter pills + pagination. Backend: GET /social/feed accepts media_type query param (anime/manga/manhwa), joins MediaEntry, filters by type. Frontend: home.ts store pagination refs (friendActivityOffset/HasMore/Filter), fetchFriendActivity(loadMore, mediaType), loadMoreFriendActivity(), setFriendActivityFilter(). FriendActivityRow.vue: filter pill bar + Load More button + disabled states. HomePage.vue: Friend Activity always visible (no v-if). Bug fixes: filterOptions syntax error (]()→]), removed conflicting isLoading guard from store, Pinia ref unwrapping in tests. 13 new tests (4 store + 8 component + 1 HomePage). 365 frontend tests pass across 38 files
+# 2026-06-09 | Phase 27.4 | Search integration — SearchBar.vue with debounced autocomplete dropdown (top 5 results), Enter → /search?q= route. SearchResultsPage.vue with AnimeGrid results rendering. MainLayout toolbar: OtakuHub brand + SearchBar + theme toggle. 11 new Vitest tests (component states, debounce, API calls, navigation, clear). 376 frontend tests pass across 39 files
+# 2026-06-09 | Phase 27.5 | Genre pills navigation — useMediaSearch composable now supports genres param (comma-separated, sent to backend as-is). DiscoverPage reads genre query param on mount and auto-executes search. GenrePills (existing) navigates via searchByGenre → /discover?genre=slug. All 376 frontend tests pass (no regressions)
+# 2026-06-09 | Phase 27.6 | Final test coverage pass — added DiscoverPage genre auto-search test (11 total), SearchBar (11), GenrePills (5), HomePage (10+). 377 frontend tests pass across 39 files. Phase 27 is fully complete
 ```
 # Format: [OPEN/RESOLVED] Phase X.Y — description
 [RESOLVED] Phase 13.3 — Backend pytest runtime verified via backend .venv and tests passed

@@ -94,6 +94,11 @@ class QueryBuilder(Generic[ModelType]):
         self._joins.append((target_model, onclause, isouter))
         return self
 
+    def options(self, *opts) -> 'QueryBuilder[ModelType]':
+        """Add eager-loading options (e.g. joinedload, selectinload)."""
+        self._statement = self._statement.options(*opts)
+        return self
+
     def group_by(self, *fields) -> 'QueryBuilder[ModelType]':
         """Add group by clause."""
         self._group_by.extend(fields)

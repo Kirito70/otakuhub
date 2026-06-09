@@ -87,4 +87,52 @@ describe('AnimeCard', () => {
     expect(overlay.exists()).toBe(true)
     expect(overlay.isVisible()).toBe(true)
   })
+
+  // ── Progress bar ────────────────────────────────────────────────────────────
+
+  it('renders progress bar when progress > 0', () => {
+    const wrapper = mount(AnimeCard, {
+      props: { ...defaultProps, progress: 10, totalEpisodes: 25 },
+    })
+    expect(wrapper.find('.card-progress-bar').exists()).toBe(true)
+    expect(wrapper.find('.card-progress-fill').exists()).toBe(true)
+  })
+
+  it('does not render progress bar when progress is null', () => {
+    const wrapper = mount(AnimeCard, {
+      props: { ...defaultProps, progress: null, totalEpisodes: 25 },
+    })
+    expect(wrapper.find('.card-progress-bar').exists()).toBe(false)
+  })
+
+  it('does not render progress bar when progress is 0', () => {
+    const wrapper = mount(AnimeCard, {
+      props: { ...defaultProps, progress: 0, totalEpisodes: 25 },
+    })
+    expect(wrapper.find('.card-progress-bar').exists()).toBe(false)
+  })
+
+  it('progress bar shows correct width percentage using totalEpisodes', () => {
+    const wrapper = mount(AnimeCard, {
+      props: { ...defaultProps, progress: 5, totalEpisodes: 20 },
+    })
+    const fill = wrapper.find('.card-progress-fill')
+    expect(fill.attributes('style')).toContain('width: 25%')
+  })
+
+  it('progress bar falls back to episodeCount when totalEpisodes is null', () => {
+    const wrapper = mount(AnimeCard, {
+      props: { ...defaultProps, progress: 10, totalEpisodes: null, episodeCount: 50 },
+    })
+    const fill = wrapper.find('.card-progress-fill')
+    expect(fill.attributes('style')).toContain('width: 20%')
+  })
+
+  it('progress bar caps at 100% when progress exceeds total', () => {
+    const wrapper = mount(AnimeCard, {
+      props: { ...defaultProps, progress: 30, totalEpisodes: 25 },
+    })
+    const fill = wrapper.find('.card-progress-fill')
+    expect(fill.attributes('style')).toContain('width: 100%')
+  })
 })

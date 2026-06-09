@@ -42,6 +42,8 @@ export interface EpisodeItem {
   thumbnailUrl: string | null
   durationMinutes: number | null
   airDate: string | null
+  language?: 'sub' | 'dub' | null
+  hasSources?: boolean
 }
 
 /** Source provider mapping for a media title (Phase 26). */

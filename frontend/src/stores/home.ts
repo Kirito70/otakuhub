@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 
 import { api } from 'src/boot/axios'
-import type { HomeSection, FriendActivityItem, GenreItem } from 'src/types/home'
+import type { HomeSection, FriendActivityItem, GenreItem, ContinueWatchingItem } from 'src/types/home'
 import { mapApiMediaToMediaItem, mapApiGenre } from 'src/types/home'
 import type { MediaItem } from 'src/types/media'
 
@@ -13,11 +13,14 @@ function emptySection<T = MediaItem>(title: string): HomeSection<T> {
 export const useHomeStore = defineStore('home', () => {
   // --- Individual sections ---
   const spotlight = ref<HomeSection>(emptySection('Spotlight'))
-  const continueWatching = ref<HomeSection>(emptySection('Continue Watching'))
+  const continueWatching = ref<HomeSection<ContinueWatchingItem>>(emptySection<ContinueWatchingItem>('Continue Watching'))
   const trending = ref<HomeSection>(emptySection('Trending Now'))
   const recentUpdates = ref<HomeSection>(emptySection('Recently Updated'))
   const newReleases = ref<HomeSection>(emptySection('New Releases'))
   const friendActivity = ref<HomeSection<FriendActivityItem>>(emptySection<FriendActivityItem>('Friends Watching'))
+  const friendActivityOffset = ref(0)
+  const friendActivityHasMore = ref(true)
+  const friendActivityFilter = ref<string>('all')  // 'all' | 'anime' | 'manga' | 'manhwa'
   const genres = ref<HomeSection<GenreItem>>(emptySection<GenreItem>('Popular Genres'))
 
   // --- Aggregate loading/error ---
@@ -103,14 +106,17 @@ export const useHomeStore = defineStore('home', () => {
       const { data } = await api.get<{ items: Record<string, unknown>[] }>('/api/v1/lists/me', {
         params: { statuses: 'watching,reading', limit: 20 },
       })
-      // Map the list entries — they have media fields nested
-      const items = (data.items ?? [])
-        .filter((entry: Record<string, unknown>) => entry.media_id || entry.media)
+      // Map the list entries — they now have a nested "media" object from the backend
+      const items: ContinueWatchingItem[] = (data.items ?? [])
+        .filter((entry: Record<string, unknown>) => entry.media)
         .map((entry: Record<string, unknown>) => {
-          const media = (entry.media ?? entry) as Record<string, unknown>
+          const media = entry.media as Record<string, unknown>
           const mapped = mapApiMediaToMediaItem(media)
-          // Add progress info
-          return { ...mapped, progress: entry.progress as number ?? 0 }
+          return {
+            ...mapped,
+            progress: (entry.progress as number) ?? 0,
+            totalEpisodes: (media.episode_count as number | null) ?? null,
+          }
         })
       continueWatching.value.items = items
       continueWatching.value.error = null
@@ -178,19 +184,65 @@ export const useHomeStore = defineStore('home', () => {
     }
   }
 
-  async function fetchFriendActivity(): Promise<void> {
+  async function fetchFriendActivity(
+    loadMore: boolean = false,
+    mediaType?: string,
+  ): Promise<void> {
+    // If a new filter is provided (not loadMore), reset pagination
+    if (!loadMore && mediaType !== undefined) {
+      friendActivityFilter.value = mediaType
+      friendActivityOffset.value = 0
+      friendActivityHasMore.value = true
+      friendActivity.value.items = []
+    }
+
+    friendActivity.value.isLoading = true
+    friendActivity.value.error = null
+
     try {
-      const { data } = await api.get<{ items: Record<string, unknown>[] }>('/api/v1/social/feed', {
-        params: { limit: 10 },
-      })
-      friendActivity.value.items = (data.items ?? []).map(mapActivityItem)
+      const params: Record<string, string | number> = { limit: 10 }
+      if (friendActivityOffset.value > 0) {
+        params.offset = friendActivityOffset.value
+      }
+      // Only send media_type param if not 'all'
+      if (friendActivityFilter.value !== 'all') {
+        params.media_type = friendActivityFilter.value
+      }
+
+      const { data } = await api.get<{
+        items: Record<string, unknown>[]
+        total: number
+        limit: number
+        offset: number
+      }>('/api/v1/social/feed', { params })
+
+      const mapped = (data.items ?? []).map(mapActivityItem)
+
+      if (loadMore) {
+        friendActivity.value.items = [...friendActivity.value.items, ...mapped]
+      } else {
+        friendActivity.value.items = mapped
+      }
+
+      friendActivityOffset.value += mapped.length
+      friendActivityHasMore.value = (data.total ?? 0) > friendActivityOffset.value
       friendActivity.value.error = null
     } catch (e) {
       friendActivity.value.error = extractErrorMessage(e)
-      // Friend activity is optional
+      // Friend activity is optional — don't throw
     } finally {
       friendActivity.value.isLoading = false
     }
+  }
+
+  /** Convenience wrapper to load more friend activity. */
+  async function loadMoreFriendActivity(): Promise<void> {
+    await fetchFriendActivity(true)
+  }
+
+  /** Change the media type filter and re-fetch. */
+  async function setFriendActivityFilter(filter: string): Promise<void> {
+    await fetchFriendActivity(false, filter)
   }
 
   async function fetchGenres(): Promise<void> {
@@ -239,8 +291,10 @@ export const useHomeStore = defineStore('home', () => {
   return {
     spotlight, continueWatching, trending, recentUpdates,
     newReleases, friendActivity, genres,
+    friendActivityOffset, friendActivityHasMore, friendActivityFilter,
     anyLoading, anyError, lastFetchedAt, hasData,
     fetchHome,
-    fetchSpotlight, fetchTrending, fetchNewReleases, fetchGenres,
+    fetchSpotlight, fetchContinueWatching, fetchTrending, fetchNewReleases, fetchGenres,
+    fetchFriendActivity, loadMoreFriendActivity, setFriendActivityFilter,
   }
 })

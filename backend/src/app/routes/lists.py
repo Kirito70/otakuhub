@@ -35,7 +35,8 @@ def get_tracking_service(db: AsyncSession = Depends(get_db_session)) -> Tracking
 
 @router.get("/me", response_model=UserListResponse)
 async def get_my_list(
-    status: Optional[str] = Query(default=None),
+    status: Optional[str] = Query(default=None, description="Single status filter (legacy)"),
+    statuses: Optional[str] = Query(default=None, description="Comma-separated status list (e.g. 'watching,reading')"),
     media_type: Optional[str] = Query(default=None),
     limit: int = Query(default=50, ge=1, le=200),
     offset: int = Query(default=0, ge=0),
@@ -46,6 +47,7 @@ async def get_my_list(
     entries = await tracking_service.get_user_list(
         user_id=user.id,
         status=status,
+        statuses=statuses,
         media_type=media_type,
         limit=limit,
         offset=offset,
@@ -68,7 +70,9 @@ async def get_list_entry(
     entry = await tracking_service.get_user_list_entry(user.id, media_id)
     if not entry:
         raise HTTPException(status_code=404, detail="List entry not found")
-    return ListEntryResponse.model_validate(entry)
+    # Use model_dump to avoid lazy-loading media relationship
+    data = entry.model_dump()
+    return ListEntryResponse(**data)
 
 
 @router.post("", response_model=ListEntryResponse, status_code=201)
@@ -82,7 +86,9 @@ async def create_list_entry_root(
         entry = await tracking_service.create_list_entry(user.id, entry_create)
     except ValueError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
-    return ListEntryResponse.model_validate(entry)
+    # Use model_dump to avoid lazy-loading media relationship
+    data = entry.model_dump()
+    return ListEntryResponse(**data)
 
 
 @router.post("/entries", response_model=ListEntryResponse, status_code=201)
@@ -106,7 +112,9 @@ async def update_list_entry_root(
     entry = await tracking_service.update_list_entry(user.id, media_id, entry_update)
     if not entry:
         raise HTTPException(status_code=404, detail="List entry not found")
-    return ListEntryResponse.model_validate(entry)
+    # Use model_dump to avoid lazy-loading media relationship
+    data = entry.model_dump()
+    return ListEntryResponse(**data)
 
 
 @router.patch("/entries/{media_id}", response_model=ListEntryResponse)

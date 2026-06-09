@@ -1,6 +1,20 @@
 <template>
   <section class="friend-activity-section">
-    <div v-if="loading" class="activity-skeleton">
+    <!-- Filter pills -->
+    <div class="activity-filters">
+      <button
+        v-for="opt in filterOptions"
+        :key="opt.value"
+        class="filter-pill"
+        :class="{ active: activeFilter === opt.value }"
+        :disabled="filterLoading"
+        @click="$emit('filter-change', opt.value)"
+      >
+        {{ opt.label }}
+      </button>
+    </div>
+
+    <div v-if="loading && items.length === 0" class="activity-skeleton">
       <div v-for="n in 3" :key="n" class="skeleton-row">
         <div class="skeleton-avatar"></div>
         <div class="skeleton-text">
@@ -38,6 +52,17 @@
           <span class="activity-time">{{ relativeTime(item.createdAt) }}</span>
         </div>
       </div>
+
+      <!-- Load More -->
+      <div v-if="hasMore" class="load-more-wrapper">
+        <button
+          class="load-more-btn"
+          :disabled="loading"
+          @click="$emit('load-more')"
+        >
+          {{ loading ? 'Loading...' : 'Load More' }}
+        </button>
+      </div>
     </div>
   </section>
 </template>
@@ -45,15 +70,27 @@
 <script setup lang="ts">
 import type { FriendActivityItem } from 'src/types/home'
 
-defineProps<{
+const props = defineProps<{
   items: FriendActivityItem[]
   loading: boolean
   error: string | null
+  activeFilter?: string
+  hasMore?: boolean
+  filterLoading?: boolean
 }>()
 
 defineEmits<{
   'item-click': [mediaId: string]
+  'filter-change': [filter: string]
+  'load-more': []
 }>()
+
+const filterOptions = [
+  { label: 'All', value: 'all' },
+  { label: 'Anime', value: 'anime' },
+  { label: 'Manga', value: 'manga' },
+  { label: 'Manhwa', value: 'manhwa' },
+]
 
 function describeEvent(item: FriendActivityItem): string {
   switch (item.eventType) {
@@ -95,10 +132,73 @@ function relativeTime(dateStr: string): string {
 @use 'src/css/tokens' as *;
 
 .friend-activity-section {
+  .activity-filters {
+    display: flex;
+    gap: $space-2;
+    margin-bottom: $space-3;
+    flex-wrap: wrap;
+  }
+
+  .filter-pill {
+    padding: $space-1 $space-3;
+    border-radius: $radius-full;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: transparent;
+    color: $text-secondary;
+    font-size: $font-size-xs;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all $transition;
+
+    &:hover:not(:disabled) {
+      border-color: $accent-primary;
+      color: $accent-primary;
+    }
+
+    &.active {
+      background: $accent-primary;
+      color: white;
+      border-color: $accent-primary;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+
   .activity-list {
     display: flex;
     flex-direction: column;
     gap: $space-2;
+  }
+
+  .load-more-wrapper {
+    text-align: center;
+    padding: $space-3 0;
+  }
+
+  .load-more-btn {
+    padding: $space-1 $space-5;
+    border-radius: $radius-md;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: transparent;
+    color: $text-secondary;
+    font-size: $font-size-xs;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all $transition;
+
+    &:hover:not(:disabled) {
+      border-color: $accent-primary;
+      color: $accent-primary;
+      background: rgba($accent-primary, 0.1);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
   }
 
   .activity-item {

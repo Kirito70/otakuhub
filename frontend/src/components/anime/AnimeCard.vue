@@ -18,6 +18,10 @@
       <div class="card-hover-overlay">
         <span class="btn-play-hint">▶ Play</span>
       </div>
+      <!-- Progress bar overlay for Continue Watching -->
+      <div v-if="showProgressBar" class="card-progress-bar">
+        <div class="card-progress-fill" :style="{ width: progressPercent + '%' }"></div>
+      </div>
     </div>
     <div class="card-info">
       <h3 class="card-title text-truncate">{{ title }}</h3>
@@ -44,10 +48,14 @@ interface AnimeCardProps {
   episodeCount: number | null
   isNew?: boolean
   status: string | null
+  progress?: number | null
+  totalEpisodes?: number | null
 }
 
 const props = withDefaults(defineProps<AnimeCardProps>(), {
   isNew: false,
+  progress: null,
+  totalEpisodes: null,
 })
 
 defineEmits<{
@@ -58,6 +66,17 @@ const imageLoaded = ref(false)
 const imageError = ref(false)
 
 const hasScore = computed(() => props.score !== null && props.score !== undefined)
+
+const showProgressBar = computed(() => {
+  return props.progress !== null && props.progress !== undefined && props.progress > 0
+})
+
+const progressPercent = computed(() => {
+  if (!showProgressBar.value) return 0
+  const total = props.totalEpisodes ?? props.episodeCount ?? 1
+  if (total <= 0) return 0
+  return Math.min(100, Math.round((props.progress! / total) * 100))
+})
 
 function onImgLoad() {
   imageLoaded.value = true
@@ -163,6 +182,23 @@ function onImgError() {
 
     &:hover .card-hover-overlay {
       opacity: 1;
+    }
+
+    .card-progress-bar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.15);
+      z-index: 2;
+
+      .card-progress-fill {
+        height: 100%;
+        background: $accent-primary;
+        transition: width 0.3s ease;
+        border-radius: 0 2px 0 0;
+      }
     }
   }
 

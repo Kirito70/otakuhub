@@ -7,6 +7,7 @@ interface SearchParams {
   query?: string
   type?: string
   page?: number
+  genres?: string[]
 }
 
 function normalizeResponse(raw: unknown): MediaSearchResponse {
@@ -53,6 +54,7 @@ export function useMediaSearch() {
           query: params.query,
           type: params.type,
           page: params.page ?? 1,
+          genres: params.genres?.join(',') ?? undefined,
         },
       })
 

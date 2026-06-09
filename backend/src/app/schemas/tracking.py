@@ -38,6 +38,27 @@ class ListEntryUpdate(BaseModel):
     completed_at: Optional[datetime] = None
 
 
+class MediaEntryRef(BaseModel):
+    """Lightweight media reference nested inside list entry responses."""
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    title_romaji: str
+    title_english: Optional[str] = None
+    title_native: Optional[str] = None
+    cover_image_medium: Optional[str] = None
+    cover_image_large: Optional[str] = None
+    media_type: str
+    format: Optional[str] = None
+    episode_count: Optional[int] = None
+    chapter_count: Optional[int] = None
+    average_score: Optional[float] = None
+    season_year: Optional[int] = None
+    status: Optional[str] = None
+    season: Optional[str] = None
+    synopsis: Optional[str] = None
+
+
 class ListEntryResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -54,6 +75,7 @@ class ListEntryResponse(BaseModel):
     completed_at: Optional[datetime] = None
     created_at: datetime
     updated_at: datetime
+    media: Optional[MediaEntryRef] = None
 
 
 class UserListResponse(BaseModel):

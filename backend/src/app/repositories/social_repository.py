@@ -9,7 +9,7 @@ from sqlalchemy import or_
 
 from src.app.models import (
     Recommendation, Discussion, DiscussionReply,
-    ListEntryHistory, GroupMember,
+    ListEntryHistory, GroupMember, MediaEntry,
 )
 from src.app.repositories.base_repository import BaseRepository
 
@@ -162,8 +162,13 @@ class GroupActivityRepository(BaseRepository[ListEntryHistory]):
         user_id: UUID,
         limit: int = 50,
         offset: int = 0,
+        media_type: str | None = None,
     ) -> List[ListEntryHistory]:
-        """Get recent list activity by group members of the user."""
+        """Get recent list activity by group members of the user.
+
+        When ``media_type`` is provided (e.g. ``"anime"``, ``"manga"``), only
+        entries whose linked ``MediaEntry.media_type`` matches are returned.
+        """
         group_ids = select(GroupMember.group_id).where(GroupMember.user_id == user_id)
         member_ids = (
             select(GroupMember.user_id)
@@ -172,9 +177,18 @@ class GroupActivityRepository(BaseRepository[ListEntryHistory]):
             .distinct()
         )
         q = self.query().filter(ListEntryHistory.user_id.in_(member_ids))
+        if media_type is not None:
+            q = (
+                q.join(MediaEntry, MediaEntry.id == ListEntryHistory.media_id)
+                .filter(MediaEntry.media_type == media_type)
+            )
         return await q.order_by(ListEntryHistory.created_at.desc()).offset(offset).limit(limit).all()
 
-    async def count_feed(self, user_id: UUID) -> int:
+    async def count_feed(
+        self,
+        user_id: UUID,
+        media_type: str | None = None,
+    ) -> int:
         """Count total feed items visible to user for pagination."""
         group_ids = select(GroupMember.group_id).where(GroupMember.user_id == user_id)
         member_ids = (
@@ -183,4 +197,10 @@ class GroupActivityRepository(BaseRepository[ListEntryHistory]):
             .where(GroupMember.user_id != user_id)
             .distinct()
         )
-        return await self.query().filter(ListEntryHistory.user_id.in_(member_ids)).count()
+        q = self.query().filter(ListEntryHistory.user_id.in_(member_ids))
+        if media_type is not None:
+            q = (
+                q.join(MediaEntry, MediaEntry.id == ListEntryHistory.media_id)
+                .filter(MediaEntry.media_type == media_type)
+            )
+        return await q.count()

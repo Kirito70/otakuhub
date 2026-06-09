@@ -8,11 +8,13 @@ const itemsRef = ref<Array<Record<string, unknown>>>([])
 const totalRef = ref(0)
 const isLoadingRef = ref(false)
 const errorRef = ref<string | null>(null)
+let routeQuery = {}
 const mockSearch = vi.fn()
 const mockPush = vi.fn().mockResolvedValue(undefined)
 
 vi.mock('vue-router', () => ({
   useRouter: () => ({ push: mockPush }),
+  useRoute: () => ({ query: routeQuery }),
 }))
 
 vi.mock('src/composables/useMediaSearch', () => ({
@@ -61,6 +63,7 @@ describe('DiscoverPage', () => {
     totalRef.value = 0
     isLoadingRef.value = false
     errorRef.value = null
+    routeQuery = {}
     mockSearch.mockReset()
     mockPush.mockClear()
   })
@@ -177,5 +180,16 @@ describe('DiscoverPage', () => {
     errorRef.value = 'Error!'
     const wrapperError = mount(DiscoverPage, { global: { stubs } })
     expect(wrapperError.text()).not.toContain('result(s)')
+  })
+
+  it('auto-searches by genre when genre query param is present on mount', async () => {
+    routeQuery = { genre: 'action' }
+
+    mount(DiscoverPage, { global: { stubs } })
+    await flushPromises()
+
+    expect(mockSearch).toHaveBeenCalledWith(
+      expect.objectContaining({ genres: ['action'], page: 1 }),
+    )
   })
 })
