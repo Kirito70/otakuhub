@@ -18,7 +18,7 @@ const routes: RouteRecordRaw[] = [
     path: '/',
     component: () => import('layouts/MainLayout.vue'),
     children: [
-      { path: '', redirect: { name: 'discover' } },
+      { path: '', name: 'home', component: () => import('pages/HomePage.vue'), meta: { requiresAuth: true } },
       { path: 'discover', name: 'discover', component: () => import('pages/discover/DiscoverPage.vue'), meta: { requiresAuth: true } },
       { path: 'media/:id', name: 'media-detail', component: () => import('pages/media/MediaDetailPage.vue'), meta: { requiresAuth: true } },
       {

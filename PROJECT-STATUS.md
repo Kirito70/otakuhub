@@ -11,11 +11,11 @@
 
 ```
 CURRENT_PHASE:     27
-CURRENT_SUB_PHASE: 27.1
-STATUS:            PLANNED
+CURRENT_SUB_PHASE: 27.2
+STATUS:            IN_PROGRESS
 LAST_UPDATED:      2026-06-09
 BLOCKED_BY:        none
-NEXT_ACTION:       Begin Phase 27.1 — HomePage layout with spotlight hero + section structure
+NEXT_ACTION:       Phase 27.2 — Continue Watching section (user-list entries with progress, horizontal scroll, hidden if empty)
 ```
 
 > **Note**: After completing all 24 formal phases, an audit (AUDIT-PLAN.md) identified real gaps. Phases 0–4 are complete. Phase 5 (Frontend Feature Gaps) is in progress.
@@ -451,7 +451,7 @@ NEXT_ACTION:       Begin Phase 27.1 — HomePage layout with spotlight hero + se
 
 | Sub-phase | Task | Status | Notes |
 |-----------|------|--------|-------|
-| 27.1 | HomePage layout — spotlight hero + section structure | ⏳ | Sections: Spotlight → Continue Watching → Trending → Recent Updates → Friends Activity → Genres |
+| 27.1 | HomePage layout — spotlight hero + section structure | ✅ | HomePage.vue with hero carousel (auto-rotate, gradient overlays, dots nav), TrendingCarousel (trending/recent updates), AnimeGrid (new releases), FriendActivityRow (activity feed), GenrePills (genre nav), SectionHeader, home.ts Pinia store (parallel section fetches, graceful fallback, error collection). Route `/` now serves HomePage. 27 new tests (8 HomePage + 6 FriendActivityRow + 5 GenrePills + 7 store + 1 SectionHeader). All 340 frontend tests pass across 38 files |
 | 27.2 | Continue Watching section | ⏳ | User-list entries with progress, horizontal scroll; hidden if empty |
 | 27.3 | Friends Activity section | ⏳ | Group feed filtered to media events; hidden if no groups or no activity |
 | 27.4 | Search integration — prominent top bar with autocomplete | ⏳ | Debounced search with AnimeCard mini dropdown, Enter → search results page |
@@ -989,6 +989,7 @@ NEXT_ACTION:       Begin Phase 27.1 — HomePage layout with spotlight hero + se
 # 2026-06-09 | Phase 26.5 | VideoPlayer + usePlayerListener composable — VideoPlayer.vue (iframe/loading/error/empty states, fullscreen API, PlayerControls+PlayerError integration), PlayerControls.vue (progress bar with seek, play/pause, MM:SS time display, quality selector, fullscreen toggle, hover fade), PlayerError.vue (message/retry button), usePlayerListener composable (postMessage origin validation, reactive isPlaying/currentTime/error state, sendCommand/togglePlay/seek, lifecycle cleanup, onEvent callback). 51 Vitest tests (19 composable + 6 error + 14 controls + 12 video player). All 301 frontend tests pass
 # 2026-06-09 | Phase 26.6 | TrendingCarousel — horizontal scroll track with hidden scrollbar, arrow navigation (scrolls by itemWidth×3, disabled at start/end bounds via scrollPos tracking), gradient fade overlays (left+right), skeleton loading (7 shimmer cards), error/empty states, resize handler for maxScroll recalculation. 12 Vitest tests. All 313 frontend tests pass across 33 files
 # 2026-06-09 | Phase 26 | Complete — All 6 sub-phases (26.1–26.6) implemented. 8 new components (AnimeCard, AnimeGrid, HeroBanner, ScoreRing, EpisodeItem, EpisodeList, ServerSelector, TrendingCarousel), 1 new player composable (usePlayerListener), 3 player components (VideoPlayer, PlayerControls, PlayerError), 1 composable test suite (19 tests), 107 total new Vitest tests across 33 files. tokens.scss design token system (surfaces, accents, spacing, typography, breakpoints, mixins). Dark streaming-first aesthetic (bg: #0a0a0a, purple/cyan accents). All 313 frontend tests + 382 backend tests pass. Phase 26 COMPLETE
+# 2026-06-09 | Phase 27.1 | HomePage layout — hero spotlight + section structure. HomePage.vue (hero carousel with auto-rotate/dots/gradient, TrendingCarousel, AnimeGrid, FriendActivityRow, GenrePills, SectionHeader), home.ts Pinia store (parallel fetchHome with Promise.allSettled, graceful error isolation, API data mapping), route `/` -> HomePage. 27 new tests (8 HomePage + 6 FriendActivityRow + 5 GenrePills + 7 store + 1 SectionHeader). All 340 frontend tests pass across 38 files
 ```
 # Format: [OPEN/RESOLVED] Phase X.Y — description
 [RESOLVED] Phase 13.3 — Backend pytest runtime verified via backend .venv and tests passed
