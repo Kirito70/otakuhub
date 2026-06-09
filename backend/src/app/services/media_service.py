@@ -8,7 +8,20 @@ from uuid import UUID
 
 from src.app.models import MediaEntry, MediaExternalIds, Genre, Studio, Tag, MediaGenre, MediaStudio, MediaTag, Episode, RelatedMedia
 from src.app.services.base_service import BaseService
-from src.app.schemas.media import MediaDetailResponse, AiringEpisodeItem, AiringResponse, RelatedMediaItem
+from src.app.schemas.media import (
+    MediaDetailResponse,
+    AiringEpisodeItem,
+    AiringResponse,
+    RelatedMediaItem,
+    EpisodeItem,
+    EpisodeListResponse,
+    ChapterItem,
+    ChapterListResponse,
+    GenreItem,
+    GenreListResponse,
+    SeasonalMediaItem,
+    SeasonalResponse,
+)
 from src.app.repositories.media_repository import MediaRepository
 
 
@@ -210,6 +223,115 @@ class MediaService(BaseService):
 
         return AiringResponse(
             items=episode_items,
+            total=total,
+            limit=limit,
+            offset=offset,
+        )
+
+    async def get_seasonal_media(
+        self,
+        season_year: int,
+        season: str,
+        limit: int = 20,
+        offset: int = 0,
+    ) -> SeasonalResponse:
+        """Get seasonal media entries ordered by average score descending."""
+        from datetime import datetime
+
+        if season_year is None:
+            season_year = datetime.utcnow().year
+        if season is None:
+            month = datetime.utcnow().month
+            if month in (3, 4, 5):
+                season = "spring"
+            elif month in (6, 7, 8):
+                season = "summer"
+            elif month in (9, 10, 11):
+                season = "fall"
+            else:
+                season = "winter"
+
+        items, total = await self._media_repository.get_seasonal_media(
+            season_year=season_year,
+            season=season,
+            limit=limit,
+            offset=offset,
+        )
+
+        media_items = [SeasonalMediaItem.model_validate(m) for m in items]
+
+        return SeasonalResponse(
+            items=media_items,
+            total=total,
+            limit=limit,
+            offset=offset,
+        )
+
+    async def get_genres(self) -> GenreListResponse:
+        """Get all genres ordered by name."""
+        genres = await self._media_repository.get_genres()
+        items = [GenreItem.model_validate(g) for g in genres]
+        return GenreListResponse(items=items)
+
+    async def get_episodes(
+        self,
+        media_id: UUID,
+        limit: int = 20,
+        offset: int = 0,
+    ) -> EpisodeListResponse:
+        """Get canonical episodes for a media entry, ordered by number."""
+        items, total = await self._media_repository.get_episodes_by_media_id(
+            media_id=media_id,
+            limit=limit,
+            offset=offset,
+        )
+
+        episode_items = [
+            EpisodeItem(
+                id=ep.id,
+                episode_number=ep.episode_number,
+                title=ep.title,
+                air_date=ep.air_date,
+                duration_minutes=ep.duration_minutes,
+                thumbnail_url=ep.thumbnail_url,
+            )
+            for ep in items
+        ]
+
+        return EpisodeListResponse(
+            items=episode_items,
+            total=total,
+            limit=limit,
+            offset=offset,
+        )
+
+    async def get_chapters(
+        self,
+        media_id: UUID,
+        limit: int = 20,
+        offset: int = 0,
+    ) -> ChapterListResponse:
+        """Get canonical chapters for a media entry, ordered by number."""
+        items, total = await self._media_repository.get_chapters_by_media_id(
+            media_id=media_id,
+            limit=limit,
+            offset=offset,
+        )
+
+        chapter_items = [
+            ChapterItem(
+                id=ch.id,
+                chapter_number=ch.chapter_number,
+                volume_number=ch.volume_number,
+                title=ch.title,
+                published_at=ch.published_at,
+                mangadex_chapter_id=ch.mangadex_chapter_id,
+            )
+            for ch in items
+        ]
+
+        return ChapterListResponse(
+            items=chapter_items,
             total=total,
             limit=limit,
             offset=offset,

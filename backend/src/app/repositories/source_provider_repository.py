@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import datetime
 from uuid import UUID
 
-from sqlmodel import select
+from sqlmodel import select, and_
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from src.app.models.media_source_episode import MediaSourceEpisode
@@ -52,6 +52,41 @@ class SourceMappingRepository(BaseRepository[MediaSourceMapping]):
         await self.db_session.refresh(existing)
         return existing
 
+    async def get_mappings_by_media(self, *, media_id: UUID) -> list[MediaSourceMapping]:
+        """Get all non-deleted source mappings for a media entry."""
+        return await self.query().filter(MediaSourceMapping.media_id == media_id).all()
+
+    async def list_all_with_filters(
+        self,
+        *,
+        source: str | None = None,
+        mapping_status: str | None = None,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> list[MediaSourceMapping]:
+        """List all non-deleted source mappings with optional filters."""
+        q = self.query()
+        if source is not None:
+            q = q.filter(MediaSourceMapping.source == source)
+        if mapping_status is not None:
+            q = q.filter(MediaSourceMapping.mapping_status == mapping_status)
+        q = q.order_by(MediaSourceMapping.last_seen_at.desc())
+        return await q.offset(offset).limit(limit).all()
+
+    async def count_all_with_filters(
+        self,
+        *,
+        source: str | None = None,
+        mapping_status: str | None = None,
+    ) -> int:
+        """Count all non-deleted source mappings with optional filters."""
+        q = self.query()
+        if source is not None:
+            q = q.filter(MediaSourceMapping.source == source)
+        if mapping_status is not None:
+            q = q.filter(MediaSourceMapping.mapping_status == mapping_status)
+        return await q.count()
+
     async def mark_stale_not_seen_since(self, *, source: str, cutoff: datetime) -> int:
         result = await self.db_session.exec(
             select(MediaSourceMapping).where(
@@ -79,6 +114,31 @@ class SourceEpisodeRepository(BaseRepository[MediaSourceEpisode]):
 
     async def list_for_mapping(self, *, mapping_id: UUID) -> list[MediaSourceEpisode]:
         return await self.query().filter(MediaSourceEpisode.mapping_id == mapping_id).all()
+
+    async def get_episodes_by_media(
+        self, *, media_id: UUID
+    ) -> list[MediaSourceEpisode]:
+        """Get all non-deleted source episodes for a media entry.
+
+        Joins through media_source_mappings to find all episodes across
+        all providers for this media.
+        """
+        result = await self.db_session.exec(
+            select(MediaSourceEpisode)
+            .join(
+                MediaSourceMapping,
+                and_(
+                    MediaSourceEpisode.mapping_id == MediaSourceMapping.id,
+                    MediaSourceMapping.deleted_at.is_(None),
+                ),
+            )
+            .where(
+                MediaSourceMapping.media_id == media_id,
+                MediaSourceEpisode.deleted_at.is_(None),
+                MediaSourceEpisode.is_available.is_(True),
+            )
+        )
+        return result.all()
 
     async def upsert(self, payload: SourceEpisodeUpsert) -> MediaSourceEpisode:
         now = utc_now()

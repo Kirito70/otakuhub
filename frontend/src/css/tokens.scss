@@ -1,0 +1,132 @@
+// =============================================================================
+// OtakuHub Design Tokens — Streaming UI Component Library
+// Phase 26.1 — ADR 089, inspired by ADR 079 aniwave-style dark palette
+//
+// All custom streaming components import this file. Quasar shell components
+// continue to use quasar.variables.scss.
+// =============================================================================
+
+// ── Surfaces ────────────────────────────────────────────────────────────────
+
+$bg-primary:   #0a0a0a;   // Main page background
+$bg-secondary: #111111;   // Card/section surfaces
+$bg-elevated:  #1a1a1a;   // Hover states, dropdowns, modals
+$bg-hover:     #222222;   // Row/item hover
+$bg-overlay:   rgba(0, 0, 0, 0.75);  // Player overlay
+
+// ── Text ────────────────────────────────────────────────────────────────────
+
+$text-primary:   #ffffff;
+$text-secondary: #a0a0a0;
+$text-muted:     #606060;
+$text-inverse:   #0a0a0a;
+
+// ── Accent palette ──────────────────────────────────────────────────────────
+
+$accent-primary:   #7c3aed;  // Purple — primary brand
+$accent-secondary: #06b6d4;  // Cyan — secondary/highlights
+$accent-glow:      #a855f7;  // Bright purple — glow/hover
+$accent-warm:      #f59e0b;  // Amber — ratings/warnings
+$accent-success:   #22c55e;  // Green — available/sub
+$accent-error:     #ef4444;  // Red — errors/unavailable
+$accent-info:      #3b82f6;  // Blue — info
+
+// ── Borders & radius ────────────────────────────────────────────────────────
+
+$radius-sm:   4px;
+$radius-md:   8px;
+$radius-lg:   12px;
+$radius-xl:   16px;
+$radius-full: 50%;
+
+$border-subtle: 1px solid rgba(255, 255, 255, 0.06);
+$border-default: 1px solid rgba(255, 255, 255, 0.08);
+$border-strong: 1px solid rgba(255, 255, 255, 0.12);
+
+// ── Shadows & glow ──────────────────────────────────────────────────────────
+
+$shadow-sm:   0 1px 3px rgba(0, 0, 0, 0.3);
+$shadow-md:   0 4px 12px rgba(0, 0, 0, 0.4);
+$shadow-lg:   0 8px 24px rgba(0, 0, 0, 0.5);
+$glow-purple: 0 0 12px rgba(124, 58, 237, 0.4);
+$glow-cyan:   0 0 12px rgba(6, 182, 212, 0.4);
+
+// ── Transitions ─────────────────────────────────────────────────────────────
+
+$transition-fast:  150ms ease;
+$transition:       200ms ease;
+$transition-slow:  300ms ease;
+
+// ── Typography ──────────────────────────────────────────────────────────────
+
+$font-family: 'Inter', 'Roboto', sans-serif;
+$font-size-xs:   0.75rem;   // 12px
+$font-size-sm:   0.875rem;  // 14px
+$font-size-md:   1rem;      // 16px
+$font-size-lg:   1.125rem;  // 18px
+$font-size-xl:   1.5rem;    // 24px
+$font-size-2xl:  2rem;      // 32px
+$font-size-3xl:  2.5rem;    // 40px
+
+// ── Spacing (4px base) ──────────────────────────────────────────────────────
+
+$space-1:  4px;
+$space-2:  8px;
+$space-3:  12px;
+$space-4:  16px;
+$space-5:  20px;
+$space-6:  24px;
+$space-7:  28px;
+$space-8:  32px;
+$space-9:  40px;
+$space-10: 48px;
+$space-11: 56px;
+$space-12: 64px;
+
+// ── Z-index layers ──────────────────────────────────────────────────────────
+
+$z-base:      1;
+$z-dropdown:  100;
+$z-sticky:    200;
+$z-overlay:   500;
+$z-modal:     1000;
+$z-player:    2000;
+
+// ── Score ring colors (0-10 scale) ──────────────────────────────────────────
+
+@function score-color($score) {
+  @if $score == null or $score == 0 {
+    @return $text-muted;
+  }
+  @if $score < 4 {
+    @return $accent-error;
+  }
+  @if $score < 6 {
+    @return $accent-warm;
+  }
+  @if $score < 8 {
+    @return $accent-success;
+  }
+  @return $accent-secondary;
+}
+
+// ── Media query breakpoints (matching Quasar: xs < 600, sm < 1024, md < 1440, lg < 1920) ──
+
+$breakpoint-xs:  600px;
+$breakpoint-sm:  1024px;
+$breakpoint-md:  1440px;
+$breakpoint-lg:  1920px;
+
+@mixin respond-above($bp) {
+  @if $bp == xs { @media (min-width: $breakpoint-xs) { @content; } }
+  @if $bp == sm { @media (min-width: $breakpoint-sm) { @content; } }
+  @if $bp == md { @media (min-width: $breakpoint-md) { @content; } }
+  @if $bp == lg { @media (min-width: $breakpoint-lg) { @content; } }
+}
+
+@mixin respond-below($bp) {
+  @if $bp == xs { @media (max-width: 599px) { @content; } }
+  @if $bp == sm { @media (max-width: 1023px) { @content; } }
+  @if $bp == md { @media (max-width: 1439px) { @content; } }
+  @if $bp == lg { @media (max-width: 1919px) { @content; } }
+}

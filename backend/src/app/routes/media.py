@@ -7,15 +7,23 @@ from datetime import datetime
 
 from src.app.services.media_service import MediaService
 from src.app.services.user_service import UserService
+from src.app.services.source_provider_service import SourceProviderService
+from src.app.schemas.source_provider import MediaSourceResponse, ConsolidatedEpisodeSourceResponse
 from src.app.schemas.media import (
     MediaCreateRequest,
     MediaDetailResponse,
     MediaUpdateRequest,
     AiringResponse,
     RelatedMediaItem,
+    EpisodeListResponse,
+    ChapterListResponse,
+    GenreListResponse,
+    SeasonalResponse,
 )
 from src.app.schemas.common import DeleteResponse
+from sqlmodel.ext.asyncio.session import AsyncSession
 from src.app.core.auth import get_current_user
+from src.app.database import get_db_session
 from src.app.models import User
 
 router = APIRouter()
@@ -29,6 +37,11 @@ def get_media_service():
 def get_user_service():
     """Get UserService instance."""
     return UserService()
+
+def get_source_provider_service(db: AsyncSession = Depends(get_db_session)) -> SourceProviderService:
+    """Get SourceProviderService instance with request-scoped DB session."""
+    return SourceProviderService(db)
+
 
 def require_admin(user: User = Depends(get_current_user)) -> User:
     """Ensure current user has admin privileges."""
@@ -184,6 +197,37 @@ async def get_airing_calendar(
     )
 
 
+@router.get("/media/genres", response_model=GenreListResponse)
+async def get_genres(
+    media_service: MediaService = Depends(get_media_service),
+    user: User = Depends(get_current_user),
+):
+    """Get all genres ordered by name."""
+    return await media_service.get_genres()
+
+
+@router.get("/media/seasonal", response_model=SeasonalResponse)
+async def get_seasonal_media(
+    season_year: Optional[int] = Query(None, description="Year (e.g. 2026). Defaults to current year."),
+    season: Optional[str] = Query(None, description="Season (spring, summer, fall, winter). Defaults to current season."),
+    limit: int = Query(20, ge=1, le=100, description="Results per page"),
+    offset: int = Query(0, ge=0, description="Pagination offset"),
+    media_service: MediaService = Depends(get_media_service),
+    user: User = Depends(get_current_user),
+):
+    """Get seasonal media entries ordered by average score descending.
+
+    Returns media matching the given season_year and season (or defaults to
+    the current season), sorted by score from highest to lowest.
+    """
+    return await media_service.get_seasonal_media(
+        season_year=season_year,
+        season=season,
+        limit=limit,
+        offset=offset,
+    )
+
+
 @router.get("/media/{media_id}/relations")
 async def get_media_relations(
     media_id: UUID,
@@ -197,3 +241,76 @@ async def get_media_relations(
         relation_type=relation_type,
     )
     return {"items": items, "total": len(items)}
+
+
+@router.get("/media/{media_id:uuid}/chapters", response_model=ChapterListResponse)
+async def get_media_chapters(
+    media_id: UUID,
+    limit: int = Query(default=20, ge=1, le=100, description="Results per page"),
+    offset: int = Query(default=0, ge=0, description="Pagination offset"),
+    media_service: MediaService = Depends(get_media_service),
+    user: User = Depends(get_current_user),
+):
+    """Get canonical chapter list for a media entry, ordered by chapter number.
+
+    Returns chapters from the chapters table sorted ascending.
+    """
+    return await media_service.get_chapters(
+        media_id=media_id,
+        limit=limit,
+        offset=offset,
+    )
+
+
+@router.get("/media/{media_id:uuid}/sources", response_model=MediaSourceResponse)
+async def get_media_sources(
+    media_id: UUID,
+    source_provider_service: SourceProviderService = Depends(get_source_provider_service),
+    user: User = Depends(get_current_user),
+):
+    """Get available provider source mappings with episodes for a media entry.
+
+    Returns all non-deleted source mappings (Anikoto, MegaPlay, etc.) with
+    their episode lists including language, embed URLs, and availability.
+    """
+    return await source_provider_service.get_sources_for_media(media_id=media_id)
+
+
+@router.get("/media/{media_id:uuid}/episodes/sources", response_model=ConsolidatedEpisodeSourceResponse)
+async def get_media_episodes_sources(
+    media_id: UUID,
+    limit: int = Query(default=20, ge=1, le=100, description="Results per page"),
+    offset: int = Query(default=0, ge=0, description="Pagination offset"),
+    source_provider_service: SourceProviderService = Depends(get_source_provider_service),
+    user: User = Depends(get_current_user),
+):
+    """Get consolidated episodes with source provider data.
+
+    Merges canonical episodes (from episodes table) with all available
+    source provider embed URLs, deduplicated by episode number.
+    Pagination applies to canonical episodes.
+    """
+    return await source_provider_service.get_consolidated_episodes(
+        media_id=media_id,
+        limit=limit,
+        offset=offset,
+    )
+
+
+@router.get("/media/{media_id:uuid}/episodes", response_model=EpisodeListResponse)
+async def get_media_episodes(
+    media_id: UUID,
+    limit: int = Query(default=20, ge=1, le=100, description="Results per page"),
+    offset: int = Query(default=0, ge=0, description="Pagination offset"),
+    media_service: MediaService = Depends(get_media_service),
+    user: User = Depends(get_current_user),
+):
+    """Get canonical episode list for a media entry, ordered by episode number.
+
+    Returns episodes from the episodes table sorted ascending.
+    """
+    return await media_service.get_episodes(
+        media_id=media_id,
+        limit=limit,
+        offset=offset,
+    )

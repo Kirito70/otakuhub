@@ -87,6 +87,95 @@ class AiringResponse(BaseModel):
     offset: int = 0
 
 
+class EpisodeItem(BaseModel):
+    """Single episode from the canonical episodes table."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    episode_number: int
+    title: Optional[str] = None
+    air_date: Optional[datetime] = None
+    duration_minutes: Optional[int] = None
+    thumbnail_url: Optional[str] = None
+
+
+class EpisodeListResponse(BaseModel):
+    """Paginated response for canonical episode list."""
+
+    items: List[EpisodeItem] = []
+    total: int = 0
+    limit: int = 20
+    offset: int = 0
+
+
+class ChapterItem(BaseModel):
+    """Single chapter from the canonical chapters table."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    chapter_number: float
+    volume_number: Optional[int] = None
+    title: Optional[str] = None
+    published_at: Optional[datetime] = None
+    mangadex_chapter_id: Optional[str] = None
+
+
+class ChapterListResponse(BaseModel):
+    """Paginated response for canonical chapter list."""
+
+    items: List[ChapterItem] = []
+    total: int = 0
+    limit: int = 20
+    offset: int = 0
+
+
+class SeasonalMediaItem(BaseModel):
+    """Single seasonal media entry with score ordering."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    title_romaji: str
+    title_english: Optional[str] = None
+    cover_image_medium: Optional[str] = None
+    media_type: Any
+    format: Optional[Any] = None
+    status: Any
+    average_score: Optional[float] = None
+    popularity: Optional[int] = None
+    season: Optional[Any] = None
+    season_year: Optional[int] = None
+    episode_count: Optional[int] = None
+    chapter_count: Optional[int] = None
+
+
+class SeasonalResponse(BaseModel):
+    """Paginated response for seasonal media."""
+
+    items: List[SeasonalMediaItem] = []
+    total: int = 0
+    limit: int = 20
+    offset: int = 0
+
+
+class GenreItem(BaseModel):
+    """Single genre with name and slug."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    name: str
+    slug: str
+
+
+class GenreListResponse(BaseModel):
+    """Response for genre list."""
+
+    items: List[GenreItem] = []
+
+
 class MediaCreateRequest(BaseModel):
     """Payload for admin create media entry."""
 

@@ -10,17 +10,19 @@
 ## Current State
 
 ```
-CURRENT_PHASE:     18
-CURRENT_SUB_PHASE: 18.10
-STATUS:            COMPLETED
-LAST_UPDATED:      2026-06-08
+CURRENT_PHASE:     27
+CURRENT_SUB_PHASE: 27.1
+STATUS:            PLANNED
+LAST_UPDATED:      2026-06-09
 BLOCKED_BY:        none
-NEXT_ACTION:       Advance to Phase 19 (Social Frontend Pages) or audit phase progression
+NEXT_ACTION:       Begin Phase 27.1 — HomePage layout with spotlight hero + section structure
 ```
 
 > **Note**: After completing all 24 formal phases, an audit (AUDIT-PLAN.md) identified real gaps. Phases 0–4 are complete. Phase 5 (Frontend Feature Gaps) is in progress.
 
-> **Urgent pre-audit interruption (2026-06-05/06)**: ADR 078 defines and implements source-provider ID storage and Anikoto/MegaPlay sync so OtakuHub can store provider catalog/episode IDs for future approved playback integrations. Implementation is verified; audit phase progression can resume.
+> **Urgent pre-audit interruption (2026-06-05/06)**: ADR 078 defines and implements source-provider ID storage and Anikoto/MegaPlay sync.
+
+> **Streaming Features (2026-06-08)**: ADRs 079–087 define Phases 23–28 — streaming-first redesign with aniwave-style dark UX, playback API, video player, real AniList import, notification pipeline, and admin source provider UI.
 
 ---
 
@@ -52,6 +54,22 @@ NEXT_ACTION:       Advance to Phase 19 (Social Frontend Pages) or audit phase pr
 | 22 | Profile Frontend Pages | ✅ Complete |
 | 23 | Polish, Testing & Deploy | ✅ Complete |
 | 24 | Security & Production Hardening Remediation | ✅ Complete |
+| 25 | Streaming Backend Infrastructure | ⏳ Planned |
+| 26 | Streaming UI Component Library | ✅ Complete |
+| 27 | Home Page Streaming Redesign | ⏳ Planned |
+| 28 | Media Detail Page Streaming Redesign | ⏳ Planned |
+| 29 | Real AniList/MAL Import | ⏳ Planned |
+| 30 | Episode Notification Pipeline (Complete) | ⏳ Planned |
+| 31 | Admin Source Provider UI | ⏳ Planned |
+| 32 | Migration & Cleanup | ⏳ Planned |
+| 33 | Characters, Staff & Voice Actors | 🔲 Gap |
+| 34 | Advanced User Statistics | 🔲 Gap |
+| 35 | Charts & Top Lists | 🔲 Gap |
+| 36 | Advanced Discovery & Browse | 🔲 Gap |
+| 37 | Player Enhancements | 🔲 Gap |
+| 38 | Social & Community Expansion | 🔲 Gap |
+| 39 | Manga Reader | 🔲 Gap |
+| 40 | Advanced Platform Features | 🔲 Gap |
 
 ---
 
@@ -397,7 +415,241 @@ NEXT_ACTION:       Advance to Phase 19 (Social Frontend Pages) or audit phase pr
 
 ---
 
-### Audit Phase 2 — Database & Models Alignment
+### Phase 25 — Streaming Backend Infrastructure
+**Goal**: Provide backend APIs for streaming playback, canonical episodes/chapters, and source provider data.
+
+**ADRs**: `079-frontend-design-direction-aniwave.md`, `080-playback-api-contract.md`
+
+| Sub-phase | Task | Status | Notes |
+|-----------|------|--------|-------|
+| 25.1 | GET /media/{id}/episodes — canonical episode list ordered by number | ✅ | EpisodeItem schema, MediaRepository.get_episodes_by_media_id, MediaService.get_episodes, route endpoint. 8 integration tests pass |
+| 25.2 | GET /media/{id}/chapters — canonical chapter list ordered by number | ✅ | ChapterItem schema, repository/service method, route, 8 integration tests |
+| 25.3 | GET /media/{id}/sources — available provider source mappings with episodes | ✅ | SourceEpisodeItem/SourceMappingDetail/MediaSourceResponse schemas, SourceMappingRepository.get_mappings_by_media, SourceProviderService, route, 6 integration tests |
+| 25.4 | GET /media/{id}/episodes/sources — consolidated episodes (canonical + source) | ✅ | Merges canonical episodes with source provider episodes deduplicated by episode_number. ConsolidatedEpisodeSourceResponse schemas, SourceProviderService.get_consolidated_episodes(), route. 8 integration tests pass |
+| 25.5 | GET /media/genres — simple genre list endpoint | ✅ | GenreItem/GenreListResponse schemas, MediaRepository.get_genres, MediaService.get_genres, route with auth, 3 integration tests |
+| 25.6 | GET /media/seasonal — currently airing season anime sorted by score | ✅ | SeasonalMediaItem/SeasonalResponse schemas, defaults to current season/year, ordered by average_score DESC NULLS LAST. MediaRepository.get_seasonal_media, route, 7 integration tests. Added nulls_last() to QueryBuilder |
+| 25.7 | GET /admin/source-mappings + PATCH /admin/source-mappings/{id} — list with filters and update source mappings | ✅ | AdminSourceMappingItem/ListResponse/Update schemas, SourceMappingRepository.list_all_with_filters/count_all_with_filters, routes in admin.py with require_admin guard, mapping_status validation, 18 integration tests |
+
+### Phase 26 — Streaming UI Component Library
+**Goal**: Build custom content-first Vue 3 components to achieve aniwave-style dark streaming aesthetic.
+
+**ADR**: `079-frontend-design-direction-aniwave.md`, `081-player-frontend-architecture.md`
+
+| Sub-phase | Task | Status | Notes |
+|-----------|------|--------|-------|
+| 26.1 | Design token system — palette, typography, spacing SCSS variables | ✅ | Dark theme: #0a0a0a bg, purple/cyan accents; semantic token map |
+| 26.2 | AnimeCard + AnimeGrid primitives | ✅ | Pure Vue 3 + SCSS card with cover/badges/hover-overlay; responsive CSS grid. 22 Vitest tests pass |
+| 26.3 | HeroBanner + ScoreRing | ✅ | Full-width gradient hero with gradient overlay, metadata tags, genre chips, expandable synopsis, ScoreRing integration, image error handling, responsive mobile layout. ScoreRing: SVG-based circular indicator with color thresholds (green/gold/yellow/red), size prop, optional label. 14 new Vitest tests pass |
+| 26.4 | EpisodeItem + EpisodeList + ServerSelector | ✅ | EpisodeItem.vue (thumbnail/play overlay/watched checkmark), EpisodeList.vue (loading skeleton/error/empty states, asc/desc sort, watched tracking), ServerSelector.vue (source pills with SUB/DUB badges, skeleton/error/empty states, unavailable/active states). 27 new Vitest tests (9 each). All 250 frontend tests pass |
+| 26.5 | VideoPlayer + usePlayerListener composable | ✅ | VideoPlayer.vue (iframe/loading/error/empty states, fullscreen API, composable integration) + PlayerControls.vue (progress bar with seek, play/pause, time display, quality selector, fullscreen toggle) + PlayerError.vue (message/retry button) + usePlayerListener composable (postMessage origin validation, reactive isPlaying/currentTime/error state, sendCommand/togglePlay/seek, lifecycle cleanup, onEvent callback). 51 new Vitest tests (19 composable + 6 error + 14 controls + 12 video player). All 301 frontend tests pass |
+| 26.6 | TrendingCarousel (horizontal scroll) | ✅ | TrendingCarousel.vue with horizontal scroll track (hidden scrollbar), arrow navigation (scrolls by itemWidth×3, disabled at bounds), gradient fade overlays, skeleton loading (7 cards), error/empty states, lifecycle resize handling. 12 new Vitest tests. All 313 frontend tests pass across 33 files |
+
+### Phase 27 — Home Page Streaming Redesign
+**Goal**: Replace DiscoverPage tabs with aniwave-style scrollable content sections.
+
+**ADR**: `083-home-page-streaming-redesign.md`
+
+| Sub-phase | Task | Status | Notes |
+|-----------|------|--------|-------|
+| 27.1 | HomePage layout — spotlight hero + section structure | ⏳ | Sections: Spotlight → Continue Watching → Trending → Recent Updates → Friends Activity → Genres |
+| 27.2 | Continue Watching section | ⏳ | User-list entries with progress, horizontal scroll; hidden if empty |
+| 27.3 | Friends Activity section | ⏳ | Group feed filtered to media events; hidden if no groups or no activity |
+| 27.4 | Search integration — prominent top bar with autocomplete | ⏳ | Debounced search with AnimeCard mini dropdown, Enter → search results page |
+| 27.5 | Genre pills — clickable genre filter navigation | ⏳ | Grid of pill buttons, each navigates to search-by-genre |
+| 27.6 | Test coverage | ⏳ | HomePage, AnimeCard, TrendingCarousel, ContinueWatching, GenrePills tests |
+
+### Phase 28 — Media Detail Page Streaming Redesign
+**Goal**: Replace basic card layout with streaming-first hero banner + episode list + player.
+
+**ADR**: `082-media-detail-streaming-redesign.md`, `081-player-frontend-architecture.md`
+
+| Sub-phase | Task | Status | Notes |
+|-----------|------|--------|-------|
+| 28.1 | Hero banner with cover art, gradient overlay, metadata, action buttons | ⏳ | 40vh desktop, 25vh mobile; gradient overlay; Play/+List/Like/Share |
+| 28.2 | Episodes tab — list from sources endpoint, server/language selector | ⏳ | Fetch from GET /media/{id}/episodes/sources; show sub/dub badges; play button |
+| 28.3 | Info tab — synopsis (expandable), genres, studios, tags, metadata table | ⏳ | Synopsis expand/collapse; clickable genre pills; studio highlight |
+| 28.4 | Related tab — horizontal carousel with relation labels | ⏳ | RelatedMediaCarousel component; sequel/prequel/side-story labels |
+| 28.5 | VideoPlayer overlay integration | ⏳ | Full-screen player opens on play click; usePlayerListener attached; close/minimize |
+| 28.6 | Progress tracking from player events | ⏳ | On complete → PATCH list entry progress; auto-advance to next episode |
+| 28.7 | Test coverage | ⏳ | MediaDetailPage, HeroBanner, EpisodeList, MediaInfo, RelatedCarousel, VideoPlayer tests |
+
+### Phase 29 — Real AniList/MAL List Import
+**Goal**: Replace skeleton import with real AniList GraphQL public list fetching.
+
+**ADR**: `084-real-anilist-mal-import.md`
+
+| Sub-phase | Task | Status | Notes |
+|-----------|------|--------|-------|
+| 29.1 | AniListListFetcher — GraphQL client for public user list | ⏳ | Backend external client; shared rate limiter with AnilistClient |
+| 29.2 | Import service — status mapping, progress mapping, score conversion (100→10) | ⏳ | ANILIST_STATUS_MAP, media_id resolution via media_external_ids |
+| 29.3 | Real import_user_list_task — fetch, upsert, history rows, progress tracking | ⏳ | Replace skeleton; create/update user_list_entries + list_entry_history |
+| 29.4 | Frontend status enhancement — show per-entry progress during import | ⏳ | Enhance ImportListPage running state with item-level details |
+| 29.5 | Test coverage | ⏳ | Fetcher mock tests, import task integration tests, ImportListPage enhanced tests |
+
+### Phase 30 — Episode Notification Pipeline (Complete)
+**Goal**: Hook notification creation into daily refresh, deliver via Apprise, clean up old notifications.
+
+**ADR**: `085-episode-notification-pipeline.md`
+
+| Sub-phase | Task | Status | Notes |
+|-----------|------|--------|-------|
+| 30.1 | Hook process_new_episodes into daily_refresh_compose | ⏳ | Append to signature chain after megaplay_verify |
+| 30.2 | Notify users task — group by user, deliver via Apprise per preferences | ⏳ | Query unsent notifications, call AppriseClient per channel, set sent_at |
+| 30.3 | Apprise client enhancement — channel routing (discord/telegram/email/push) | ⏳ | Map notification_preferences to Apprise URLs |
+| 30.4 | Cleanup task — purge read notifications older than 90 days | ⏳ | Weekly schedule; uses idx_notifications_cleanup index |
+| 30.5 | Beat schedule updates | ⏳ | Add notify_users + cleanup_notifications to Celery beat |
+| 30.6 | Frontend notification badge polling | ⏳ | useNotificationBadge composable; 60s poll interval |
+| 30.7 | Test coverage | ⏳ | Process/notify/cleanup task tests, AppriseClient tests |
+
+### Phase 31 — Admin Source Provider UI
+**Goal**: Simple admin page to trigger syncs, view jobs, and reconcile unmatched mappings.
+
+**ADR**: `086-admin-source-provider-ui.md`
+
+| Sub-phase | Task | Status | Notes |
+|-----------|------|--------|-------|
+| 31.1 | Backend endpoints — list + update source mappings | ⏳ | GET /admin/source-mappings, PATCH /admin/source-mappings/{id} |
+| 31.2 | AdminSourceProviderPage — sync trigger buttons, job status list | ⏳ | Reuse existing admin endpoints; trigger Anikoto full/recent/verify |
+| 31.3 | Unmatched mappings section with reconciliation workflow | ⏳ | Search on AniList dialog, manual match, ignore, delete actions |
+| 31.4 | Test coverage | ⏳ | Admin page tests, API endpoint tests |
+
+### Phase 32 — Migration & Cleanup
+**Goal**: Convert remaining Quasar pages to custom components and remove unused framework weight.
+
+**ADR**: `079-frontend-design-direction-aniwave.md`
+
+| Sub-phase | Task | Status | Notes |
+|-----------|------|--------|-------|
+| 32.1 | Convert MyListPage to custom streaming components | ⏳ | Replace QCard with AnimeCard, QList with custom list components |
+| 32.2 | Convert social/watchparty pages to match design system | ⏳ | Consistent dark theme across all remaining pages |
+| 32.3 | Bundle optimization — remove unused Quasar components | ⏳ | Tree-shake unused Quasar modules; verify electron/mobile builds |
+| 32.4 | Full visual QA + accessibility pass | ⏳ | Keyboard nav, screen reader, color contrast, responsive breakpoints |
+| 32.5 | Test pass — all existing + new tests verified | ⏳ | Full vitest run + backend pytest run |
+
+---
+
+### Phase 33 — Characters, Staff & Voice Actors
+**Goal**: Complete character and staff database with AniList sync, character/staff pages, and media detail integration.
+
+**ADR**: `088-feature-gap-analysis-aniwave-anilist-mal.md`
+
+| Sub-phase | Task | Status | Notes |
+|-----------|------|--------|-------|
+| 33.1 | characters + staff tables, models, repos | 🔲 | Name, image, description, favorites count |
+| 33.2 | media_characters + media_staff join tables | 🔲 | Character role (MAIN/SUPPORTING/BACKGROUND), staff role enum |
+| 33.3 | character_voice_actors join table | 🔲 | character ↔ staff ↔ language ↔ media |
+| 33.4 | AniList sync for character/staff data | 🔲 | New Celery task, GraphQL client, rate-limited |
+| 33.5 | API endpoints: GET /characters/{id}, /staff/{id}, /media/{id}/characters, /media/{id}/staff | 🔲 | Also character search |
+| 33.6 | Character page (bio, image, animeography, VA roles) | 🔲 | Frontend |
+| 33.7 | Staff page (bio, image, filmography by role) | 🔲 | Frontend |
+| 33.8 | Character + Staff tabs on media detail | 🔲 | Frontend, with voice actor names |
+| 33.9 | Test coverage | 🔲 | Backend + frontend tests |
+
+### Phase 34 — Advanced User Statistics
+**Goal**: AniList-style stats dashboard — genre distribution, activity heatmap, score distribution, format breakdown.
+
+| Sub-phase | Task | Status | Notes |
+|-----------|------|--------|-------|
+| 34.1 | Stats computation service | 🔲 | Genre, format, score, status distribution from user_list_entries |
+| 34.2 | Yearly activity calendar (GitHub-style heatmap) | 🔲 | Group by completed_at dates |
+| 34.3 | Voice actor / studio stats (requires Phase 33) | 🔲 | Most watched VA/studio |
+| 34.4 | API: GET /users/{id}/stats?type=genres|formats|scores|activity | 🔲 | Chart-ready JSON |
+| 34.5 | Stats page on user profile (tab or separate page) | 🔲 | Frontend |
+| 34.6 | Genre distribution + score distribution charts | 🔲 | Lightweight CSS/SVG charts |
+| 34.7 | Activity calendar heatmap | 🔲 | GitHub-style contribution graph |
+| 34.8 | Stats summary card | 🔲 | "N days watched", "Mean score: X" |
+| 34.9 | Test coverage | 🔲 | |
+
+### Phase 35 — Charts & Top Lists
+**Goal**: Top 100 anime by score/popularity/favorites. Seasonal rankings. Group-specific charts.
+
+| Sub-phase | Task | Status | Notes |
+|-----------|------|--------|-------|
+| 35.1 | GET /charts/top?category=score|popularity|favorites | 🔲 | Backend endpoint |
+| 35.2 | Seasonal ranking endpoint | 🔲 | Current season top anime |
+| 35.3 | Group-specific charts | 🔲 | What's popular in friend group |
+| 35.4 | Charts page with tab switcher | 🔲 | Top Rated / Most Popular / Most Favorited |
+| 35.5 | Test coverage | 🔲 | |
+
+### Phase 36 — Advanced Discovery & Browse
+**Goal**: Power-user browse with multi-filter, seasonal page, random, tags, "more like this".
+
+| Sub-phase | Task | Status | Notes |
+|-----------|------|--------|-------|
+| 36.1 | Enhanced browse endpoint — multi-filter + sort | 🔲 | genres, year, season, format, status, score, sort |
+| 36.2 | Tags-based discovery | 🔲 | Filter by tag with relevance |
+| 36.3 | Seasonal grouping endpoint | 🔲 | Current season + next season |
+| 36.4 | Random anime endpoint | 🔲 | GET /media/random |
+| 36.5 | "More like this" by shared tags/genres | 🔲 | Endpoint + media detail section |
+| 36.6 | Browse page: advanced filter sidebar | 🔲 | Genre checkboxes, year slider, format dropdown |
+| 36.7 | Seasonal anime page | 🔲 | Current season grid + upcoming tab |
+| 36.8 | Random anime button with re-roll | 🔲 | Frontend |
+| 36.9 | Test coverage | 🔲 | |
+
+### Phase 37 — Player Enhancements
+**Goal**: Pro-level video player with auto-next, keyboard shortcuts, multi-language subs, server failover.
+
+| Sub-phase | Task | Status | Notes |
+|-----------|------|--------|-------|
+| 37.1 | Auto-next episode with countdown overlay | 🔲 | 10s→3s countdown, cancelable |
+| 37.2 | Keyboard shortcuts (space, f, n, b, m, arrows) | 🔲 | Play/pause, fullscreen, next, back, mute, seek |
+| 37.3 | Multiple subtitle language selector | 🔲 | If provider returns multiple language embeds |
+| 37.4 | Server reliability tracking + auto-failover | 🔲 | Track error rate, switch on failure |
+| 37.5 | Report broken episode link | 🔲 | Flags episode for admin review |
+| 37.6 | Skip intro/outro buttons | 🔲 | Requires episode timing data |
+| 37.7 | Picture-in-picture mode | 🔲 | Via documentPictureInPicture API |
+| 37.8 | Watch history tracking | 🔲 | Every play session logged |
+| 37.9 | Test coverage | 🔲 | |
+
+### Phase 38 — Social & Community Expansion
+**Goal**: Follow system, reviews with helpful votes, global discussions, text posts, share links.
+
+| Sub-phase | Task | Status | Notes |
+|-----------|------|--------|-------|
+| 38.1 | Follow system — user_follows table + notifications | 🔲 | Follower/following relationship |
+| 38.2 | Reviews table + model + repo | 🔲 | user_id, media_id, body, score, is_spoiler |
+| 38.3 | Review helpful votes — review_votes table | 🔲 | helpful / not-helpful voting |
+| 38.4 | Global discussions (optional group_id) | 🔲 | Remove group requirement for discussions |
+| 38.5 | Activity text posts — activity_posts table | 🔲 | Text status updates, not just list changes |
+| 38.6 | Share link generation | 🔲 | GET /share/{type}/{id} returns deep link |
+| 38.7 | Reviews tab on media detail + create review form | 🔲 | Frontend with markdown |
+| 38.8 | Follow/unfollow on user profiles | 🔲 | Frontend |
+| 38.9 | Text status posting from profile | 🔲 | Frontend |
+| 38.10 | Share button on media + episode | 🔲 | Copy deep link to clipboard |
+| 38.11 | Test coverage | 🔲 | |
+
+### Phase 39 — Manga Reader
+**Goal**: Read manga chapters in-browser with MangaDex source, customizable reading direction, bookmarks.
+
+| Sub-phase | Task | Status | Notes |
+|-----------|------|--------|-------|
+| 39.1 | MangaDex chapter content API client | 🔲 | Fetch chapter page images |
+| 39.2 | Chapter page caching strategy | 🔲 | Cache pages, respect MangaDex rate limits |
+| 39.3 | Source/mirror switching for manga chapters | 🔲 | Multiple manga source providers |
+| 39.4 | API: GET /media/{id}/manga/chapters/{ch_id}/pages | 🔲 | Proxied and cached |
+| 39.5 | PUT /reading/bookmark endpoint | 🔲 | Save position within chapter |
+| 39.6 | Manga reader page — scrollable layout | 🔲 | Long-strip vertical reading |
+| 39.7 | Page turning modes (scroll, LTR paged, RTL) | 🔲 | Toggle reading direction |
+| 39.8 | Bookmark + resume from position | 🔲 | Within-chapter progress |
+| 39.9 | Progress auto-save on last page | 🔲 | Marks chapter read |
+| 39.10 | Test coverage | 🔲 | |
+
+### Phase 40 — Advanced Platform Features
+**Goal**: PWA, i18n, theme customization, import/export, batch editing, view toggles.
+
+| Sub-phase | Task | Status | Notes |
+|-----------|------|--------|-------|
+| 40.1 | PWA manifest + install prompt | 🔲 | Offline browse, install banner |
+| 40.2 | Multi-language UI (vue-i18n) | 🔲 | i18n integration |
+| 40.3 | Theme customization — accent color picker | 🔲 | Custom CSS like AniList |
+| 40.4 | Watch history page | 🔲 | Full browsing/playback history |
+| 40.5 | List import/export (JSON/CSV) | 🔲 | GET /lists/export, POST /lists/import |
+| 40.6 | Batch editing list entries | 🔲 | Multi-select status/progress change |
+| 40.7 | List view toggle (grid / list / detailed) | 🔲 | Per-user preference |
+| 40.8 | Test coverage | 🔲 | |
+
+---
+
 **Goal**: Fix UUID v7, Full-Text Search, Alembic migrations, PostgreSQL default config, and missing constraints.
 
 **ADR**: `docs/adr/077-database-models-alignment.md`
@@ -713,6 +965,30 @@ NEXT_ACTION:       Advance to Phase 19 (Social Frontend Pages) or audit phase pr
 # 2026-06-08 | Phase 18.10 | Tracking page tests: 21 tests for ImportListPage — rendering, API routing, error mapping, loading states, job polling, status display, reset flow, validation rules
 # 2026-06-08 | Phase 18 | Tracking frontend pages fully implemented (18.1–18.10); 187 frontend tests, 324 backend tests passing
 # 2026-06-08 | .gitignore fixed (removed overbroad `env.*` rule); alembic/env.py now load_dotenv() for .env without manual env var; committed to version control
+# 2026-06-08 | ADR 079 | Frontend design direction — keep Quasar as shell, build custom streaming component library for aniwave-style aesthetic
+# 2026-06-08 | ADR 080 | Playback API contract — GET /media/{id}/episodes, /sources, /episodes/sources endpoints
+# 2026-06-08 | ADR 081 | Frontend player architecture — usePlayerListener composable, VideoPlayer overlay, origin validation
+# 2026-06-08 | ADR 082 | Media detail streaming redesign — hero banner, episode list with server selector, player overlay
+# 2026-06-08 | ADR 083 | Home page streaming redesign — content sections, trending carousel, continue watching
+# 2026-06-08 | ADR 084 | Real AniList import — username-based GraphQL public list fetching (replaces skeleton)
+# 2026-06-08 | ADR 085 | Episode notification pipeline — hook + Apprise delivery + cleanup
+# 2026-06-08 | ADR 086 | Admin source provider UI — sync triggers, job viewer, unmatched reconciliation
+# 2026-06-08 | ADR 087 | Streaming features master plan — phased roadmap (Phases 25-32), ~46 days estimate
+# 2026-06-08 | ADR 088 | Feature gap analysis vs AniWave/AniList/MAL — identified 8 new phases (33-40): Characters & Staff, User Stats, Charts, Advanced Browse, Player Enhancements, Social Expansion, Manga Reader, Platform Features — ~108 days total
+# 2026-06-09 | Phase 25.1 | GET /media/{id}/episodes — canonical episode list endpoint implemented. EpisodeItem/EpisodeListResponse schemas, MediaRepository.get_episodes_by_media_id, MediaService.get_episodes, route with pagination, 8 integration tests (auth, empty, ordering, fields, pagination, invalid params, missing media)
+# 2026-06-09 | Phase 25.2 | GET /media/{id}/chapters — canonical chapter list endpoint implemented. ChapterItem/ChapterListResponse schemas, same pattern, 8 integration tests
+# 2026-06-09 | Phase 25.3 | GET /media/{id}/sources — provider source mappings endpoint implemented. SourceEpisodeItem/SourceMappingDetail/MediaSourceResponse schemas, SourceMappingRepository.get_mappings_by_media, SourceProviderService, route, 6 integration tests
+# 2026-06-09 | Phase 25.4 | GET /media/{id}/episodes/sources — consolidated episodes endpoint implemented. ConsolidatedSourceInfo/ConsolidatedEpisodeSourceItem/ConsolidatedEpisodeSourceResponse schemas, SourceEpisodeRepository.get_episodes_by_media, SourceProviderService.get_consolidated_episodes merges canonical + source episodes by episode_number, route, 8 integration tests. Fixed empty-state test isolation across Phase 25 test files with _create_test_media helper. All 354 backend + 187 frontend tests pass
+# 2026-06-09 | Phase 25.5 | GET /media/genres — simple genre list endpoint. GenreItem/GenreListResponse schemas, MediaRepository.get_genres, MediaService.get_genres, route with auth, 3 integration tests. All 357 backend + 187 frontend tests pass
+# 2026-06-09 | Phase 25.6 | GET /media/seasonal — seasonal media endpoint. SeasonalMediaItem/SeasonalResponse schemas, defaults to current season/year, ordered by average_score DESC NULLS LAST. MediaRepository.get_seasonal_media, route, 7 integration tests. Added nulls_last() to QueryBuilder. All 364 backend + 187 frontend tests pass
+
+# 2026-06-09 | Phase 25.7 | Admin source-mapping management — GET /admin/source-mappings (list with source/mapping_status filters + pagination) and PATCH /admin/source-mappings/{id} (update media_id, mapping_status, match_confidence, streaming flags, title, etc.) with require_admin guard. Added AdminSourceMappingItem/AdminSourceMappingListResponse/AdminSourceMappingUpdate schemas, SourceMappingRepository.list_all_with_filters/count_all_with_filters methods, routes in admin.py, mapping_status validation (matched/unmatched/ignored/stale). 18 integration tests (auth, admin gate, filters, pagination, field updates, partial updates, empty body 400, invalid status 422). Phase 25 complete — all 7 sub-phases implemented. All 382 backend + 187 frontend tests pass
+# 2026-06-09 | Phase 26.2 | AnimeCard + AnimeGrid primitives — AnimeCard.vue (cover/badges/hover play overlay, image lifecycle, skeleton state), AnimeGrid.vue (responsive CSS grid 2→3→4→6 cols, loading/error/empty states, title header, item-click emit). 22 Vitest tests (12 card + 10 grid). All 220 frontend tests pass
+# 2026-06-09 | Phase 26.3 | HeroBanner + ScoreRing — HeroBanner.vue (gradient overlay hero, poster/banner images, metadata tags, genre chips, expandable synopsis, ScoreRing integration, error fallback, responsive mobile layout), ScoreRing.vue (SVG circular score indicator with color thresholds green/gold/yellow/red, size prop, optional label, animated dashoffset). 14 new Vitest tests (9 banner + 5 ring). All 236 frontend tests pass
+# 2026-06-09 | Phase 26.4 | EpisodeItem + EpisodeList + ServerSelector — EpisodeItem.vue (thumbnail/play overlay/watched checkmark/selected state), EpisodeList.vue (5-row skeleton, error/empty states, asc/desc sorting, watched tracking), ServerSelector.vue (source pills with SUB/DUB badges, skeleton/loading/error/empty states, unavailable/active states). 27 new Vitest tests (9 each). All 250 frontend tests pass
+# 2026-06-09 | Phase 26.5 | VideoPlayer + usePlayerListener composable — VideoPlayer.vue (iframe/loading/error/empty states, fullscreen API, PlayerControls+PlayerError integration), PlayerControls.vue (progress bar with seek, play/pause, MM:SS time display, quality selector, fullscreen toggle, hover fade), PlayerError.vue (message/retry button), usePlayerListener composable (postMessage origin validation, reactive isPlaying/currentTime/error state, sendCommand/togglePlay/seek, lifecycle cleanup, onEvent callback). 51 Vitest tests (19 composable + 6 error + 14 controls + 12 video player). All 301 frontend tests pass
+# 2026-06-09 | Phase 26.6 | TrendingCarousel — horizontal scroll track with hidden scrollbar, arrow navigation (scrolls by itemWidth×3, disabled at start/end bounds via scrollPos tracking), gradient fade overlays (left+right), skeleton loading (7 shimmer cards), error/empty states, resize handler for maxScroll recalculation. 12 Vitest tests. All 313 frontend tests pass across 33 files
+# 2026-06-09 | Phase 26 | Complete — All 6 sub-phases (26.1–26.6) implemented. 8 new components (AnimeCard, AnimeGrid, HeroBanner, ScoreRing, EpisodeItem, EpisodeList, ServerSelector, TrendingCarousel), 1 new player composable (usePlayerListener), 3 player components (VideoPlayer, PlayerControls, PlayerError), 1 composable test suite (19 tests), 107 total new Vitest tests across 33 files. tokens.scss design token system (surfaces, accents, spacing, typography, breakpoints, mixins). Dark streaming-first aesthetic (bg: #0a0a0a, purple/cyan accents). All 313 frontend tests + 382 backend tests pass. Phase 26 COMPLETE
 ```
 # Format: [OPEN/RESOLVED] Phase X.Y — description
 [RESOLVED] Phase 13.3 — Backend pytest runtime verified via backend .venv and tests passed

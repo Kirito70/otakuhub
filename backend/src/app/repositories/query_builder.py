@@ -63,6 +63,12 @@ class QueryBuilder(Generic[ModelType]):
         self._order_by_clauses.extend(fields)
         return self
 
+    def nulls_last(self) -> 'QueryBuilder[ModelType]':
+        """Apply nulls_last to the last order_by clause."""
+        if self._order_by_clauses:
+            self._order_by_clauses[-1] = self._order_by_clauses[-1].nulls_last()
+        return self
+
     def desc(self, field) -> 'QueryBuilder[ModelType]':
         """Add descending order by clause."""
         self._order_by_clauses.append(desc(field))

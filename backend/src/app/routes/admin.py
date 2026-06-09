@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Any
 from uuid import UUID
 
@@ -12,8 +13,17 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from src.app.core.auth import get_current_user
 from src.app.database import get_db_session
 from src.app.models import User
+from src.app.models.media_source_mapping import MediaSourceMapping
+from src.app.repositories.source_provider_repository import SourceMappingRepository
 from src.app.services.sync_service import SyncService
-from src.app.schemas.source_provider import AnikotoFullSyncRequest, AnikotoRecentSyncRequest, JobEnqueueResponse
+from src.app.schemas.source_provider import (
+    AdminSourceMappingItem,
+    AdminSourceMappingListResponse,
+    AdminSourceMappingUpdate,
+    AnikotoFullSyncRequest,
+    AnikotoRecentSyncRequest,
+    JobEnqueueResponse,
+)
 
 try:
     from src.app.workers.sync_tasks import (
@@ -281,6 +291,94 @@ async def admin_get_sync_job(
     if job is None:
         raise HTTPException(status_code=404, detail="Sync job not found")
     return _job_to_detail(job)
+
+
+def get_source_mapping_repo(db: AsyncSession = Depends(get_db_session)) -> SourceMappingRepository:
+    """Get SourceMappingRepository with request-scoped DB session."""
+    return SourceMappingRepository(db)
+
+
+@router.get("/source-mappings", response_model=AdminSourceMappingListResponse)
+async def admin_list_source_mappings(
+    source: str | None = Query(default=None, description="Filter by provider source name"),
+    mapping_status: str | None = Query(default=None, description="Filter by mapping status"),
+    limit: int = Query(default=50, ge=1, le=200),
+    offset: int = Query(default=0, ge=0),
+    repo: SourceMappingRepository = Depends(get_source_mapping_repo),
+    _: User = Depends(require_admin),
+) -> AdminSourceMappingListResponse:
+    """List all source mappings with optional filters and pagination."""
+    items = await repo.list_all_with_filters(
+        source=source,
+        mapping_status=mapping_status,
+        limit=limit,
+        offset=offset,
+    )
+    total = await repo.count_all_with_filters(
+        source=source,
+        mapping_status=mapping_status,
+    )
+    return AdminSourceMappingListResponse(
+        items=[_mapping_to_admin_item(m) for m in items],
+        total=total,
+        limit=limit,
+        offset=offset,
+    )
+
+
+@router.patch("/source-mappings/{mapping_id}", response_model=AdminSourceMappingItem)
+async def admin_update_source_mapping(
+    mapping_id: UUID,
+    payload: AdminSourceMappingUpdate,
+    repo: SourceMappingRepository = Depends(get_source_mapping_repo),
+    _: User = Depends(require_admin),
+) -> AdminSourceMappingItem:
+    """Update a source mapping (media_id, status, flags, etc.)."""
+    mapping = await repo.get_by_id(mapping_id)
+    if mapping is None:
+        raise HTTPException(status_code=404, detail="Source mapping not found")
+
+    update_data = payload.model_dump(exclude_unset=True)
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No fields to update")
+
+    # Validate mapping_status if provided
+    valid_statuses = {"matched", "unmatched", "ignored", "stale"}
+    if "mapping_status" in update_data and update_data["mapping_status"] not in valid_statuses:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Invalid mapping_status '{update_data['mapping_status']}'. Must be one of: {', '.join(sorted(valid_statuses))}",
+        )
+
+    update_data["updated_at"] = datetime.utcnow()
+    updated = await repo.update(mapping_id, update_data)
+    assert updated is not None  # already checked above
+    return _mapping_to_admin_item(updated)
+
+
+def _mapping_to_admin_item(m: MediaSourceMapping) -> AdminSourceMappingItem:
+    """Convert a MediaSourceMapping ORM object to AdminSourceMappingItem."""
+    return AdminSourceMappingItem(
+        id=m.id,
+        media_id=m.media_id,
+        source=m.source,
+        source_media_id=m.source_media_id,
+        source_slug=m.source_slug,
+        source_url=m.source_url,
+        source_title=m.source_title,
+        source_title_normalized=m.source_title_normalized,
+        mapping_status=m.mapping_status,
+        match_confidence=m.match_confidence,
+        is_streaming_enabled=m.is_streaming_enabled,
+        has_sub=m.has_sub,
+        has_dub=m.has_dub,
+        episode_count=m.episode_count,
+        first_seen_at=m.first_seen_at,
+        last_seen_at=m.last_seen_at,
+        details_synced_at=m.details_synced_at,
+        created_at=m.created_at,
+        updated_at=m.updated_at,
+    )
 
 
 def _job_to_detail(job: Any) -> SyncJobDetail:

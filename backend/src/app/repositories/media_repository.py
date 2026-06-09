@@ -6,7 +6,7 @@ from sqlalchemy import desc, or_, and_
 from sqlmodel import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.app.models import MediaEntry, MediaExternalIds, Genre, MediaGenre, Episode
+from src.app.models import MediaEntry, MediaExternalIds, Genre, MediaGenre, Episode, Chapter
 from src.app.repositories.base_repository import BaseRepository
 
 
@@ -163,6 +163,100 @@ class MediaRepository(BaseRepository[MediaEntry]):
         # Apply pagination
         paginated = statement.limit(limit).offset(offset)
 
+        result = await self.db_session.exec(paginated)
+        items = result.all()
+
+        return items, total
+
+    async def get_seasonal_media(
+        self,
+        season_year: int,
+        season: str,
+        limit: int = 20,
+        offset: int = 0,
+    ) -> Tuple[List[MediaEntry], int]:
+        """Get seasonal media entries ordered by average score descending."""
+        from sqlmodel import and_
+
+        # Get total count
+        count_query = (
+            self.query()
+            .filter(MediaEntry.season_year == season_year)
+            .filter(MediaEntry.season == season)
+        )
+        total = await count_query.count()
+
+        # Get paginated results ordered by score
+        items_query = (
+            self.query()
+            .filter(MediaEntry.season_year == season_year)
+            .filter(MediaEntry.season == season)
+            .order_by(desc(MediaEntry.average_score))
+            .nulls_last()
+            .offset(offset)
+            .limit(limit)
+        )
+
+        items = await items_query.all()
+        return items, total
+
+    async def get_genres(self) -> List[Genre]:
+        """Get all genres ordered by name."""
+        statement = select(Genre).order_by(Genre.name.asc())
+        result = await self.db_session.exec(statement)
+        return list(result.all())
+
+    async def get_chapters_by_media_id(
+        self,
+        media_id: UUID,
+        limit: int = 20,
+        offset: int = 0,
+    ) -> Tuple[List[Chapter], int]:
+        """Get canonical chapters for a media entry ordered by chapter number.
+
+        Returns (items, total_count). Chapters are sorted ascending by number.
+        """
+        statement = (
+            select(Chapter)
+            .where(Chapter.media_id == media_id)
+            .order_by(Chapter.chapter_number.asc())
+        )
+
+        # Total count
+        count_statement = select(func.count()).select_from(statement.subquery())
+        count_result = await self.db_session.exec(count_statement)
+        total = count_result.one() or 0
+
+        # Apply pagination
+        paginated = statement.limit(limit).offset(offset)
+        result = await self.db_session.exec(paginated)
+        items = result.all()
+
+        return items, total
+
+    async def get_episodes_by_media_id(
+        self,
+        media_id: UUID,
+        limit: int = 20,
+        offset: int = 0,
+    ) -> Tuple[List[Episode], int]:
+        """Get canonical episodes for a media entry ordered by episode number.
+
+        Returns (items, total_count). Episodes are sorted ascending by number.
+        """
+        statement = (
+            select(Episode)
+            .where(Episode.media_id == media_id)
+            .order_by(Episode.episode_number.asc())
+        )
+
+        # Total count
+        count_statement = select(func.count()).select_from(statement.subquery())
+        count_result = await self.db_session.exec(count_statement)
+        total = count_result.one() or 0
+
+        # Apply pagination
+        paginated = statement.limit(limit).offset(offset)
         result = await self.db_session.exec(paginated)
         items = result.all()
 

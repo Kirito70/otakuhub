@@ -1,3 +1,85 @@
+// =============================================================================
+// OtakuHub Global Styles
+// =============================================================================
+
+@use 'tokens' as *;
+
+// ── Base body ───────────────────────────────────────────────────────────────
+
 body {
-  font-family: 'Inter', 'Roboto', sans-serif;
+  font-family: $font-family;
+  background-color: $bg-primary;
+  color: $text-primary;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+// ── Scrollbar ───────────────────────────────────────────────────────────────
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: $radius-full;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+}
+
+// ── Selection ───────────────────────────────────────────────────────────────
+
+::selection {
+  background: rgba($accent-primary, 0.3);
+  color: $text-primary;
+}
+
+// ── Global link reset ───────────────────────────────────────────────────────
+
+a {
+  color: $accent-secondary;
+  text-decoration: none;
+  transition: color $transition;
+
+  &:hover {
+    color: $accent-glow;
+  }
+}
+
+// ── Image loading transitions ───────────────────────────────────────────────
+
+img {
+  &.loading {
+    opacity: 0;
+  }
+  &.loaded {
+    opacity: 1;
+    transition: opacity $transition;
+  }
+}
+
+// ── Utility classes ─────────────────────────────────────────────────────────
+
+.text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
 }
