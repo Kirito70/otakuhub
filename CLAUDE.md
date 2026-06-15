@@ -21,7 +21,7 @@
 - Write/update tests before implementation when feasible; if not feasible due to legacy coupling, add failing regression tests immediately after reproducing bug
 - After writing a new FastAPI endpoint, update `docs/api-spec.md`
 - After writing a new DB migration, update `docs/database-schema.md`
-- After a new Quasar page, update the route table in `docs/quasar-architecture.md`
+- After a new Vue page, update the route table in `docs/frontend-architecture.md`
 
 ### Frontend Form Validation Policy (Mandatory)
 - Every frontend form must validate required fields and basic format constraints before API submission.

@@ -191,7 +191,7 @@ function formatDate(dateStr: string): string {
 
         &.dub {
           background: rgba($accent-warm, 0.2);
-          color: $accent-warn;
+          color: $accent-warm;
         }
       }
     }

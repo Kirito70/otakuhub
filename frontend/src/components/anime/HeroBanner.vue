@@ -132,6 +132,7 @@ function onPosterError() {
 
 <style lang="scss">
 @use 'src/css/tokens' as *;
+@use 'sass:color';
 
 .hero-banner {
   position: relative;
@@ -279,7 +280,7 @@ function onPosterError() {
           }
 
           &:hover {
-            background: lighten($accent-primary, 8%);
+            background: color.adjust($accent-primary, $lightness: 8%);
             box-shadow: 0 0 16px rgba($accent-primary, 0.4);
           }
         }

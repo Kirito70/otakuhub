@@ -9,7 +9,7 @@ from pathlib import Path
 
 from alembic import context
 from dotenv import load_dotenv
-from sqlalchemy import pool
+from sqlalchemy import pool, text
 from sqlalchemy.ext.asyncio import create_async_engine
 
 # Load local .env before reading settings so DATABASE_URL is available
@@ -68,6 +68,13 @@ async def run_async_migrations() -> None:
         db_url,
         poolclass=pool.NullPool,
     )
+
+    # Enable required PostgreSQL extensions before running migrations
+    async with connectable.connect() as conn:
+        await conn.execute(text("CREATE EXTENSION IF NOT EXISTS pg_trgm"))
+        await conn.execute(text("CREATE EXTENSION IF NOT EXISTS unaccent"))
+        await conn.execute(text("CREATE EXTENSION IF NOT EXISTS btree_gin"))
+        await conn.commit()
 
     async with connectable.connect() as connection:
         await connection.run_sync(do_run_migrations)

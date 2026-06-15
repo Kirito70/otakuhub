@@ -37,7 +37,7 @@
     "docs/agents.md",
     "docs/backend-architecture.md",
     "docs/database-schema.md",
-    "docs/quasar-architecture.md"
+    "docs/frontend-architecture.md"
   ],
   "default_agent": "build",
   "agent": {

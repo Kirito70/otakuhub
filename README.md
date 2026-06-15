@@ -146,7 +146,7 @@ npx quasar build
 
 - `PROJECT-STATUS.md` — single source of truth for current phase/sub-phase
 - `docs/backend-architecture.md`
-- `docs/quasar-architecture.md`
+- `docs/frontend-architecture.md`
 - `docs/database-schema.md`
 - `docs/api-spec.md`
 - `docs/adr/` — architecture decision records

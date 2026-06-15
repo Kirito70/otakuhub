@@ -1,247 +1,314 @@
 <template>
-  <q-page class="q-pa-md">
+  <div class="bg-[#0a0a0a] text-white min-h-screen p-4">
     <!-- Back button when viewing detail -->
-    <div v-if="view === 'detail'" class="q-mb-sm">
-      <q-btn flat dense icon="arrow_back" label="Back to parties" @click="closeDetail" />
+    <div v-if="view === 'detail'" class="mb-2">
+      <button @click="closeDetail" class="flex items-center text-sm text-gray-400 hover:text-white">
+        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+        </svg>
+        Back to parties
+      </button>
     </div>
 
-    <q-tabs v-model="activeTab" class="q-mb-md" dense :disable="view === 'detail'">
-      <q-tab name="upcoming" label="Upcoming" />
-      <q-tab name="past" label="Past" />
-      <q-tab name="create" label="Create" />
-    </q-tabs>
+    <!-- Tabs -->
+    <div class="flex border-b border-[#1f2937] mb-4" :class="{ 'pointer-events-none opacity-50': view === 'detail' }">
+      <button
+        v-for="tab in tabs"
+        :key="tab.key"
+        @click="activeTab = tab.key"
+        class="px-4 py-2 text-sm font-medium transition-colors"
+        :class="activeTab === tab.key ? 'text-white border-b-2 border-blue-500' : 'text-gray-400 hover:text-gray-300'"
+      >
+        {{ tab.label }}
+      </button>
+    </div>
 
-    <q-tab-panels v-model="activeTab" animated>
-      <!-- Upcoming Tab -->
-      <q-tab-panel name="upcoming" class="q-pa-none">
-        <app-page-state
-          :is-loading="store.isLoading"
-          :error="store.error"
-          :is-empty="store.parties.length === 0 && !store.isLoading"
-          empty-label="No upcoming watch parties in your groups yet."
-          loading-label="Loading upcoming parties..."
-          @retry="store.fetchUpcoming()"
+    <!-- Upcoming Tab -->
+    <div v-if="activeTab === 'upcoming'">
+      <div v-if="store.isLoading" class="flex items-center justify-center py-6">
+        <svg class="animate-spin h-5 w-5 text-blue-500 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+        </svg>
+        <span class="text-gray-400 text-sm">Loading upcoming parties...</span>
+      </div>
+      <div v-else-if="store.error" class="bg-red-600/10 border border-red-600/30 text-red-400 p-4 rounded-lg mb-4">
+        <span>{{ store.error }}</span>
+        <button @click="store.fetchUpcoming()" class="ml-2 underline text-sm hover:text-red-300">Retry</button>
+      </div>
+      <div v-else-if="store.parties.length === 0" class="text-gray-400 text-sm py-4">
+        No upcoming watch parties in your groups yet.
+      </div>
+      <div v-else class="divide-y divide-[#1f2937] border border-[#1f2937] rounded-lg overflow-hidden">
+        <div
+          v-for="party in store.parties"
+          :key="party.id"
+          class="flex items-center justify-between p-4 hover:bg-[#111111] cursor-pointer transition-colors"
+          @click="openDetail(party.id)"
         >
-          <q-list bordered separator>
-            <q-item
-              v-for="party in store.parties"
-              :key="party.id"
-              clickable
-              v-ripple
-              @click="openDetail(party.id)"
-            >
-              <q-item-section>
-                <q-item-label class="text-weight-medium">
-                  {{ party.title || 'Untitled Watch Party' }}
-                </q-item-label>
-                <q-item-label caption>
-                  {{ formatDate(party.scheduled_at) }}
-                  <span v-if="party.episode_number !== null"> · Ep. {{ party.episode_number }}</span>
-                </q-item-label>
-                <q-item-label caption class="text-grey-7">
-                  Status: <q-badge :color="statusColor(party.status)" :label="party.status" />
-                </q-item-label>
-              </q-item-section>
-              <q-item-section side>
-                <q-btn size="sm" color="positive" label="Attend" @click.stop="store.rsvpToParty(party.id, 'attending')" />
-              </q-item-section>
-            </q-item>
-          </q-list>
-        </app-page-state>
-      </q-tab-panel>
+          <div class="flex-1 min-w-0">
+            <div class="font-medium truncate">{{ party.title || 'Untitled Watch Party' }}</div>
+            <div class="text-sm text-gray-400 mt-0.5">
+              {{ formatDate(party.scheduled_at) }}
+              <span v-if="party.episode_number !== null"> &middot; Ep. {{ party.episode_number }}</span>
+            </div>
+            <div class="text-xs text-gray-500 mt-0.5">
+              Status: <span :class="statusBadgeClass(party.status)">{{ party.status }}</span>
+            </div>
+          </div>
+          <button
+            @click.stop="store.rsvpToParty(party.id, 'attending')"
+            class="px-3 py-1.5 text-xs font-medium rounded bg-green-600 hover:bg-green-700 text-white shrink-0 ml-4"
+          >
+            Attend
+          </button>
+        </div>
+      </div>
+    </div>
 
-      <!-- Past Tab -->
-      <q-tab-panel name="past" class="q-pa-none">
-        <app-page-state
-          :is-loading="store.pastIsLoading"
-          :error="store.pastError"
-          :is-empty="store.pastParties.length === 0 && !store.pastIsLoading"
-          empty-label="No past watch parties yet."
-          loading-label="Loading past parties..."
-          @retry="store.fetchPast()"
+    <!-- Past Tab -->
+    <div v-if="activeTab === 'past'">
+      <div v-if="store.pastIsLoading" class="flex items-center justify-center py-6">
+        <svg class="animate-spin h-5 w-5 text-blue-500 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+        </svg>
+        <span class="text-gray-400 text-sm">Loading past parties...</span>
+      </div>
+      <div v-else-if="store.pastError" class="bg-red-600/10 border border-red-600/30 text-red-400 p-4 rounded-lg mb-4">
+        <span>{{ store.pastError }}</span>
+        <button @click="store.fetchPast()" class="ml-2 underline text-sm hover:text-red-300">Retry</button>
+      </div>
+      <div v-else-if="store.pastParties.length === 0" class="text-gray-400 text-sm py-4">
+        No past watch parties yet.
+      </div>
+      <div v-else class="divide-y divide-[#1f2937] border border-[#1f2937] rounded-lg overflow-hidden">
+        <div
+          v-for="party in store.pastParties"
+          :key="party.id"
+          class="flex items-center justify-between p-4 hover:bg-[#111111] cursor-pointer transition-colors"
+          @click="openDetail(party.id)"
         >
-          <q-list bordered separator>
-            <q-item
-              v-for="party in store.pastParties"
-              :key="party.id"
-              clickable
-              v-ripple
-              @click="openDetail(party.id)"
+          <div class="flex-1 min-w-0">
+            <div :class="['font-medium truncate', party.status === 'cancelled' ? 'text-gray-500' : '']">
+              {{ party.title || 'Untitled Watch Party' }}
+            </div>
+            <div class="text-sm text-gray-400 mt-0.5">{{ formatDate(party.scheduled_at) }}</div>
+            <div class="text-xs text-gray-500 mt-0.5">
+              <span :class="statusBadgeClass(party.status)">{{ party.status }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Create Tab -->
+    <div v-if="activeTab === 'create'">
+      <div class="bg-[#111111] border border-[#1f2937] rounded-lg">
+        <div class="px-4 py-3 text-base font-medium border-b border-[#1f2937]">Create Watch Party</div>
+        <form @submit.prevent="onCreate" class="p-4 space-y-4">
+          <div>
+            <label class="block text-sm text-gray-400 mb-1">Group ID</label>
+            <input
+              v-model="createForm.groupId"
+              type="text"
+              class="w-full bg-[#1a1a1a] border border-[#1f2937] rounded px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+              placeholder="Group ID"
+            />
+            <p v-if="formErrors.groupId" class="text-red-400 text-xs mt-1">{{ formErrors.groupId }}</p>
+          </div>
+          <div>
+            <label class="block text-sm text-gray-400 mb-1">Media ID</label>
+            <input
+              v-model="createForm.mediaId"
+              type="text"
+              class="w-full bg-[#1a1a1a] border border-[#1f2937] rounded px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+              placeholder="Media ID"
+            />
+            <p v-if="formErrors.mediaId" class="text-red-400 text-xs mt-1">{{ formErrors.mediaId }}</p>
+          </div>
+          <div>
+            <label class="block text-sm text-gray-400 mb-1">Scheduled At</label>
+            <input
+              v-model="createForm.scheduledAt"
+              type="datetime-local"
+              class="w-full bg-[#1a1a1a] border border-[#1f2937] rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
+            />
+            <p v-if="formErrors.scheduledAt" class="text-red-400 text-xs mt-1">{{ formErrors.scheduledAt }}</p>
+          </div>
+          <div>
+            <label class="block text-sm text-gray-400 mb-1">Title (optional)</label>
+            <input
+              v-model="createForm.title"
+              type="text"
+              class="w-full bg-[#1a1a1a] border border-[#1f2937] rounded px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+              placeholder="Title (optional)"
+            />
+          </div>
+          <div>
+            <label class="block text-sm text-gray-400 mb-1">Episode # (optional)</label>
+            <input
+              type="number"
+              :value="createForm.episodeNumber ?? ''"
+              @input="createForm.episodeNumber = ($event.target as HTMLInputElement).value ? Number(($event.target as HTMLInputElement).value) : null"
+              class="w-full bg-[#1a1a1a] border border-[#1f2937] rounded px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+              placeholder="Episode # (optional)"
+            />
+          </div>
+          <div>
+            <label class="block text-sm text-gray-400 mb-1">Stream URL (optional)</label>
+            <input
+              v-model="createForm.streamUrl"
+              type="text"
+              class="w-full bg-[#1a1a1a] border border-[#1f2937] rounded px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+              placeholder="Stream URL (optional)"
+            />
+            <p v-if="formErrors.streamUrl" class="text-red-400 text-xs mt-1">{{ formErrors.streamUrl }}</p>
+          </div>
+          <div>
+            <label class="block text-sm text-gray-400 mb-1">Notes (optional)</label>
+            <textarea
+              v-model="createForm.notes"
+              class="w-full bg-[#1a1a1a] border border-[#1f2937] rounded px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 resize-y min-h-[80px]"
+              placeholder="Notes (optional)"
+            ></textarea>
+          </div>
+
+          <div v-if="createError" class="bg-red-600/10 border border-red-600/30 text-red-400 p-3 rounded-lg text-sm">{{ createError }}</div>
+          <div v-if="createSuccess" class="bg-green-600/10 border border-green-600/30 text-green-400 p-3 rounded-lg text-sm">Watch party created successfully!</div>
+
+          <div class="flex justify-end">
+            <button
+              type="submit"
+              :disabled="isCreateDisabled"
+              class="px-4 py-2 text-sm font-medium rounded bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <q-item-section>
-                <q-item-label :class="party.status === 'cancelled' ? 'text-grey-5' : ''">
-                  {{ party.title || 'Untitled Watch Party' }}
-                </q-item-label>
-                <q-item-label caption>
-                  {{ formatDate(party.scheduled_at) }}
-                </q-item-label>
-                <q-item-label caption class="text-grey-7">
-                  <q-badge :color="statusColor(party.status)" :label="party.status" />
-                </q-item-label>
-              </q-item-section>
-            </q-item>
-          </q-list>
-        </app-page-state>
-      </q-tab-panel>
-
-      <!-- Create Tab -->
-      <q-tab-panel name="create" class="q-pa-none">
-        <q-card bordered flat>
-          <q-card-section>
-            <div class="text-subtitle1">Create Watch Party</div>
-          </q-card-section>
-          <q-separator />
-          <q-form ref="createFormRef" @submit="onCreate">
-            <q-card-section class="q-gutter-md">
-              <q-input v-model="createForm.groupId" outlined label="Group ID" lazy-rules :rules="groupIdRules" />
-              <q-input v-model="createForm.mediaId" outlined label="Media ID" lazy-rules :rules="mediaIdRules" />
-              <q-input v-model="createForm.scheduledAt" outlined type="datetime-local" label="Scheduled At" lazy-rules :rules="scheduledAtRules" />
-              <q-input v-model="createForm.title" outlined label="Title (optional)" />
-              <q-input v-model.number="createForm.episodeNumber" outlined type="number" label="Episode # (optional)" />
-              <q-input v-model="createForm.streamUrl" outlined label="Stream URL (optional)" lazy-rules :rules="streamUrlRules" />
-              <q-input v-model="createForm.notes" outlined type="textarea" label="Notes (optional)" autogrow />
-
-              <q-banner v-if="createError" class="bg-negative text-white" rounded>
-                {{ createError }}
-              </q-banner>
-              <q-banner v-if="createSuccess" class="bg-positive text-white" rounded>
-                Watch party created successfully!
-              </q-banner>
-            </q-card-section>
-
-            <q-card-actions align="right">
-              <q-btn
-                color="primary"
-                :loading="store.isLoading"
-                :disable="isCreateDisabled"
-                label="Create"
-                type="submit"
-              />
-            </q-card-actions>
-          </q-form>
-        </q-card>
-      </q-tab-panel>
-    </q-tab-panels>
+              <span v-if="store.isLoading" class="flex items-center">
+                <svg class="animate-spin h-4 w-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+                Creating...
+              </span>
+              <span v-else>Create</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
 
     <!-- Detail Dialog -->
-    <q-dialog v-model="detailOpen" maximized transition-show="slide-up" transition-hide="slide-down">
-      <q-card v-if="store.currentDetail">
-        <q-card-section class="row items-center q-pb-none">
-          <div class="text-h6">{{ store.currentDetail.title || 'Watch Party' }}</div>
-          <q-space />
-          <q-btn flat dense icon="close" v-close-popup />
-        </q-card-section>
-
-        <q-card-section>
-          <div class="row q-col-gutter-md">
-            <div class="col-12 col-md-6">
-              <q-list dense>
-                <q-item>
-                  <q-item-section>
-                    <q-item-label caption>Status</q-item-label>
-                    <q-item-label>
-                      <q-badge :color="statusColor(store.currentDetail.status)" :label="store.currentDetail.status" />
-                    </q-item-label>
-                  </q-item-section>
-                </q-item>
-                <q-item>
-                  <q-item-section>
-                    <q-item-label caption>Scheduled</q-item-label>
-                    <q-item-label>{{ formatDate(store.currentDetail.scheduled_at) }}</q-item-label>
-                  </q-item-section>
-                </q-item>
-                <q-item v-if="store.currentDetail.episode_number !== null">
-                  <q-item-section>
-                    <q-item-label caption>Episode</q-item-label>
-                    <q-item-label>{{ store.currentDetail.episode_number }}</q-item-label>
-                  </q-item-section>
-                </q-item>
-                <q-item>
-                  <q-item-section>
-                    <q-item-label caption>Host</q-item-label>
-                    <q-item-label>{{ store.currentDetail.host_username }}</q-item-label>
-                  </q-item-section>
-                </q-item>
-                <q-item v-if="store.currentDetail.media_title">
-                  <q-item-section>
-                    <q-item-label caption>Media</q-item-label>
-                    <q-item-label>{{ store.currentDetail.media_title }}</q-item-label>
-                  </q-item-section>
-                </q-item>
-                <q-item v-if="store.currentDetail.stream_url">
-                  <q-item-section>
-                    <q-item-label caption>Stream URL</q-item-label>
-                    <q-item-label>
-                      <a :href="store.currentDetail.stream_url" target="_blank" rel="noopener">{{ store.currentDetail.stream_url }}</a>
-                    </q-item-label>
-                  </q-item-section>
-                </q-item>
-              </q-list>
+    <div v-if="detailOpen" class="fixed inset-0 z-50 bg-black/60" @click.self="closeDetail">
+      <div class="absolute inset-0 overflow-y-auto">
+        <div class="min-h-full flex items-start justify-center pt-8 pb-12">
+          <div v-if="store.currentDetail" class="w-full max-w-2xl bg-[#111111] border border-[#1f2937] rounded-lg mx-4">
+            <!-- Header -->
+            <div class="flex items-center justify-between px-4 py-3 border-b border-[#1f2937]">
+              <h2 class="text-lg font-semibold">{{ store.currentDetail.title || 'Watch Party' }}</h2>
+              <button @click="closeDetail" class="text-gray-400 hover:text-white">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
             </div>
 
-            <div class="col-12 col-md-6">
-              <div class="text-subtitle2 q-mb-sm">RSVPs</div>
-              <app-page-state
-                :is-loading="store.rsvpsIsLoading"
-                :error="store.rsvpsError"
-                :is-empty="store.rsvps.length === 0 && !store.rsvpsIsLoading"
-                empty-label="No RSVPs yet."
-                loading-label="Loading RSVPs..."
-              >
-                <q-list dense>
-                  <q-item v-for="rsvp in store.rsvps" :key="rsvp.user_id">
-                    <q-item-section>
-                      <q-item-label caption>#{{ rsvp.user_id.slice(0, 8) }}</q-item-label>
-                    </q-item-section>
-                    <q-item-section side>
-                      <q-badge :color="rsvpColor(rsvp.status)" :label="rsvp.status" />
-                    </q-item-section>
-                  </q-item>
-                </q-list>
-              </app-page-state>
+            <div class="p-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Left column -->
+                <div class="space-y-3">
+                  <div>
+                    <div class="text-xs text-gray-500">Status</div>
+                    <div class="mt-0.5">
+                      <span :class="statusBadgeClass(store.currentDetail.status)">{{ store.currentDetail.status }}</span>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="text-xs text-gray-500">Scheduled</div>
+                    <div class="mt-0.5 text-sm">{{ formatDate(store.currentDetail.scheduled_at) }}</div>
+                  </div>
+                  <div v-if="store.currentDetail.episode_number !== null">
+                    <div class="text-xs text-gray-500">Episode</div>
+                    <div class="mt-0.5 text-sm">{{ store.currentDetail.episode_number }}</div>
+                  </div>
+                  <div>
+                    <div class="text-xs text-gray-500">Host</div>
+                    <div class="mt-0.5 text-sm">{{ store.currentDetail.host_username }}</div>
+                  </div>
+                  <div v-if="store.currentDetail.media_title">
+                    <div class="text-xs text-gray-500">Media</div>
+                    <div class="mt-0.5 text-sm">{{ store.currentDetail.media_title }}</div>
+                  </div>
+                  <div v-if="store.currentDetail.stream_url">
+                    <div class="text-xs text-gray-500">Stream URL</div>
+                    <div class="mt-0.5 text-sm">
+                      <a
+                        :href="store.currentDetail.stream_url"
+                        target="_blank"
+                        rel="noopener"
+                        class="text-blue-400 hover:underline break-all"
+                      >{{ store.currentDetail.stream_url }}</a>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Right column -->
+                <div>
+                  <div class="text-sm font-medium mb-2">RSVPs</div>
+                  <div v-if="store.rsvpsIsLoading" class="flex items-center text-sm text-gray-400">
+                    <svg class="animate-spin h-4 w-4 text-blue-500 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                    Loading RSVPs...
+                  </div>
+                  <div v-else-if="store.rsvpsError" class="text-red-400 text-sm">{{ store.rsvpsError }}</div>
+                  <div v-else-if="store.rsvps.length === 0" class="text-gray-400 text-sm">No RSVPs yet.</div>
+                  <div v-else class="divide-y divide-[#1f2937]">
+                    <div v-for="rsvp in store.rsvps" :key="rsvp.user_id" class="flex items-center justify-between py-2">
+                      <span class="text-xs text-gray-400">#{{ rsvp.user_id.slice(0, 8) }}</span>
+                      <span :class="rsvpBadgeClass(rsvp.status)">{{ rsvp.status }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div v-if="store.currentDetail.notes" class="mt-4">
+                <div class="text-xs text-gray-500 mb-1">Notes</div>
+                <p class="text-sm whitespace-pre-wrap">{{ store.currentDetail.notes }}</p>
+              </div>
+
+              <div class="flex justify-end gap-2 mt-4">
+                <button @click="store.rsvpToParty(store.currentDetail.id, 'attending')" class="px-3 py-1.5 text-xs font-medium rounded bg-green-600 hover:bg-green-700 text-white">Attending</button>
+                <button @click="store.rsvpToParty(store.currentDetail.id, 'pending')" class="px-3 py-1.5 text-xs font-medium rounded bg-yellow-600 hover:bg-yellow-700 text-white">Maybe</button>
+                <button @click="store.rsvpToParty(store.currentDetail.id, 'declined')" class="px-3 py-1.5 text-xs font-medium rounded bg-red-600 hover:bg-red-700 text-white">Decline</button>
+              </div>
             </div>
           </div>
-
-          <div v-if="store.currentDetail.notes" class="q-mt-md">
-            <div class="text-caption text-grey-7">Notes</div>
-            <p class="text-body2" style="white-space: pre-wrap">{{ store.currentDetail.notes }}</p>
-          </div>
-
-          <div class="row justify-end q-mt-md q-gutter-sm">
-            <q-btn color="positive" label="Attending" @click="store.rsvpToParty(store.currentDetail.id, 'attending')" />
-            <q-btn color="warning" label="Maybe" @click="store.rsvpToParty(store.currentDetail.id, 'pending')" />
-            <q-btn color="negative" label="Decline" @click="store.rsvpToParty(store.currentDetail.id, 'declined')" />
-          </div>
-        </q-card-section>
-      </q-card>
-    </q-dialog>
-  </q-page>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
-import type { QForm } from 'quasar'
+import { z } from 'zod'
 import { computed, onMounted, ref, watch } from 'vue'
 
-import AppPageState from 'src/components/AppPageState.vue'
-import { useValidationRules } from 'src/composables/useValidationRules'
 import { useWatchPartyStore } from 'src/stores/watchparty'
 
 const store = useWatchPartyStore()
-const rules = useValidationRules()
 
 const activeTab = ref<'upcoming' | 'past' | 'create'>('upcoming')
 const view = ref<'list' | 'detail'>('list')
 const detailOpen = ref(false)
 
-// Create form
-const createFormRef = ref<QForm | null>(null)
-const createSuccess = ref(false)
-const createError = ref<string | null>(null)
-const groupIdRules = [rules.required('Group ID')]
-const mediaIdRules = [rules.required('Media ID')]
-const scheduledAtRules = [rules.required('Scheduled At')]
-const streamUrlRules = [rules.isHttpUrl('Stream URL')]
+const tabs = [
+  { key: 'upcoming' as const, label: 'Upcoming' },
+  { key: 'past' as const, label: 'Past' },
+  { key: 'create' as const, label: 'Create' },
+]
 
+// Create form
 const createForm = ref({
   groupId: '',
   mediaId: '',
@@ -252,12 +319,40 @@ const createForm = ref({
   notes: '',
 })
 
+const createSchema = z.object({
+  groupId: z.string().min(1, 'Group ID is required'),
+  mediaId: z.string().min(1, 'Media ID is required'),
+  scheduledAt: z.string().min(1, 'Scheduled At is required'),
+  streamUrl: z.string().url('Stream URL must be a valid URL starting with http:// or https://').or(z.literal('')).optional(),
+})
+
+const formErrors = ref<Record<string, string>>({})
+const createSuccess = ref(false)
+const createError = ref<string | null>(null)
+
 const isCreateDisabled = computed(() =>
   store.isLoading
   || !createForm.value.groupId.trim()
   || !createForm.value.mediaId.trim()
   || !createForm.value.scheduledAt.trim(),
 )
+
+function validateForm(): boolean {
+  const result = createSchema.safeParse(createForm.value)
+  if (!result.success) {
+    const errors: Record<string, string> = {}
+    for (const issue of result.error.issues) {
+      const path = issue.path[0] as string
+      if (!errors[path]) {
+        errors[path] = issue.message
+      }
+    }
+    formErrors.value = errors
+    return false
+  }
+  formErrors.value = {}
+  return true
+}
 
 // Fetch upcoming on mount
 onMounted(async () => {
@@ -275,8 +370,7 @@ async function onCreate(): Promise<void> {
   createSuccess.value = false
   createError.value = null
 
-  const isValid = await createFormRef.value?.validate()
-  if (!isValid) {
+  if (!validateForm()) {
     createError.value = 'Please fix validation errors before submitting.'
     return
   }
@@ -292,7 +386,6 @@ async function onCreate(): Promise<void> {
       notes: createForm.value.notes || undefined,
     })
     createSuccess.value = true
-    // Switch to upcoming tab after creation
     activeTab.value = 'upcoming'
   } catch {
     // Store handles error state
@@ -315,22 +408,22 @@ function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleString()
 }
 
-function statusColor(status: string): string {
+function statusBadgeClass(status: string): string {
   switch (status) {
-    case 'scheduled': return 'primary'
-    case 'live': return 'positive'
-    case 'completed': return 'grey'
-    case 'cancelled': return 'negative'
-    default: return 'grey'
+    case 'scheduled': return 'inline-block px-2 py-0.5 text-xs font-medium rounded bg-blue-600 text-white'
+    case 'live': return 'inline-block px-2 py-0.5 text-xs font-medium rounded bg-green-600 text-white'
+    case 'completed': return 'inline-block px-2 py-0.5 text-xs font-medium rounded bg-gray-600 text-white'
+    case 'cancelled': return 'inline-block px-2 py-0.5 text-xs font-medium rounded bg-red-600 text-white'
+    default: return 'inline-block px-2 py-0.5 text-xs font-medium rounded bg-gray-600 text-white'
   }
 }
 
-function rsvpColor(status: string): string {
+function rsvpBadgeClass(status: string): string {
   switch (status) {
-    case 'attending': return 'positive'
-    case 'pending': return 'warning'
-    case 'declined': return 'negative'
-    default: return 'grey'
+    case 'attending': return 'inline-block px-2 py-0.5 text-xs font-medium rounded bg-green-600 text-white'
+    case 'pending': return 'inline-block px-2 py-0.5 text-xs font-medium rounded bg-yellow-600 text-white'
+    case 'declined': return 'inline-block px-2 py-0.5 text-xs font-medium rounded bg-red-600 text-white'
+    default: return 'inline-block px-2 py-0.5 text-xs font-medium rounded bg-gray-600 text-white'
   }
 }
 </script>

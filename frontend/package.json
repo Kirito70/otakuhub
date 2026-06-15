@@ -2,29 +2,42 @@
   "name": "otakuhub-frontend",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
-    "dev": "quasar dev",
-    "build": "quasar build",
-    "build:electron": "quasar build -m electron",
-    "build:android": "quasar build -m capacitor -T android",
-    "test": "vitest run"
+    "dev": "vite",
+    "dev:host": "vite --host",
+    "build": "vue-tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "electron:dev": "electron-vite dev",
+    "electron:build": "electron-vite build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint src/"
   },
   "dependencies": {
-    "@quasar/extras": "^1.18.0",
     "axios": "^1.8.4",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-vue-next": "^0.487.0",
     "pinia": "^2.1.7",
-    "quasar": "^2.18.2",
+    "tailwind-merge": "^3.2.0",
     "vue": "^3.5.13",
-    "vue-router": "^4.5.1"
+    "vue-router": "^4.5.1",
+    "zod": "^3.24.0"
   },
   "devDependencies": {
-    "@quasar/app-vite": "^2.1.0",
-    "@vitejs/plugin-vue": "^6.0.6",
+    "@tailwindcss/vite": "^4.1.0",
+    "@vitejs/plugin-vue": "^6.0.0",
     "@vue/test-utils": "^2.4.10",
     "electron": "^41.5.0",
     "electron-builder": "^26.8.1",
-    "jsdom": "^29.1.1",
-    "typescript": "^5.8.3",
-    "vitest": "^4.1.5"
+    "electron-vite": "^5.0.0",
+    "jsdom": "^26.0.0",
+    "sass-embedded": "^1.100.0",
+    "tailwindcss": "^4.1.0",
+    "typescript": "^5.7.0",
+    "vite": "^6.3.0",
+    "vitest": "^3.1.0",
+    "vue-tsc": "^2.2.0"
   }
 }

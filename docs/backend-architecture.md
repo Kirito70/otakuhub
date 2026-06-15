@@ -1,7 +1,7 @@
 # OtakuHub — Backend Architecture
 
 ## Overview
-FastAPI async Python backend. Serves a Flutter frontend for 5 platforms.
+FastAPI async Python backend. Serves a Vue 3 + Tailwind CSS + shadcn-vue frontend for web and desktop (Electron).
 Handles all anime/manga metadata, user tracking, social features, and sync pipeline.
 
 ## Project Structure
@@ -85,11 +85,11 @@ backend/
 - **Service** contains business rules: password verification, token rotation, group ownership checks, role validation, and orchestrates multiple repositories.
 - **Repository** read‑only operations use `self.query()` (QueryBuilder) which automatically filters out soft‑deleted rows. Write‑operations (`create`, `update`, `soft_delete`) remain direct async SQLAlchemy calls.
 - **Worker** (future) may handle email verification or invitation expiry.
-- **External** – no direct external API calls from Flutter for auth; all go through FastAPI.
+- **External** – no direct external API calls from the frontend for auth; all go through FastAPI.
 
 ## Request Flow
 ```
-Flutter App
+Vue 3 App (web/Electron)
     ↓  HTTPS (JWT in Authorization header)
 Nginx (reverse proxy + TLS termination)
     ↓
@@ -121,15 +121,15 @@ POST /api/v1/auth/login
   → verify password (bcrypt via passlib)
   → if stored hash is legacy SHA-256, rehash to bcrypt on successful login
   → issue access_token (15min JWT) + refresh_token (30d, stored SHA-256 hash in DB)
-  → Flutter stores both in flutter_secure_storage
+  → Frontend stores both in localStorage (Pinia persisted state)
 
 Request to protected endpoint:
-  → Flutter sends: Authorization: Bearer <access_token>
+  → Frontend sends: Authorization: Bearer <access_token>
   → FastAPI: verify JWT signature + expiry
   → get_current_user: load User from DB by sub claim
 
 Access token expires:
-  → Flutter calls POST /api/v1/auth/refresh with refresh_token in body
+  → Frontend calls POST /api/v1/auth/refresh with refresh_token in body
   → Validate refresh_token hash against DB
   → Rotate: revoke current token and issue a new refresh token
   → Replay protection: if a revoked refresh token is reused, revoke all active refresh tokens for that user

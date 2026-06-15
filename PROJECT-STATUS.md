@@ -10,12 +10,12 @@
 ## Current State
 
 ```
-CURRENT_PHASE:     28
-CURRENT_SUB_PHASE: 28.7
-STATUS:            ✅ COMPLETE
+CURRENT_PHASE:     M
+CURRENT_SUB_PHASE: M3
+STATUS:            🔄 In Progress
 LAST_UPDATED:      2026-06-09
 BLOCKED_BY:        none
-NEXT_ACTION:       Phase 29 — Real AniList/MAL List Import
+NEXT_ACTION:       Phase M3 — shadcn-vue Component Migration (QForm→Input, QBtn→Button, QCard→Card, QDialog→Dialog)
 ```
 
 > **Note**: After completing all 24 formal phases, an audit (AUDIT-PLAN.md) identified real gaps. Phases 0–4 are complete. Phase 5 (Frontend Feature Gaps) is in progress.
@@ -23,6 +23,8 @@ NEXT_ACTION:       Phase 29 — Real AniList/MAL List Import
 > **Urgent pre-audit interruption (2026-06-05/06)**: ADR 078 defines and implements source-provider ID storage and Anikoto/MegaPlay sync.
 
 > **Streaming Features (2026-06-08)**: ADRs 079–087 define Phases 23–28 — streaming-first redesign with aniwave-style dark UX, playback API, video player, real AniList import, notification pipeline, and admin source provider UI.
+
+> **Architectural Rebuild (2026-06-09)**: ADR 090 — Ditch Quasar, adopt shadcn-vue + Tailwind CSS. Complete rewrite of frontend to remove Quasar dependency and use Vite + Tailwind CSS v4 + shadcn-vue primitives. aniwaves.ru is the target design reference.
 
 ---
 
@@ -56,8 +58,9 @@ NEXT_ACTION:       Phase 29 — Real AniList/MAL List Import
 | 24 | Security & Production Hardening Remediation | ✅ Complete |
 | 25 | Streaming Backend Infrastructure | ⏳ Planned |
 | 26 | Streaming UI Component Library | ✅ Complete |
-| 27 | Home Page Streaming Redesign | ⏳ Planned |
+| 27 | Home Page Streaming Redesign | ✅ Complete |
 | 28 | Media Detail Page Streaming Redesign | ✅ Complete |
+| M | Quasar → shadcn-vue + Tailwind Migration | 🔄 In progress |
 | 29 | Real AniList/MAL Import | ⏳ Planned |
 | 30 | Episode Notification Pipeline (Complete) | ⏳ Planned |
 | 31 | Admin Source Provider UI | ⏳ Planned |
@@ -472,6 +475,19 @@ NEXT_ACTION:       Phase 29 — Real AniList/MAL List Import
 | 28.5 | VideoPlayer overlay integration | ✅ | Teleport-to-body full-viewport overlay with header (close + Ep N title + Prev/Next nav), VideoPlayer autoplay, lastEvent→ended emit for auto-advance |
 | 28.6 | Progress tracking from player events | ✅ | onPlayerEnded → getEntryByMedia (GET /api/v1/lists/entries/{id}) → addToList (POST, new entry) or updateEntry (PATCH, progress). Auto-complete on last episode. Double-watch guard. 7 new Vitest tests |
 | 28.7 | Test coverage | ✅ | 399 total frontend tests across 40 files. 17 MediaDetailPage tests (10 existing + 7 player/progress), 12 RelatedMediaCarousel, 9 EpisodeItem, 9 EpisodeList, 9 HeroBanner, 12 VideoPlayer, 9 ServerSelector |
+
+### Phase M — Quasar → shadcn-vue + Tailwind Migration
+**Goal**: Remove Quasar entirely. Replace with Vite + Tailwind CSS v4 + shadcn-vue primitives. Target aniwaves.ru visual design.
+
+**ADR**: `090-ditch-quasar-shadcn-tailwind.md`
+
+| Sub-phase | Task | Status | Notes |
+|-----------|------|--------|-------|
+| M1 | Foundation — Vite + Tailwind + shadcn-vue project init | ✅ Complete | package.json, vite.config, tsconfig, globals.css, AppShell, all pages rewritten; vite build succeeds (1783 modules), dev server starts. 26 test failures remain (Quasar selectors in test files — Phase M5) |
+| M2 | Layout & Shell — AppShell, sidebar, bottom nav, dark mode, auth guards | ✅ Complete | Old layout files deleted. AppShell with desktop sidebar + mobile drawer + bottom nav + TopBar + dark mode all wired. Router uses AppShell/AuthShell directly. |
+| M3 | shadcn-vue Component Migration — QForm→Input, QBtn→Button, QCard→Card, QDialog→Dialog, etc. | ⏳ | Replace Quasar form/page primitives with shadcn-vue + zod validation |
+| M4 | SCSS → Tailwind Conversion — tokens.scss, streaming components, remove remaining SCSS | ⏳ | Convert all custom SCSS to Tailwind utilities; verify 399+ tests pass |
+| M5 | Verification — vitest, vite build, electron-vite build, visual QA against aniwaves.ru | ⏳ | Full test pass + build check + dead dep removal |
 
 ### Phase 29 — Real AniList/MAL List Import
 **Goal**: Replace skeleton import with real AniList GraphQL public list fetching.
@@ -994,6 +1010,11 @@ NEXT_ACTION:       Phase 29 — Real AniList/MAL List Import
 # 2026-06-09 | Phase 27.3 | Friends Activity section — media type filter pills + pagination. Backend: GET /social/feed accepts media_type query param (anime/manga/manhwa), joins MediaEntry, filters by type. Frontend: home.ts store pagination refs (friendActivityOffset/HasMore/Filter), fetchFriendActivity(loadMore, mediaType), loadMoreFriendActivity(), setFriendActivityFilter(). FriendActivityRow.vue: filter pill bar + Load More button + disabled states. HomePage.vue: Friend Activity always visible (no v-if). Bug fixes: filterOptions syntax error (]()→]), removed conflicting isLoading guard from store, Pinia ref unwrapping in tests. 13 new tests (4 store + 8 component + 1 HomePage). 365 frontend tests pass across 38 files
 # 2026-06-09 | Phase 27.4 | Search integration — SearchBar.vue with debounced autocomplete dropdown (top 5 results), Enter → /search?q= route. SearchResultsPage.vue with AnimeGrid results rendering. MainLayout toolbar: OtakuHub brand + SearchBar + theme toggle. 11 new Vitest tests (component states, debounce, API calls, navigation, clear). 376 frontend tests pass across 39 files
 # 2026-06-09 | Phase 27.5 | Genre pills navigation — useMediaSearch composable now supports genres param (comma-separated, sent to backend as-is). DiscoverPage reads genre query param on mount and auto-executes search. GenrePills (existing) navigates via searchByGenre → /discover?genre=slug. All 376 frontend tests pass (no regressions)
+# 2026-06-09 | Phase M1 | Foundation — Vite + Tailwind + shadcn-vue project init complete
+# 2026-06-09 | Bugfix | Backend database migration fixed: added `CREATE EXTENSION IF NOT EXISTS pg_trgm/unaccent/btree_gin` to `connect_db()` before `create_all` (fresh databases lack these extensions); fixed `ondelete="SET_NULL"` → `ondelete="SET NULL"` in migration `001_initial_tables.py` (4 FK columns). Backend now starts cleanly on a fresh PostgreSQL database.
+# 2026-06-09 | Migration Fix | Database auto-migration overhaul: `connect_db()` now enables `pg_trgm/unaccent/btree_gin` extensions before `create_all`; stamps `alembic_version` to head after table creation (prevents DuplicateTableError). Alembic `env.py` also enables extensions for standalone `alembic upgrade head`. Fixed `ondelete="SET_NULL"` → `ondelete="SET NULL"` in migration 001 (4 FK columns). Both `uv run otakuhub-dev` and `uv run alembic upgrade head` now work on a fresh database.
+# 2026-06-09 | Phase M2.1 | Old Quasar layout files deleted: `src/layouts/MainLayout.vue`, `AuthLayout.vue`, `__tests__/MainLayout.test.ts` — all unreferenced (router uses AppShell/AuthShell directly). Suite-level test failure resolved: 39 test files (was 40), 6 failed (was 7), 369 passed unchanged.
+# 2026-06-09 | Phase M1 | Foundation — Vite + Tailwind + shadcn-vue project init complete: package.json rewritten (removed Quasar/Capacitor deps, added Vite v6.4.3/Tailwind v4/shadcn-vue/sass-embedded), vite.config.ts (Tailwind Vue plugin, path aliases, SCSS preprocessor), tsconfig.json (path aliases, vite/client types), index.html (dark class, bg #0a0a0a), src/main.ts (Pinia + Router + axios bootstrap), src/css/globals.css (Tailwind @theme tokens). AppShell layout (Sidebar/TopBar/BottomNav/AppShell/AuthShell), router rewritten (no Quasar wrapper), plugins/axios.ts → boot/axios.ts re-export, useTheme composable (no Quasar). Pages rewritten: LoginPage/RegisterPage (native forms + zod), SetupPage/ProfilePage/WatchPartyPage/NotificationPreferencesPage (native + zod + Tailwind). SCSS build errors fixed (lighten/darken → color.adjust, @use import resolution with api: 'modern-compiler'). vite build succeeds (1783 modules, 5s), dev server starts. Tokens.scss preserved for streaming components (Phase M4 SCSS→Tailwind deferred). 26 test failures are expected (Quasar selectors in test files — Phase M5 will fix).
 # 2026-06-09 | Phase 27.6 | Final test coverage pass — added DiscoverPage genre auto-search test (11 total), SearchBar (11), GenrePills (5), HomePage (10+). 377 frontend tests pass across 39 files. Phase 27 is fully complete
 ```
 # Format: [OPEN/RESOLVED] Phase X.Y — description

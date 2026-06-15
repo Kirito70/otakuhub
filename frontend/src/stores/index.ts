@@ -1,8 +1,3 @@
-import { store } from 'quasar/wrappers'
-import { createPinia } from 'pinia'
-
-export default store(() => {
-  const pinia = createPinia()
-
-  return pinia
-})
+// Pinia store index — stores are created in main.ts
+// Individual stores are imported directly from their files.
+export {}

@@ -1,204 +1,226 @@
 <template>
-  <q-page class="q-pa-md">
-    <q-tabs v-model="activeTab" class="q-mb-md" dense>
-      <q-tab name="overview" label="Overview" />
-      <q-tab name="edit" label="Edit Profile" />
-      <q-tab name="security" label="Account & Security" />
-    </q-tabs>
+  <div class="p-4">
+    <!-- Tabs -->
+    <div class="flex gap-1 mb-4 border-b border-[#1f2937]">
+      <button
+        v-for="tab in tabs"
+        :key="tab.key"
+        @click="activeTab = tab.key"
+        :class="[
+          'px-4 py-2 text-sm font-medium transition-colors rounded-t-lg',
+          activeTab === tab.key
+            ? 'text-white border-b-2 border-purple-500'
+            : 'text-[#6b7280] hover:text-[#a1a1aa]'
+        ]"
+      >
+        {{ tab.label }}
+      </button>
+    </div>
 
-    <q-tab-panels v-model="activeTab" animated>
-      <!-- Overview Tab -->
-      <q-tab-panel name="overview" class="q-pa-none">
-        <app-page-state
-          :is-loading="!user"
-          :error="null"
-          :is-empty="!user"
-        >
-          <div v-if="user" class="row q-col-gutter-md">
-            <!-- Profile Card -->
-            <div class="col-12 col-md-4">
-              <q-card bordered flat>
-                <q-card-section class="items-center column text-center">
-                  <q-avatar size="96px" class="q-mb-md">
-                    <img v-if="user.avatar_url" :src="user.avatar_url" alt="Avatar" />
-                    <div v-else class="bg-primary text-white text-h4 flex flex-center" style="width:96px;height:96px;border-radius:50%">
-                      {{ avatarInitial }}
-                    </div>
-                  </q-avatar>
-                  <div class="text-h6">{{ user.display_name || user.username }}</div>
-                  <div class="text-caption text-grey-7">@{{ user.username }}</div>
-                </q-card-section>
-                <q-separator />
-                <q-card-section>
-                  <div class="text-body2 q-mb-xs">
-                    <strong>Email:</strong> {{ user.email }}
+    <!-- Overview Tab -->
+    <div v-if="activeTab === 'overview'">
+      <app-page-state
+        :is-loading="!user"
+        :error="null"
+        :is-empty="!user"
+      >
+        <div v-if="user" class="flex gap-4 flex-col md:flex-row">
+          <!-- Profile Card -->
+          <div class="w-full md:w-1/3">
+            <div class="rounded-lg bg-[#111111] border border-[#1f2937] overflow-hidden">
+              <div class="p-4 flex flex-col items-center text-center">
+                <div class="w-24 h-24 mb-4">
+                  <img
+                    v-if="user.avatar_url"
+                    :src="user.avatar_url"
+                    alt="Avatar"
+                    class="w-24 h-24 rounded-full object-cover"
+                  />
+                  <div
+                    v-else
+                    class="w-24 h-24 rounded-full bg-purple-600 text-white text-2xl font-bold flex items-center justify-center"
+                  >
+                    {{ avatarInitial }}
                   </div>
-                  <div class="text-body2 q-mb-xs">
-                    <strong>Timezone:</strong> {{ user.timezone }}
-                  </div>
-                  <div class="text-body2 q-mb-xs">
-                    <strong>Member since:</strong> {{ formatDate(user.created_at) }}
-                  </div>
-                </q-card-section>
-              </q-card>
+                </div>
+                <div class="text-lg font-semibold">{{ user.display_name || user.username }}</div>
+                <div class="text-xs text-[#6b7280]">@{{ user.username }}</div>
+              </div>
+              <hr class="border-[#1f2937]" />
+              <div class="p-4 space-y-1">
+                <div class="text-sm mb-1">
+                  <strong>Email:</strong> {{ user.email }}
+                </div>
+                <div class="text-sm mb-1">
+                  <strong>Timezone:</strong> {{ user.timezone }}
+                </div>
+                <div class="text-sm mb-1">
+                  <strong>Member since:</strong> {{ formatDate(user.created_at) }}
+                </div>
+              </div>
             </div>
-
-            <!-- Bio Card -->
-            <div class="col-12 col-md-8">
-              <q-card bordered flat>
-                <q-card-section>
-                  <div class="text-subtitle1">Bio</div>
-                  <p v-if="user.bio" class="text-body2 q-mt-sm" style="white-space: pre-wrap">{{ user.bio }}</p>
-                  <p v-else class="text-grey-7 text-caption q-mt-sm">No bio yet.</p>
-                </q-card-section>
-              </q-card>
-            </div>
-
           </div>
-        </app-page-state>
-      </q-tab-panel>
 
-      <!-- Edit Profile Tab -->
-      <q-tab-panel name="edit" class="q-pa-none">
-        <q-card bordered flat>
-          <q-card-section>
-            <q-form @submit.prevent="saveProfile" class="q-gutter-md">
-              <q-input
+          <!-- Bio Card -->
+          <div class="w-full md:w-2/3">
+            <div class="rounded-lg bg-[#111111] border border-[#1f2937] overflow-hidden">
+              <div class="p-4">
+                <div class="text-base font-medium mb-2">Bio</div>
+                <p v-if="user.bio" class="text-sm mt-2" style="white-space: pre-wrap">{{ user.bio }}</p>
+                <p v-else class="text-[#6b7280] text-xs mt-2">No bio yet.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </app-page-state>
+    </div>
+
+    <!-- Edit Profile Tab -->
+    <div v-if="activeTab === 'edit'">
+      <div class="rounded-lg bg-[#111111] border border-[#1f2937] overflow-hidden">
+        <div class="p-4">
+          <form @submit.prevent="handleSaveProfile" class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-[#a1a1aa] mb-1">Display Name</label>
+              <input
                 v-model="editForm.display_name"
-                outlined
-                dense
-                label="Display Name"
+                type="text"
                 placeholder="Your display name"
                 maxlength="100"
+                class="w-full rounded-lg bg-[#0a0a0a] border border-[#1f2937] px-3 py-2 text-sm text-white placeholder:text-[#6b7280] focus:outline-none focus:border-purple-500 transition-colors"
               />
-              <q-input
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-[#a1a1aa] mb-1">Avatar URL</label>
+              <input
                 v-model="editForm.avatar_url"
-                outlined
-                dense
-                label="Avatar URL"
+                type="url"
                 placeholder="https://example.com/avatar.jpg"
-                :rules="[val => !val || isValidUrl(val) || 'Must be a valid URL']"
-                lazy-rules
+                class="w-full rounded-lg bg-[#0a0a0a] border border-[#1f2937] px-3 py-2 text-sm text-white placeholder:text-[#6b7280] focus:outline-none focus:border-purple-500 transition-colors"
               />
-              <q-input
+              <p v-if="editErrors.avatar_url" class="text-xs text-red-400 mt-1">{{ editErrors.avatar_url }}</p>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-[#a1a1aa] mb-1">Bio</label>
+              <textarea
                 v-model="editForm.bio"
-                outlined
-                dense
-                type="textarea"
-                label="Bio"
                 placeholder="Tell us about yourself..."
                 maxlength="1000"
-              />
-              <q-select
+                rows="3"
+                class="w-full rounded-lg bg-[#0a0a0a] border border-[#1f2937] px-3 py-2 text-sm text-white placeholder:text-[#6b7280] focus:outline-none focus:border-purple-500 transition-colors resize-vertical"
+              ></textarea>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-[#a1a1aa] mb-1">Timezone</label>
+              <select
                 v-model="editForm.timezone"
-                outlined
-                dense
-                label="Timezone"
-                :options="commonTimezones"
-                emit-value
-                map-options
-              />
+                class="w-full rounded-lg bg-[#0a0a0a] border border-[#1f2937] px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-500 transition-colors"
+              >
+                <option v-for="tz in commonTimezones" :key="tz" :value="tz">{{ tz }}</option>
+              </select>
+            </div>
 
-              <div class="row justify-end">
-                <q-btn
-                  type="submit"
-                  color="primary"
-                  label="Save Changes"
-                  :loading="isSavingProfile"
-                  :disable="isSavingProfile"
-                />
-              </div>
+            <div class="flex justify-end">
+              <button
+                type="submit"
+                :disabled="isSavingProfile"
+                class="rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                <span v-if="isSavingProfile" class="inline-block animate-spin mr-2">⟳</span>
+                Save Changes
+              </button>
+            </div>
 
-              <q-banner v-if="profileSaveStatus === 'success'" class="bg-positive text-white q-mt-sm" dense>
-                Profile updated successfully!
-              </q-banner>
-              <q-banner v-if="profileSaveStatus === 'error'" class="bg-negative text-white q-mt-sm" dense>
-                Failed to update profile. Please try again.
-              </q-banner>
-            </q-form>
-          </q-card-section>
-        </q-card>
-      </q-tab-panel>
+            <div v-if="profileSaveStatus === 'success'" class="rounded bg-emerald-600 text-white px-3 py-2 text-sm mt-2">
+              Profile updated successfully!
+            </div>
+            <div v-if="profileSaveStatus === 'error'" class="rounded bg-red-600 text-white px-3 py-2 text-sm mt-2">
+              {{ editErrors._form || 'Failed to update profile. Please try again.' }}
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
 
-      <!-- Account & Security Tab -->
-      <q-tab-panel name="security" class="q-pa-none">
-        <q-card bordered flat>
-          <q-card-section>
-            <div class="text-subtitle1 q-mb-md">Change Password</div>
-            <q-form @submit.prevent="changePassword" class="q-gutter-md">
-              <q-input
+    <!-- Account & Security Tab -->
+    <div v-if="activeTab === 'security'">
+      <div class="rounded-lg bg-[#111111] border border-[#1f2937] overflow-hidden">
+        <div class="p-4">
+          <div class="text-base font-medium mb-4">Change Password</div>
+          <form @submit.prevent="handleChangePassword" class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-[#a1a1aa] mb-1">Current Password *</label>
+              <input
                 v-model="passwordForm.current_password"
-                outlined
-                dense
                 type="password"
-                label="Current Password *"
-                :rules="[val => !!val || 'Current password is required']"
-                lazy-rules
+                placeholder="Current password"
+                class="w-full rounded-lg bg-[#0a0a0a] border border-[#1f2937] px-3 py-2 text-sm text-white placeholder:text-[#6b7280] focus:outline-none focus:border-purple-500 transition-colors"
               />
-              <q-input
+              <p v-if="passwordErrors.current_password" class="text-xs text-red-400 mt-1">{{ passwordErrors.current_password }}</p>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-[#a1a1aa] mb-1">New Password *</label>
+              <input
                 v-model="passwordForm.new_password"
-                outlined
-                dense
                 type="password"
-                label="New Password *"
-                :rules="[
-                  val => !!val || 'New password is required',
-                  val => val.length >= 8 || 'Password must be at least 8 characters',
-                ]"
-                lazy-rules
+                placeholder="New password"
+                class="w-full rounded-lg bg-[#0a0a0a] border border-[#1f2937] px-3 py-2 text-sm text-white placeholder:text-[#6b7280] focus:outline-none focus:border-purple-500 transition-colors"
               />
-              <q-input
+              <p v-if="passwordErrors.new_password" class="text-xs text-red-400 mt-1">{{ passwordErrors.new_password }}</p>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-[#a1a1aa] mb-1">Confirm New Password *</label>
+              <input
                 v-model="passwordForm.new_password_confirm"
-                outlined
-                dense
                 type="password"
-                label="Confirm New Password *"
-                :rules="[
-                  val => !!val || 'Please confirm your new password',
-                  val => val === passwordForm.new_password || 'Passwords do not match',
-                ]"
-                lazy-rules
+                placeholder="Confirm new password"
+                class="w-full rounded-lg bg-[#0a0a0a] border border-[#1f2937] px-3 py-2 text-sm text-white placeholder:text-[#6b7280] focus:outline-none focus:border-purple-500 transition-colors"
               />
+              <p v-if="passwordErrors.new_password_confirm" class="text-xs text-red-400 mt-1">{{ passwordErrors.new_password_confirm }}</p>
+            </div>
 
-              <div class="row justify-end">
-                <q-btn
-                  type="submit"
-                  color="primary"
-                  label="Change Password"
-                  :loading="isSavingPassword"
-                  :disable="isSavingPassword"
-                />
-              </div>
+            <div class="flex justify-end">
+              <button
+                type="submit"
+                :disabled="isSavingPassword"
+                class="rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                <span v-if="isSavingPassword" class="inline-block animate-spin mr-2">⟳</span>
+                Change Password
+              </button>
+            </div>
 
-              <q-banner v-if="passwordSaveStatus === 'success'" class="bg-positive text-white q-mt-sm" dense>
-                Password changed successfully!
-              </q-banner>
-              <q-banner v-if="passwordSaveStatus === 'error'" class="bg-negative text-white q-mt-sm" dense>
-                Failed to change password. Check your current password and try again.
-              </q-banner>
-            </q-form>
-          </q-card-section>
-        </q-card>
-      </q-tab-panel>
-    </q-tab-panels>
-  </q-page>
+            <div v-if="passwordSaveStatus === 'success'" class="rounded bg-emerald-600 text-white px-3 py-2 text-sm mt-2">
+              Password changed successfully!
+            </div>
+            <div v-if="passwordSaveStatus === 'error'" class="rounded bg-red-600 text-white px-3 py-2 text-sm mt-2">
+              {{ passwordErrors._form || 'Failed to change password. Check your current password and try again.' }}
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, watch, computed } from 'vue'
-import { useQuasar } from 'quasar'
+import { reactive, ref, computed } from 'vue'
+import { z } from 'zod'
 
 import { api } from 'src/boot/axios'
 import AppPageState from 'src/components/AppPageState.vue'
 import { useAuthStore } from 'src/stores/auth'
-import type { UserSettings, UserSettingsUpdateRequest } from 'src/types/social'
 
-const $q = useQuasar()
 const auth = useAuthStore()
+
+const tabs = [
+  { key: 'overview', label: 'Overview' },
+  { key: 'edit', label: 'Edit Profile' },
+  { key: 'security', label: 'Account & Security' },
+] as const
 
 const activeTab = ref<'overview' | 'edit' | 'security'>('overview')
 
-// User data from auth store
 const user = computed(() => auth.user)
 
 const avatarInitial = computed(() => {
@@ -206,22 +228,22 @@ const avatarInitial = computed(() => {
   return name.charAt(0).toUpperCase()
 })
 
-// Edit form
 const editForm = reactive({
   display_name: '',
   avatar_url: '',
   bio: '',
   timezone: 'UTC',
 })
+const editErrors = reactive<Record<string, string>>({})
 const isSavingProfile = ref(false)
 const profileSaveStatus = ref<'idle' | 'success' | 'error'>('idle')
 
-// Password form
 const passwordForm = reactive({
   current_password: '',
   new_password: '',
   new_password_confirm: '',
 })
+const passwordErrors = reactive<Record<string, string>>({})
 const isSavingPassword = ref(false)
 const passwordSaveStatus = ref<'idle' | 'success' | 'error'>('idle')
 
@@ -232,26 +254,53 @@ const commonTimezones = [
   'Australia/Sydney', 'Pacific/Auckland',
 ]
 
+const profileSchema = z.object({
+  display_name: z.string().max(100).optional().or(z.literal('')),
+  avatar_url: z.string().url('Must be a valid URL').optional().or(z.literal('')),
+  bio: z.string().max(1000).optional().or(z.literal('')),
+  timezone: z.string().min(1),
+})
+
+const passwordSchema = z.object({
+  current_password: z.string().min(1, 'Current password is required'),
+  new_password: z.string().min(8, 'Password must be at least 8 characters'),
+  new_password_confirm: z.string().min(1, 'Please confirm your new password'),
+}).refine(data => data.new_password === data.new_password_confirm, {
+  message: 'Passwords do not match',
+  path: ['new_password_confirm'],
+})
+
 // Hydrate edit form when switching to edit tab
+import { watch } from 'vue'
+
 watch(activeTab, (tab) => {
   if (tab === 'edit' && auth.user) {
     editForm.display_name = auth.user.display_name || ''
     editForm.avatar_url = auth.user.avatar_url || ''
     editForm.bio = auth.user.bio || ''
     editForm.timezone = auth.user.timezone || 'UTC'
+    Object.keys(editErrors).forEach(k => delete editErrors[k])
+  }
+  if (tab === 'security') {
+    Object.keys(passwordErrors).forEach(k => delete passwordErrors[k])
   }
 })
 
-function isValidUrl(val: string): boolean {
-  try {
-    new URL(val)
-    return true
-  } catch {
-    return false
-  }
+function clearErrors(errors: Record<string, string>) {
+  Object.keys(errors).forEach(k => delete errors[k])
 }
 
-async function saveProfile(): Promise<void> {
+async function handleSaveProfile(): Promise<void> {
+  clearErrors(editErrors)
+  const result = profileSchema.safeParse(editForm)
+  if (!result.success) {
+    for (const issue of result.error.issues) {
+      const field = issue.path[0] as string
+      editErrors[field] = issue.message
+    }
+    return
+  }
+
   isSavingProfile.value = true
   profileSaveStatus.value = 'idle'
   try {
@@ -271,7 +320,17 @@ async function saveProfile(): Promise<void> {
   }
 }
 
-async function changePassword(): Promise<void> {
+async function handleChangePassword(): Promise<void> {
+  clearErrors(passwordErrors)
+  const result = passwordSchema.safeParse(passwordForm)
+  if (!result.success) {
+    for (const issue of result.error.issues) {
+      const field = issue.path[0] as string
+      passwordErrors[field] = issue.message
+    }
+    return
+  }
+
   isSavingPassword.value = true
   passwordSaveStatus.value = 'idle'
   try {
@@ -281,7 +340,6 @@ async function changePassword(): Promise<void> {
       new_password_confirm: passwordForm.new_password_confirm,
     })
     passwordSaveStatus.value = 'success'
-    // Clear form
     passwordForm.current_password = ''
     passwordForm.new_password = ''
     passwordForm.new_password_confirm = ''

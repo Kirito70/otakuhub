@@ -26,6 +26,7 @@ defineEmits<{
 
 <style lang="scss">
 @use 'src/css/tokens' as *;
+@use 'sass:color';
 
 .player-error {
   display: flex;
@@ -40,7 +41,7 @@ defineEmits<{
 
   .player-error-icon {
     font-size: 3rem;
-    color: $accent-danger;
+    color: $accent-error;
   }
 
   .player-error-title {
@@ -71,7 +72,7 @@ defineEmits<{
     transition: background $transition;
 
     &:hover {
-      background: lighten($accent-primary, 10%);
+      background: color.adjust($accent-primary, $lightness: 10%);
     }
   }
 }

@@ -43,7 +43,7 @@ def _classify_domain(user_text: str) -> str:
         "fastapi", "endpoint", "router", "service", "repository", "alembic", "sql", "postgres", "pydantic"
     ))
     frontend_hits = any(k in text for k in (
-        "quasar", "vue", "pinia", "page", "component", "form", "layout", "sidebar", "mobile ui"
+        "tailwind", "shadcn", "vite", "vue", "pinia", "page", "component", "form", "layout", "sidebar", "mobile ui"
     ))
     sync_hits = any(k in text for k in (
         "sync", "seed", "anilist", "mangadex", "jikan", "celery", "backfill", "weekly refresh"

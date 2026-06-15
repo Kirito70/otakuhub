@@ -30,10 +30,33 @@ async def get_db_session() -> AsyncSession:
 
 
 async def connect_db() -> None:
-    """Connect to the database and create tables if they don't exist."""
+    """Connect to the database, enable extensions, create tables, and stamp Alembic."""
     async with engine.begin() as conn:
-        # Create all tables defined in SQLModel models
+        # Enable required PostgreSQL extensions before creating tables
+        # pg_trgm enables trigram-based partial-match search (gin_trgm_ops indexes)
+        # unaccent enables accent-insensitive text search
+        # btree_gin enables GIN indexes on btree-compatible types
+        await conn.execute(text("CREATE EXTENSION IF NOT EXISTS pg_trgm"))
+        await conn.execute(text("CREATE EXTENSION IF NOT EXISTS unaccent"))
+        await conn.execute(text("CREATE EXTENSION IF NOT EXISTS btree_gin"))
+        await conn.commit()
+
+    # Create all tables from SQLModel model definitions (idempotent — checkfirst=True)
+    async with engine.begin() as conn:
         await conn.run_sync(SQLModel.metadata.create_all)
+
+    # Stamp Alembic to 'head' so future `alembic upgrade head` is a no-op
+    # Uses raw SQL because Alembic's command.stamp() needs a sync driver URL.
+    async with engine.begin() as conn:
+        await conn.execute(text(
+            "CREATE TABLE IF NOT EXISTS alembic_version (version_num VARCHAR(32) PRIMARY KEY)"
+        ))
+        # Migration chain: 001 → 002 → 003. Head is currently '003'.
+        await conn.execute(text(
+            "INSERT INTO alembic_version (version_num) VALUES ('003') ON CONFLICT (version_num) DO NOTHING"
+        ))
+        await conn.commit()
+
     print(f"Database connected: {settings.database_url.split('@')[-1]}")
 
 

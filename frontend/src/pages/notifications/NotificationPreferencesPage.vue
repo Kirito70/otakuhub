@@ -1,61 +1,103 @@
 <template>
-  <q-page class="q-pa-md">
-    <div class="row items-center justify-between q-mb-md">
-      <div class="text-h5">Notification Preferences</div>
-      <q-btn flat color="primary" label="Back to Bell" @click="goBack" />
+  <div class="p-4 min-h-screen bg-[#0a0a0a] text-white">
+    <div class="flex items-center justify-between mb-4">
+      <h1 class="text-xl font-bold">Notification Preferences</h1>
+      <button class="text-sm text-blue-400 hover:text-blue-300 transition-colors" @click="goBack">
+        Back to Bell
+      </button>
     </div>
 
-    <q-banner v-if="formError" class="bg-negative text-white q-mb-md" dense>{{ formError }}</q-banner>
-    <q-banner v-if="saveSuccess" class="bg-positive text-white q-mb-md" dense>Preferences saved.</q-banner>
-    <q-banner v-if="notificationsStore.preferencesError" class="bg-negative text-white q-mb-md" dense>
+    <div v-if="formError" class="bg-red-700 text-white px-4 py-2 rounded mb-4 text-sm">{{ formError }}</div>
+    <div v-if="saveSuccess" class="bg-green-700 text-white px-4 py-2 rounded mb-4 text-sm">Preferences saved.</div>
+    <div v-if="notificationsStore.preferencesError" class="bg-red-700 text-white px-4 py-2 rounded mb-4 text-sm">
       {{ notificationsStore.preferencesError }}
-    </q-banner>
+    </div>
 
-    <q-form ref="preferencesFormRef" class="q-gutter-md" @submit="onSubmit">
-      <q-toggle v-model="form.new_episode" label="New episode alerts" />
-      <q-toggle v-model="form.new_chapter" label="New chapter alerts" />
-      <q-toggle v-model="form.friend_activity" label="Friend activity" />
-      <q-toggle v-model="form.recommendations" label="Recommendations" />
-      <q-toggle v-model="form.watch_party_invite" label="Watch party invites" />
-      <q-toggle v-model="form.watch_party_reminder" label="Watch party reminders" />
+    <form class="space-y-4" @submit.prevent="onSubmit">
+      <label class="flex items-center gap-3 cursor-pointer">
+        <input type="checkbox" v-model="form.new_episode" class="w-4 h-4 rounded bg-[#111111] border-[#1f2937] accent-blue-500" />
+        <span class="text-sm">New episode alerts</span>
+      </label>
+      <label class="flex items-center gap-3 cursor-pointer">
+        <input type="checkbox" v-model="form.new_chapter" class="w-4 h-4 rounded bg-[#111111] border-[#1f2937] accent-blue-500" />
+        <span class="text-sm">New chapter alerts</span>
+      </label>
+      <label class="flex items-center gap-3 cursor-pointer">
+        <input type="checkbox" v-model="form.friend_activity" class="w-4 h-4 rounded bg-[#111111] border-[#1f2937] accent-blue-500" />
+        <span class="text-sm">Friend activity</span>
+      </label>
+      <label class="flex items-center gap-3 cursor-pointer">
+        <input type="checkbox" v-model="form.recommendations" class="w-4 h-4 rounded bg-[#111111] border-[#1f2937] accent-blue-500" />
+        <span class="text-sm">Recommendations</span>
+      </label>
+      <label class="flex items-center gap-3 cursor-pointer">
+        <input type="checkbox" v-model="form.watch_party_invite" class="w-4 h-4 rounded bg-[#111111] border-[#1f2937] accent-blue-500" />
+        <span class="text-sm">Watch party invites</span>
+      </label>
+      <label class="flex items-center gap-3 cursor-pointer">
+        <input type="checkbox" v-model="form.watch_party_reminder" class="w-4 h-4 rounded bg-[#111111] border-[#1f2937] accent-blue-500" />
+        <span class="text-sm">Watch party reminders</span>
+      </label>
 
-      <q-input
-        v-model="form.discord_webhook"
-        outlined
-        label="Discord webhook (optional)"
-        lazy-rules
-        :rules="[validateDiscordWebhook]"
-      />
-
-      <q-input
-        v-model="form.telegram_chat_id"
-        outlined
-        label="Telegram chat ID (optional)"
-        lazy-rules
-        :rules="[validateTelegramChatId]"
-      />
-
-      <q-toggle v-model="form.email_enabled" label="Enable email delivery" />
-      <q-toggle v-model="form.push_enabled" label="Enable push delivery" />
-
-      <div class="row q-gutter-sm">
-        <q-btn color="primary" label="Save Preferences" type="submit" :loading="notificationsStore.isSavingPreferences" />
-        <q-btn flat color="primary" label="Reset" @click="loadFromStore" />
+      <div>
+        <label class="block text-sm mb-1">Discord webhook (optional)</label>
+        <input
+          v-model="form.discord_webhook"
+          type="text"
+          placeholder="https://discord.com/api/webhooks/..."
+          class="w-full px-3 py-2 rounded bg-[#111111] border border-[#1f2937] text-white text-sm placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors"
+        />
+        <p v-if="discordValidationError" class="text-red-400 text-xs mt-1">{{ discordValidationError }}</p>
       </div>
-    </q-form>
-  </q-page>
+
+      <div>
+        <label class="block text-sm mb-1">Telegram chat ID (optional)</label>
+        <input
+          v-model="form.telegram_chat_id"
+          type="text"
+          placeholder="-1001234567890"
+          class="w-full px-3 py-2 rounded bg-[#111111] border border-[#1f2937] text-white text-sm placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors"
+        />
+        <p v-if="telegramValidationError" class="text-red-400 text-xs mt-1">{{ telegramValidationError }}</p>
+      </div>
+
+      <label class="flex items-center gap-3 cursor-pointer">
+        <input type="checkbox" v-model="form.email_enabled" class="w-4 h-4 rounded bg-[#111111] border-[#1f2937] accent-blue-500" />
+        <span class="text-sm">Enable email delivery</span>
+      </label>
+      <label class="flex items-center gap-3 cursor-pointer">
+        <input type="checkbox" v-model="form.push_enabled" class="w-4 h-4 rounded bg-[#111111] border-[#1f2937] accent-blue-500" />
+        <span class="text-sm">Enable push delivery</span>
+      </label>
+
+      <div class="flex gap-2 pt-2">
+        <button
+          type="submit"
+          :disabled="notificationsStore.isSavingPreferences"
+          class="px-4 py-2 rounded bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium transition-colors"
+        >
+          {{ notificationsStore.isSavingPreferences ? 'Saving...' : 'Save Preferences' }}
+        </button>
+        <button
+          type="button"
+          class="px-4 py-2 rounded bg-[#111111] border border-[#1f2937] hover:bg-[#1a1a1a] text-white text-sm transition-colors"
+          @click="loadFromStore"
+        >
+          Reset
+        </button>
+      </div>
+    </form>
+  </div>
 </template>
 
 <script setup lang="ts">
-import type { QForm } from 'quasar'
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 import { useNotificationsStore } from 'src/stores/notifications'
 
 const router = useRouter()
 const notificationsStore = useNotificationsStore()
-const preferencesFormRef = ref<QForm | null>(null)
 const saveSuccess = ref(false)
 const formError = ref<string | null>(null)
 
@@ -72,21 +114,21 @@ const form = ref({
   push_enabled: false,
 })
 
-function validateDiscordWebhook(value: string): true | string {
-  if (!value) {
-    return true
+const discordValidationError = computed(() => {
+  if (!form.value.discord_webhook) {
+    return null
   }
-  const isValid = /^(https?:\/\/|discord:\/\/).+/.test(value)
-  return isValid || 'Discord webhook must start with https://, http://, or discord://'
-}
+  const isValid = /^(https?:\/\/|discord:\/\/).+/.test(form.value.discord_webhook)
+  return isValid ? null : 'Discord webhook must start with https://, http://, or discord://'
+})
 
-function validateTelegramChatId(value: string): true | string {
-  if (!value) {
-    return true
+const telegramValidationError = computed(() => {
+  if (!form.value.telegram_chat_id) {
+    return null
   }
-  const isValid = /^-?\d+$/.test(value)
-  return isValid || 'Telegram chat ID must be numeric'
-}
+  const isValid = /^-?\d+$/.test(form.value.telegram_chat_id)
+  return isValid ? null : 'Telegram chat ID must be numeric'
+})
 
 function loadFromStore(): void {
   if (!notificationsStore.preferences) {
@@ -111,8 +153,7 @@ async function onSubmit(): Promise<void> {
   formError.value = null
   saveSuccess.value = false
 
-  const isValid = await preferencesFormRef.value?.validate()
-  if (!isValid) {
+  if (discordValidationError.value || telegramValidationError.value) {
     formError.value = 'Please fix the highlighted validation errors before saving.'
     return
   }

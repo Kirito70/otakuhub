@@ -104,7 +104,7 @@ otakuhub/
 
 ## File References
 - Backend work: `docs/backend-architecture.md`
-- Frontend work: `docs/quasar-architecture.md`
+- Frontend work: `docs/frontend-architecture.md`
 - Database work: `docs/database-schema.md`
 - Sync pipeline: `docs/sync-pipeline.md`
 - API contracts: `docs/api-spec.md`
