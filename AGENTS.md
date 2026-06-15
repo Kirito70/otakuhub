@@ -9,7 +9,8 @@ of known users (5–20 people), not scale or strangers.
 ```
 otakuhub/
 ├── backend/          # FastAPI Python backend
-├── frontend/         # Quasar (Vue 3) app — web, Electron desktop, Capacitor mobile
+├── frontend/         # Vue 3 app (REFERENCE — kept for reference only)
+│   └── flutter/      # Flutter app (ACTIVE PRIMARY FRONTEND) — mobile, desktop, web, TV
 ├── infra/            # Docker Compose, Nginx, env configs
 ├── docs/             # Architecture and design docs
 └── scripts/          # DB seed, sync workers, dev utilities
@@ -17,13 +18,16 @@ otakuhub/
 
 ## Tech Stack — Non-Negotiable
 - **Backend**: Python 3.12+, FastAPI, SQLAlchemy 2.x async, Alembic, Celery + Redis, PostgreSQL 16
-- **Frontend**: Quasar 2.x (Vue 3 + Vite) — single codebase for all platforms:
-  - Web: SPA / PWA / SSR via `quasar build`
-  - Android + iOS: Capacitor 6
-  - Windows + Linux desktop: Electron
-- **State**: Pinia (with pinia-plugin-persistedstate for auth tokens)
-- **HTTP**: Axios with request/response interceptors
-- **Language**: TypeScript strict mode throughout
+- **Frontend (active)**: Flutter 3.x (Dart 3.x) — single codebase for all platforms:
+  - Mobile: Android (APK/AAB), iOS (IPA) — native ARM
+  - Desktop: Windows, macOS, Linux — native executables
+  - Web: Flutter for Web (CanvasKit renderer)
+  - TV: Android TV, Fire TV — same APK as mobile with Focus widget navigation
+  - Tablet: Same codebase with adaptive LayoutBuilder breakpoints
+- **Frontend (reference)**: Vue 3 + Vite + Tailwind (kept at `frontend/` for design/UX reference only)
+- **State**: Riverpod 2.x (notifiers, futures, families)
+- **HTTP**: Dio with auth interceptor (token attach + 401 refresh)
+- **Models**: `freezed` + `json_serializable` for immutable data classes
 - **Auth**: JWT (access + refresh tokens), bcrypt password hashing
 - **External APIs**: AniList GraphQL (primary), MangaDex REST v5, Jikan v4
 - **Notifications**: Apprise (Discord, Telegram, email, push)
@@ -38,20 +42,18 @@ otakuhub/
 - Never mark a task complete unless relevant tests were added/updated and executed.
 - For frontend UX work, include form-level validation tests (required fields, invalid format, disabled submit, inline error states).
 
-### TypeScript / Vue 3 / Quasar
-- `<script setup lang="ts">` on every component — no Options API
-- Strict TypeScript: `"strict": true` in tsconfig — no implicit `any`
-- Pinia stores in `src/stores/<name>.ts` — one store per domain
-- Composables in `src/composables/use<Name>.ts` for reusable logic
-- All API responses typed with Zod schemas or hand-written interfaces
-- `vue-router` 4.x with typed routes — no untyped `$route` access
-- Quasar components preferred over custom HTML — use `QCard`, `QList`, `QItem`, etc.
-- Responsive: use Quasar's `$q.screen` breakpoints and `col-*` grid — not raw CSS media queries
-- Never use `any` — use `unknown` and narrow, or write proper interfaces
-- All async operations in composables: expose `isLoading`, `error`, and `data` refs
-- All forms must have client-side validation for required fields and basic format constraints before API submission
-- Use Quasar form primitives (`QForm`, `QInput` rules, `lazy-rules`) and show actionable validation messages
-- Add/update Vitest tests for form validation flows (empty submit, invalid input, successful submit)
+### Dart / Flutter
+- Feature-first structure: `lib/features/<name>/` — models, providers, screens, widgets
+- Riverpod 2.x for state — NotifierProvider for complex state, FutureProvider for async, StateProvider for simple
+- `freezed` + `json_serializable` for all data models — immutable, generated code
+- Dio with auth interceptor for all HTTP — never use `http` package directly
+- GoRouter with ShellRoute for adaptive layouts — auth guard redirect
+- Responsive: `LayoutBuilder` + breakpoints (600/1024) — not hardcoded sizes
+- TV: `Focus` widget for D-pad navigation — all interactive elements must be focusable
+- AdaptiveScaffold widget: bottom nav (<600), rail (600–1024), drawer (>1024)
+- All forms validated before API submission — use Form + TextFormField validator
+- Add/update flutter_test + mocktail tests for every screen (loading, error, data states)
+- Never use `dynamic` — always explicit types
 
 ### Python / FastAPI (unchanged)
 - Type hints required on ALL function signatures
@@ -72,14 +74,14 @@ otakuhub/
 ### Git Conventions
 - Branch naming: `feat/`, `fix/`, `chore/`, `refactor/`, `docs/`
 - Commit format: `type(scope): short description` (Conventional Commits)
-- PRs must pass: eslint + vue-tsc (frontend), ruff + mypy (backend), tests
+- PRs must pass: flutter analyze + flutter test (frontend), ruff + mypy (backend), tests
 
 ## Agent Roles
 | Agent | Primary tool | Responsibility |
 |---|---|---|
 | architect | Claude Code | System design, ADRs, schema decisions |
 | backend-dev | Cline / OpenCode | FastAPI routes, services, repositories |
-| quasar-dev | Antigravity | Quasar pages, components, Pinia stores |
+| flutter-dev | Cline / OpenCode | Flutter/Dart screens, Riverpod providers, GoRouter, widgets |
 | db-designer | Claude Code | Schema design, Alembic migrations |
 | code-reviewer | Copilot / Claude Code | PR review, quality gates |
 | security-auditor | Claude Code | Auth, SQL injection, data exposure checks |
@@ -98,13 +100,15 @@ otakuhub/
 - NEVER write to production database without explicit user confirmation
 - NEVER commit secrets, API keys, or tokens to Git
 - NEVER call AniList or MangaDex directly from the frontend — all external API calls go through FastAPI
-- NEVER use `any` in TypeScript without a comment explaining why
-- ALWAYS run `quasar build` in all target modes before marking frontend work done
+- NEVER call AniList or MangaDex directly from the frontend — all external API calls go through FastAPI
+- ALWAYS run `flutter analyze && flutter test` before marking frontend work done
+- ALWAYS run `flutter build web` for web target, `flutter build apk` for Android, `flutter build windows` for desktop before cross-platform release
 - ALWAYS check for existing Alembic revision before creating a new one
 
 ## File References
 - Backend work: `docs/backend-architecture.md`
-- Frontend work: `docs/frontend-architecture.md`
+- Frontend work: `docs/flutter-architecture.md`
 - Database work: `docs/database-schema.md`
 - Sync pipeline: `docs/sync-pipeline.md`
 - API contracts: `docs/api-spec.md`
+- Vue reference: `docs/frontend-architecture.md`

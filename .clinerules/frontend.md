@@ -1,98 +1,104 @@
 ---
 paths:
-  - "frontend/**"
+  - "frontend/flutter/**"
 ---
-# Frontend Rules (Quasar / Vue 3 / TypeScript)
+# Frontend Rules (Flutter / Dart / Riverpod)
 
-## Component Rules
-- ALWAYS use `<script setup lang="ts">` — never Options API or `defineComponent`
-- ALWAYS type component props with `defineProps<{...}>()`
-- ALWAYS type emits with `defineEmits<{...}>()`
-- NEVER use `any` — write a proper interface or use `unknown`
-- Import types with `import type { Foo }` — not `import { Foo }` for type-only imports
+## Project Paths
+The active Flutter frontend lives at `frontend/flutter/`.
+The reference Vue frontend lives at `frontend/` but is NOT actively developed.
 
-## Pinia Store Pattern
-```typescript
-// src/stores/tracking.ts
-export const useTrackingStore = defineStore('tracking', () => {
-  const entries = ref<ListEntry[]>([])
-  const isLoading = ref(false)
-  const error = ref<string | null>(null)
+## Flutter State Pattern (Riverpod)
+```dart
+// lib/features/tracking/providers/list_provider.dart
+final userListProvider = FutureProvider<List<ListEntry>>((ref) async {
+  final api = ref.read(apiClientProvider);
+  final response = await api.get('/api/v1/lists/me');
+  return (response.data as List).map((j) => ListEntry.fromJson(j)).toList();
+});
 
-  async function fetchUserList() {
-    isLoading.value = true
-    error.value = null
+// For mutable state with methods
+final trackingNotifierProvider =
+    NotifierProvider<TrackingNotifier, TrackingState>(TrackingNotifier.new);
+
+class TrackingNotifier extends Notifier<TrackingState> {
+  @override
+  TrackingState build() => TrackingState();
+
+  Future<void> updateProgress(String mediaId, int progress) async {
+    state = state.copyWith(isLoading: true);
     try {
-      const { data } = await api.get<ListEntry[]>('/api/v1/lists/me')
-      entries.value = data
+      final api = ref.read(apiClientProvider);
+      await api.patch('/api/v1/lists/$mediaId', data: {'progress': progress});
+      ref.invalidate(userListProvider);
+      state = state.copyWith(isLoading: false);
     } catch (e) {
-      error.value = getErrorMessage(e)
-    } finally {
-      isLoading.value = false
+      state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
-
-  return { entries, isLoading, error, fetchUserList }
-})
+}
 ```
 
-## Composable Pattern (for reusable logic)
-```typescript
-// src/composables/useMediaSearch.ts
-export function useMediaSearch() {
-  const results = ref<MediaSearchResult[]>([])
-  const isLoading = ref(false)
-  const error = ref<string | null>(null)
+## Screen Pattern
+```dart
+class DiscoverScreen extends ConsumerWidget {
+  const DiscoverScreen({super.key});
 
-  const search = useDebounceFn(async (query: string) => {
-    if (!query.trim()) { results.value = []; return }
-    isLoading.value = true
-    try {
-      const { data } = await api.get('/api/v1/media/search', { params: { q: query } })
-      results.value = data.items
-    } catch (e) {
-      error.value = getErrorMessage(e)
-    } finally {
-      isLoading.value = false
-    }
-  }, 300)
-
-  return { results, isLoading, error, search }
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final trending = ref.watch(trendingProvider);
+    return Scaffold(
+      body: trending.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (err, stack) => AppEmptyState(
+          message: 'Failed to load',
+          actionLabel: 'Retry',
+          onAction: () => ref.invalidate(trendingProvider),
+        ),
+        data: (items) => ListView(
+          children: items.map((item) => MediaCard(item: item)).toList(),
+        ),
+      ),
+    );
+  }
 }
 ```
 
 ## Responsive Layout
-```vue
-<template>
-  <q-page padding>
-    <!-- Mobile: 1 col, Tablet: 2 cols, Desktop: 4 cols -->
-    <div class="row q-col-gutter-md">
-      <div
-        v-for="item in items"
-        :key="item.id"
-        class="col-12 col-sm-6 col-md-3"
-      >
-        <AnimeCard :anime="item" />
-      </div>
-    </div>
-  </q-page>
-</template>
+```dart
+LayoutBuilder(
+  builder: (context, constraints) {
+    final width = constraints.maxWidth;
+    if (width < 600) {
+      return _MobileLayout(child: child);
+    } else if (width < 1024) {
+      return _TabletLayout(child: child);
+    } else {
+      return _DesktopLayout(child: child);
+    }
+  },
+)
 ```
 
-## API Calls — Always Via Axios Boot
-```typescript
-// CORRECT — use the configured axios instance
-import { api } from 'src/boot/axios'
-const { data } = await api.get('/api/v1/media/search')
+## API Calls — Always Via Dio
+```dart
+// CORRECT — use the configured Dio instance from provider
+final api = ref.read(apiClientProvider);
+final response = await api.get('/api/v1/media/search');
 
-// WRONG — never use fetch() or import axios directly
-const res = await fetch('http://...')
-import axios from 'axios'
+// WRONG — never use `http` package or create raw Dio instances
+import 'package:http/http.dart' as http; // DON'T
 ```
+
+## TV Support
+- Wrap all interactive elements in `Focus()` widget
+- Use `FocusNode` + `onFocusChange` for visual feedback
+- Add `semanticLabel` to all interactive elements
+- Test navigation via keyboard arrows / D-pad
 
 ## Never
 - Never call AniList, MangaDex, or Jikan directly from frontend code
-- Never use `localStorage` directly — use Pinia with pinia-plugin-persistedstate
-- Never use `$router.push({ path: '...' })` with raw strings — use named routes
-- Never use `v-for` on lists > 100 items without `QVirtualScroll`
-- Never use `<img>` for remote images — use `<q-img>` with error slot
+- Never use `flutter_secure_storage` on web (use `shared_preferences` fallback)
+- Never use `GoRouter.go()` with raw paths — use named routes from route_names.dart
+- Never use bare `Image.network` without error handling — use `CachedNetworkImage`
+- Never modify Vue reference code in `frontend/` for Flutter features

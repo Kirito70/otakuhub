@@ -5,62 +5,64 @@
 ## Antigravity Agent Configuration
 
 ### Primary Role in This Project
-Antigravity / Gemini is the **Quasar/Vue frontend specialist** for OtakuHub.
-Focus areas: Quasar pages, components, Pinia stores, Axios composables, responsive layout.
+Antigravity / Gemini is the **reference code specialist** for OtakuHub.
+The primary frontend is now Flutter (see `frontend/flutter/`). The Vue 3 code in `frontend/` is kept for design/UX reference only.
 
 ### Autonomy Profile
 Use **Agent-Assisted** mode (not full autopilot) for this project.
 - Plan first for any change touching more than 2 files
-- Ask for confirmation before modifying: `src/router/routes.ts`, `quasar.config.ts`, any Pinia store
-- Auto-execute safe operations: linting, page creation, composable generation
+- Ask for confirmation before modifying: backend routes, database schema
+- Auto-execute safe operations: linting, analysis, documentation
 
 ### Skills Available (`.antigravity/skills/`)
-- `quasar-page.md` — Scaffold a new Quasar page with Pinia store and tests
-- `pinia-store.md` — Create a typed Pinia store with async actions
+- `quasar-page.md` — Contents updated for shadcn-vue + Tailwind (kept for reference)
+- `pinia-store.md` — Create a typed Pinia store with async actions (reference patterns)
 
 ### Workflow Slash Commands
-Use `/startcycle <feature>` to trigger the full frontend dev pipeline:
+Use `/startcycle <feature>` to trigger the full dev pipeline:
 1. PM agent reads spec → writes user stories
-2. UI Designer describes screen layout using Quasar component names
-3. Quasar Engineer implements the page + store
-4. Test agent writes Vitest component tests
+2. UI Designer describes screen layout
+3. Flutter Engineer implements the screen + provider
+4. Test agent writes widget tests
 5. Reviewer checks against AGENTS.md conventions
 
-### Quasar-Specific Rules for Gemini
-- All components: `<script setup lang="ts">` — no Options API, no `defineComponent`
-- State: Pinia stores — no Vuex, no component-level `ref` for shared data
-- HTTP: Axios via `src/boot/axios.ts` — no direct `fetch()` calls
-- Routing: `vue-router` 4 with typed routes from `src/router/routes.ts`
-- Layout: Quasar's `QLayout` + `QPageContainer` + `QPage` — not custom div structures
-- Responsive: `$q.screen.lt.md` / `$q.screen.gt.sm` — not raw CSS breakpoints
-- Icons: `@quasar/extras` (Material Icons) — `icon="img:..."` for custom SVGs
-- Notifications: `$q.notify()` for toasts — not custom snackbar components
-- Loading: `$q.loading.show()` / `.hide()` for full-screen loading
-- Lists: `QVirtualScroll` for long lists (100+ items) — not `v-for` on bare arrays
-- All images: `q-img` component — not `<img>` tags
+### Flutter-Specific Rules for Gemini
+- All screens: `ConsumerWidget` or `ConsumerStatefulWidget` — no `StatelessWidget` for API-dependent screens
+- State: Riverpod providers — no `setState` for shared data
+- HTTP: Dio via `lib/core/api/api_client.dart` — no direct `http` calls
+- Routing: GoRouter with named routes from `lib/core/router/route_names.dart`
+- Layout: `AdaptiveScaffold` — `LayoutBuilder` with breakpoints (600/1024)
+- Responsive: `LayoutBuilder` with breakpoints — not hardcoded sizes
+- Images: `CachedNetworkImage` for remote images — not bare `Image.network`
+- TV: `Focus` widget wrapping all interactive elements for D-pad navigation
+- Forms: `Form` + `TextFormField` with validators — never unvalidated form submission
 
-### After Building a Page
+### After Building a Screen
 ```bash
-cd frontend
-vue-tsc --noEmit          # zero TS errors
-npx eslint src/           # zero lint errors
-quasar build              # confirm SPA build succeeds
+cd frontend/flutter
+flutter analyze          # zero errors
+flutter test             # all tests pass
+flutter build web        # confirm web build succeeds
+flutter build apk        # confirm Android build succeeds
 ```
 
 ### Build Targets Reference
 ```bash
-# Web SPA (primary)
-quasar build
+# Web (CanvasKit)
+flutter build web
 
-# PWA
-quasar build -m pwa
+# Android
+flutter build apk              # APK
+flutter build appbundle        # Play Store AAB
 
-# Electron (Windows + Linux desktop)
-quasar build -m electron
+# iOS (requires macOS + Xcode)
+flutter build ios
 
-# Android (via Capacitor)
-quasar build -m capacitor -T android
+# Desktop
+flutter build windows
+flutter build macos
+flutter build linux
 
-# iOS (via Capacitor, requires Mac)
-quasar build -m capacitor -T ios
+# TV — same as Android APK
+flutter build apk --target-platform android-arm64
 ```

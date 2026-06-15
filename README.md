@@ -5,7 +5,8 @@ Private friend-group anime/manga/manhwa tracking + social platform.
 ## Tech Stack
 
 - **Backend:** FastAPI, SQLAlchemy async, Alembic, Celery, Redis, PostgreSQL 16
-- **Frontend:** Quasar 2 (Vue 3 + TypeScript)
+- **Frontend (active):** Flutter 3 (Dart 3) — mobile, desktop, web, TV
+- **Frontend (reference):** Vue 3 + Vite + Tailwind (kept at `frontend/`)
 - **Infra:** Docker Compose + Nginx TLS reverse proxy
 
 ---
@@ -15,7 +16,8 @@ Private friend-group anime/manga/manhwa tracking + social platform.
 ```text
 otakuhub/
 ├── backend/      # FastAPI app + Alembic + Celery workers
-├── frontend/     # Quasar app (web/electron/capacitor)
+├── frontend/     # Vue 3 reference app (kept for design/UX patterns)
+│   └── flutter/  # Flutter app (active — mobile, desktop, web, TV)
 ├── infra/        # docker compose + nginx + cert mounts
 ├── docs/         # architecture and ADRs
 └── scripts/      # utility scripts
@@ -56,16 +58,18 @@ cd backend
 uv run otakuhub celery worker --loglevel info --queue sync
 ```
 
-### Frontend
+### Frontend (Flutter)
 
 ```bash
-cd frontend
-cp .env.example .env
-npm install
-npx quasar dev
+cd frontend/flutter
+cp .env.example .env  # or create with API_BASE_URL
+flutter pub get
+flutter run            # auto-select device
+flutter run -d chrome  # web
+flutter run -d windows # desktop
 ```
 
-Frontend will be available at `http://localhost:9000` (Quasar default).
+Flutter app will auto-launch on the selected device.
 
 ---
 
@@ -131,13 +135,15 @@ uv run mypy src/ --strict
 uv run pytest tests/ --asyncio-mode=auto
 ```
 
-### Frontend
+### Frontend (Flutter)
 
 ```bash
-cd frontend
-npm run -s typecheck
-npm run -s test -- --run
-npx quasar build
+cd frontend/flutter
+flutter analyze
+flutter test
+flutter build apk       # Android
+flutter build web       # Web
+flutter build windows   # Windows desktop
 ```
 
 ---
@@ -146,7 +152,8 @@ npx quasar build
 
 - `PROJECT-STATUS.md` — single source of truth for current phase/sub-phase
 - `docs/backend-architecture.md`
-- `docs/frontend-architecture.md`
+- `docs/flutter-architecture.md` (primary frontend)
+- `docs/frontend-architecture.md` (Vue reference)
 - `docs/database-schema.md`
 - `docs/api-spec.md`
 - `docs/adr/` — architecture decision records

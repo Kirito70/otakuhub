@@ -37,7 +37,7 @@
     "docs/agents.md",
     "docs/backend-architecture.md",
     "docs/database-schema.md",
-    "docs/frontend-architecture.md"
+    "docs/flutter-architecture.md"
   ],
   "default_agent": "build",
   "agent": {
@@ -49,8 +49,8 @@
       "description": "FastAPI routes, services, repositories, Celery workers",
       "temperature": 0.1
     },
-    "quasar-dev": {
-      "description": "Quasar/Vue 3 pages, Pinia stores, composables, responsive layout",
+    "flutter-dev": {
+      "description": "Flutter/Dart screens, Riverpod providers, GoRouter, responsive widgets",
       "temperature": 0.2
     },
     "db-designer": {
@@ -74,7 +74,7 @@
       "temperature": 0.1
     },
     "test-writer": {
-      "description": "pytest for backend, Vitest + Vue Test Utils for frontend",
+      "description": "pytest for backend, flutter_test + mocktail for frontend",
       "temperature": 0.0
     },
     "tdd-enforcer": {

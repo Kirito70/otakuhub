@@ -1,8 +1,86 @@
-# Frontend Migration Checklist — Quasar → shadcn-vue + Tailwind
+# OtakuHub — Frontend Migration Checklist
 
-> **ADR**: `docs/adr/090-ditch-quasar-shadcn-tailwind.md`
-> **Target**: aniwaves.ru visual design
-> **Status**: 🟡 Planning — not started
+> **Major decision (2026-06-09)**: ADR 091 adopts Flutter as the primary frontend. The Vue 3 + Tailwind migration (Phase M) is **deferred** until after Flutter phases F1–F10 are complete.
+> All new frontend work is Flutter (`frontend/flutter/`). The Vue code in `frontend/` is kept for reference only.
+
+---
+
+## Phase F — Flutter Cross-Platform Migration
+
+### Phase F1 — Flutter Foundation
+- [ ] `flutter create` in `frontend/flutter/`
+- [ ] pubspec.yaml deps: dio, flutter_riverpod, go_router, freezed_annotation, json_serializable, flutter_secure_storage, cached_network_image, mocktail
+- [ ] analysis_options.yaml (strict Dart)
+- [ ] Project structure: lib/core/, lib/features/, lib/tv/
+- [ ] GoRouter + ShellRoute + AdaptiveScaffold
+- [ ] Dio client + auth interceptor
+- [ ] flutter_secure_storage wrapper
+- [ ] AuthNotifier Riverpod provider
+- [ ] Dark Material 3 theme (aniwaves palette)
+- [ ] Auth guard in GoRouter
+- [ ] Build verification: web, Android APK, Windows
+
+### Phase F2 — Auth & Setup Screens
+- [ ] LoginScreen (Form + TextFormField validators)
+- [ ] RegisterScreen (with confirm-password matching)
+- [ ] SetupScreen (one-time super admin bootstrap)
+- [ ] Form validation tests (empty, invalid, successful)
+
+### Phase F3 — Discover & Media Detail
+- [ ] DiscoverScreen (search + trending + new releases tabs)
+- [ ] MediaCard widget
+- [ ] MediaDetailScreen (hero banner, episodes, info, related tabs)
+- [ ] Episode list with sub/dub filter
+- [ ] Related media carousel
+
+### Phase F4 — Tracking & Lists
+- [ ] MyListScreen (status tabs)
+- [ ] Progress update widget
+- [ ] Score widget
+- [ ] AiringCalendarScreen
+- [ ] ImportScreen (AniList/MAL)
+
+### Phase F5 — Social Features
+- [ ] Activity feed (group + personal tabs)
+- [ ] Recommendations (inbox + sent + acknowledge)
+- [ ] Discussions (threads list, detail, create)
+
+### Phase F6 — Watch Party
+- [ ] Watch party list (upcoming + past)
+- [ ] Create party screen
+- [ ] Party detail + RSVP
+
+### Phase F7 — Notifications
+- [ ] Notification inbox (all + unread tabs)
+- [ ] Notification preferences (content + channels)
+
+### Phase F8 — Profile
+- [ ] Profile overview
+- [ ] Edit profile screen
+- [ ] Account & security screen
+
+### Phase F9 — TV Optimization
+- [ ] Focus widget wrappers on all interactive elements
+- [ ] TV-optimized AdaptiveScaffold
+- [ ] D-pad navigation testing
+
+### Phase F10 — Polish & Cross-Platform QA
+- [ ] Full test coverage (flutter_test + mocktail)
+- [ ] Build verification: all targets
+- [ ] Web performance profiling
+- [ ] Visual QA against aniwaves.ru
+- [ ] CI/CD pipeline for Flutter
+
+---
+
+## Phase M — Vue 3 + Tailwind Migration (DEFERRED)
+
+> These phases are deferred until after Flutter F1–F10 are complete.
+> Vue code in `frontend/` is kept as reference material only.
+
+---
+
+### M1 — Foundation (Vite + Tailwind init)
 
 ## Phase M1 — Foundation (Vite + Tailwind + shadcn-vue)
 

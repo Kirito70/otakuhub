@@ -1,7 +1,7 @@
 # OtakuHub — Backend Architecture
 
 ## Overview
-FastAPI async Python backend. Serves a Vue 3 + Tailwind CSS + shadcn-vue frontend for web and desktop (Electron).
+FastAPI async Python backend. Serves a Flutter cross-platform frontend (mobile, desktop, web, TV) and a Vue 3 + Tailwind CSS + shadcn-vue reference frontend (kept at `frontend/` for design/UX patterns).
 Handles all anime/manga metadata, user tracking, social features, and sync pipeline.
 
 ## Project Structure

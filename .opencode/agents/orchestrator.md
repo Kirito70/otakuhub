@@ -11,7 +11,7 @@ Given the user's task, do exactly three things:
 
 1. Classify the domain:
    - `backend` — FastAPI/Python/SQLAlchemy/Alembic/API only
-   - `frontend` — Quasar/Vue/Pinia/UI only
+   - `frontend` — Flutter/Dart/Riverpod/UI only
    - `fullstack` — touches both backend and frontend
    - `sync` — AniList/MangaDex/Jikan sync pipeline, Celery jobs, seed/backfill
    - `infra` — Docker, CI/CD, compose, deployment
@@ -34,4 +34,4 @@ Rules:
 - Keep output under 180 tokens.
 - If domain is `sync`, note that `@sync-engineer` must be invoked by the architect.
 - If domain is `security`, note that `@security-auditor` must be invoked by the architect.
-- For UI-heavy work, note that `@quasar-dev` should be preferred over `@flutter-dev` unless explicitly asked.
+- For UI-heavy work, use `@flutter-dev` (Flutter is the primary frontend). Vue 3 reference code lives in `frontend/` for design/UX reference only.

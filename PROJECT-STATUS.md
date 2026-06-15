@@ -10,12 +10,12 @@
 ## Current State
 
 ```
-CURRENT_PHASE:     M
-CURRENT_SUB_PHASE: M3
+CURRENT_PHASE:     F1
+CURRENT_SUB_PHASE: F1.1
 STATUS:            🔄 In Progress
 LAST_UPDATED:      2026-06-09
 BLOCKED_BY:        none
-NEXT_ACTION:       Phase M3 — shadcn-vue Component Migration (QForm→Input, QBtn→Button, QCard→Card, QDialog→Dialog)
+NEXT_ACTION:       Phase F1.1 — Flutter project init: `flutter create` in frontend/flutter/, pubspec.yaml with deps (Dio, Riverpod, GoRouter, freezed, flutter_secure_storage), analysis_options.yaml, project structure scaffolding
 ```
 
 > **Note**: After completing all 24 formal phases, an audit (AUDIT-PLAN.md) identified real gaps. Phases 0–4 are complete. Phase 5 (Frontend Feature Gaps) is in progress.
@@ -25,6 +25,8 @@ NEXT_ACTION:       Phase M3 — shadcn-vue Component Migration (QForm→Input, Q
 > **Streaming Features (2026-06-08)**: ADRs 079–087 define Phases 23–28 — streaming-first redesign with aniwave-style dark UX, playback API, video player, real AniList import, notification pipeline, and admin source provider UI.
 
 > **Architectural Rebuild (2026-06-09)**: ADR 090 — Ditch Quasar, adopt shadcn-vue + Tailwind CSS. Complete rewrite of frontend to remove Quasar dependency and use Vite + Tailwind CSS v4 + shadcn-vue primitives. aniwaves.ru is the target design reference.
+>
+> **Flutter Cross-Platform Transition (2026-06-09)**: ADR 091 — Adopt Flutter as the primary frontend framework. Flutter targets mobile (Android/iOS), desktop (Windows/Mac/Linux), web, TV (Android TV/Fire TV), and tablet from a single Dart codebase. Vue 3 code in `frontend/` is kept as reference. Phase M (Vue migration) is deferred to after Flutter phases (F1-F10) are complete. All new frontend work targets Flutter.
 
 ---
 
@@ -32,39 +34,52 @@ NEXT_ACTION:       Phase M3 — shadcn-vue Component Migration (QForm→Input, Q
 
 | Phase | Name | Status |
 |-------|------|--------|
+| — | **ACTIVE: Flutter Frontend Phases** | |
+| F1 | Flutter Foundation — project init, router, Dio, theme, builds | 🔄 In progress |
+| F2 | Auth & Setup — login, register, bootstrap screens | ⏳ |
+| F3 | Discover & Media Detail | ⏳ |
+| F4 | Tracking & Lists | ⏳ |
+| F5 | Social Features | ⏳ |
+| F6 | Watch Party | ⏳ |
+| F7 | Notifications | ⏳ |
+| F8 | Profile | ⏳ |
+| F9 | TV Optimization — Focus widgets, D-pad, remote | ⏳ |
+| F10 | Polish & Cross-Platform QA | ⏳ |
+| — | **BACKEND PHASES (Completed)** | |
 | 1 | Foundation & Infrastructure | ✅ Complete |
 | 2 | Database & Backend Core | ✅ Complete |
 | 3 | Anime Metadata Pipeline | ✅ Complete |
 | 4 | Query Builder Pattern Implementation | ✅ Complete |
 | 5 | User Auth & Groups | ✅ Complete |
 | 6 | Tracking & Lists | ✅ Complete |
-| 7 | Flutter App Shell | 🔄 In progress |
-| 8 | Flutter Tracking Screens | ⏳ Not started |
+| 7 | Flutter App Shell (Vue reference) | ✅ Complete |
+| 8 | Flutter Tracking Screens (Vue reference) | ✅ Complete |
 | 9 | Social Features — Backend | ✅ Complete |
-| 10 | Social Features — Flutter | ✅ Complete |
+| 10 | Social Features — Flutter (Vue reference) | ✅ Complete |
 | 11 | Watch Party | ✅ Complete |
 | 12 | First-Run Setup & Super Admin Bootstrap | ✅ Complete |
 | 13 | Backend Seed/Sync Command Consolidation | ✅ Complete |
-| 14 | Frontend Foundation Stabilization | ✅ Complete |
-| 15 | Frontend Design System (Shadcn-inspired, Quasar-native) | ✅ Complete |
-| 16 | Auth & Setup Frontend Hardening | ✅ Complete |
-| 17 | Discover & Media Detail Frontend | ✅ Complete |
-| 18 | Tracking Frontend Pages | ✅ Complete |
-| 19 | Social Frontend Pages | ✅ Complete |
-| 20 | Watch Party Frontend Pages | ✅ Complete |
-| 21 | Notifications Frontend Pages | ✅ Complete |
-| 22 | Profile Frontend Pages | ✅ Complete |
+| 14 | Frontend Foundation Stabilization (Vue reference) | ✅ Complete |
+| 15 | Frontend Design System (Vue reference) | ✅ Complete |
+| 16 | Auth & Setup Frontend Hardening (Vue reference) | ✅ Complete |
+| 17 | Discover & Media Detail Frontend (Vue reference) | ✅ Complete |
+| 18 | Tracking Frontend Pages (Vue reference) | ✅ Complete |
+| 19 | Social Frontend Pages (Vue reference) | ✅ Complete |
+| 20 | Watch Party Frontend Pages (Vue reference) | ✅ Complete |
+| 21 | Notifications Frontend Pages (Vue reference) | ✅ Complete |
+| 22 | Profile Frontend Pages (Vue reference) | ✅ Complete |
 | 23 | Polish, Testing & Deploy | ✅ Complete |
 | 24 | Security & Production Hardening Remediation | ✅ Complete |
+| — | **DEFERRED: Vue Migration (after Flutter F1-F10)** | |
+| M | Quasar → shadcn-vue + Tailwind Migration (Vue) | ⏳ Deferred |
 | 25 | Streaming Backend Infrastructure | ⏳ Planned |
-| 26 | Streaming UI Component Library | ✅ Complete |
-| 27 | Home Page Streaming Redesign | ✅ Complete |
-| 28 | Media Detail Page Streaming Redesign | ✅ Complete |
-| M | Quasar → shadcn-vue + Tailwind Migration | 🔄 In progress |
+| 26 | Streaming UI Component Library (Vue reference) | ✅ Complete |
+| 27 | Home Page Streaming Redesign (Vue reference) | ✅ Complete |
+| 28 | Media Detail Page Streaming Redesign (Vue reference) | ✅ Complete |
 | 29 | Real AniList/MAL Import | ⏳ Planned |
-| 30 | Episode Notification Pipeline (Complete) | ⏳ Planned |
+| 30 | Episode Notification Pipeline | ⏳ Planned |
 | 31 | Admin Source Provider UI | ⏳ Planned |
-| 32 | Migration & Cleanup | ⏳ Planned |
+| 32 | Migration & Cleanup (Vue) | ⏳ Deferred |
 | 33 | Characters, Staff & Voice Actors | 🔲 Gap |
 | 34 | Advanced User Statistics | 🔲 Gap |
 | 35 | Charts & Top Lists | 🔲 Gap |
@@ -76,7 +91,117 @@ NEXT_ACTION:       Phase M3 — shadcn-vue Component Migration (QForm→Input, Q
 
 ---
 
-## Detailed Phase Tracking
+## Flutter Frontend Phases (Active)
+
+### Phase F1 — Flutter Foundation
+**Goal**: Flutter project init, GoRouter + ShellRoute, Dio with auth interceptor, Riverpod, dark Material 3 theme, builds verified on web + Windows + Android.
+
+**ADR**: `091-flutter-cross-platform-architecture.md`
+
+| Sub-phase | Task | Status | Notes |
+|-----------|------|--------|-------|
+| F1.1 | `flutter create` in frontend/flutter/, pubspec.yaml with deps (Dio, Riverpod, GoRouter, freezed, json_serializable, flutter_secure_storage, cached_network_image, mocktail) | 🔄 In progress | |
+| F1.2 | Project structure: lib/core/, lib/features/, lib/tv/, test/ directories with feature-first scaffold | ⏳ | |
+| F1.3 | GoRouter + ShellRoute (AdaptiveScaffold) with all named routes defined | ⏳ | |
+| F1.4 | Dio client + auth interceptor (token attach + 401 refresh) | ⏳ | |
+| F1.5 | flutter_secure_storage wrapper + shared_preferences for settings | ⏳ | |
+| F1.6 | AuthNotifier (Riverpod) — login, register, refresh, logout | ⏳ | |
+| F1.7 | Dark Material 3 theme (aniwaves palette: #0a0a0a bg, #a855f7 purple accent) | ⏳ | |
+| F1.8 | Auth guard redirect in GoRouter | ⏳ | |
+| F1.9 | Build verification: flutter build web, flutter build apk, flutter build windows | ⏳ | |
+| F1.10 | flutter analyze passes, all scaffold tests pass | ⏳ | |
+
+### Phase F2 — Auth & Setup
+**Goal**: Login, register, and setup bootstrap screens working with form validation and error handling.
+
+| Sub-phase | Task | Status | Notes |
+|-----------|------|--------|-------|
+| F2.1 | Login screen — Form + TextFormField validators, loading/error states | ⏳ | |
+| F2.2 | Register screen — validation, confirm-password matching | ⏳ | |
+| F2.3 | Setup/bootstrap screen — one-time super admin creation | ⏳ | |
+| F2.4 | Auth form tests (empty submit, invalid input, successful flow) | ⏳ | |
+
+### Phase F3 — Discover & Media Detail
+**Goal**: Search, trending, new releases, media detail with episodes/info/related tabs.
+
+| Sub-phase | Task | Status | Notes |
+|-----------|------|--------|-------|
+| F3.1 | Discover screen — search, trending, new releases tabs | ⏳ | |
+| F3.2 | MediaCard widget — cover, title, score, type badge | ⏳ | |
+| F3.3 | Media detail screen — hero banner, metadata, episodes/info/related tabs | ⏳ | |
+| F3.4 | Episode list with sub/dub filter | ⏳ | |
+| F3.5 | Related media carousel | ⏳ | |
+
+### Phase F4 — Tracking & Lists
+**Goal**: My List with status tabs, progress/score widgets, airing calendar, import.
+
+| Sub-phase | Task | Status | Notes |
+|-----------|------|--------|-------|
+| F4.1 | My List screen — status tabs (watching, completed, paused, dropped, plan) | ⏳ | |
+| F4.2 | Progress update widget | ⏳ | |
+| F4.3 | Score widget | ⏳ | |
+| F4.4 | Airing calendar screen | ⏳ | |
+| F4.5 | Import from AniList/MAL screen | ⏳ | |
+
+### Phase F5 — Social Features
+**Goal**: Activity feed, recommendations, discussions.
+
+| Sub-phase | Task | Status | Notes |
+|-----------|------|--------|-------|
+| F5.1 | Activity feed — group + personal tabs | ⏳ | |
+| F5.2 | Recommendations — inbox + sent tabs, acknowledge flow | ⏳ | |
+| F5.3 | Discussions — threads list, thread detail, create | ⏳ | |
+
+### Phase F6 — Watch Party
+**Goal**: Party listing, creation, RSVP.
+
+| Sub-phase | Task | Status | Notes |
+|-----------|------|--------|-------|
+| F6.1 | Watch party list — upcoming + past tabs | ⏳ | |
+| F6.2 | Create party screen — form with media search, date picker | ⏳ | |
+| F6.3 | Party detail + RSVP actions | ⏳ | |
+
+### Phase F7 — Notifications
+**Goal**: Notification inbox and preferences screens.
+
+| Sub-phase | Task | Status | Notes |
+|-----------|------|--------|-------|
+| F7.1 | Notification inbox — all + unread tabs, mark-read | ⏳ | |
+| F7.2 | Notification preferences — content toggles, channel config | ⏳ | |
+
+### Phase F8 — Profile
+**Goal**: Profile overview, edit profile, account & security.
+
+| Sub-phase | Task | Status | Notes |
+|-----------|------|--------|-------|
+| F8.1 | Profile overview — avatar, stats, list summary | ⏳ | |
+| F8.2 | Edit profile — display name, bio, avatar | ⏳ | |
+| F8.3 | Account & security — password change, sessions | ⏳ | |
+
+### Phase F9 — TV Optimization
+**Goal**: Focus widgets, D-pad navigation, TV-optimized layouts.
+
+| Sub-phase | Task | Status | Notes |
+|-----------|------|--------|-------|
+| F9.1 | Focus widget wrappers on all interactive elements (MediaCard, buttons, list tiles) | ⏳ | |
+| F9.2 | TV-optimized AdaptiveScaffold (NavigationRail always visible, larger cards) | ⏳ | |
+| F9.3 | Remote D-pad navigation testing across all screens | ⏳ | |
+| F9.4 | Android TV APK build verification | ⏳ | |
+
+### Phase F10 — Polish & Cross-Platform QA
+**Goal**: Full test coverage, build verification on all targets, performance profiling.
+
+| Sub-phase | Task | Status | Notes |
+|-----------|------|--------|-------|
+| F10.1 | Full flutter_test + mocktail coverage (all screens: loading, error, data, form states) | ⏳ | |
+| F10.2 | Build verification: web, Android APK, Windows, macOS, Linux | ⏳ | |
+| F10.3 | Web performance profiling (CanvasKit) | ⏳ | |
+| F10.4 | Visual QA against aniwaves.ru design reference | ⏳ | |
+| F10.5 | CI/CD pipeline update for Flutter builds | ⏳ | |
+
+---
+
+## Detailed Phase Tracking (Backend + Vue Reference)
 
 ### Phase 1 — Foundation & Infrastructure
 **Goal**: Monorepo skeleton, Docker environment, CI skeleton, all tools reading agent config.

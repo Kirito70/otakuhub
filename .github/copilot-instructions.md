@@ -3,32 +3,33 @@
 ## Project Summary
 OtakuHub is a private friend-group anime/manga/manhwa tracking app.
 Backend: Python 3.12 + FastAPI + SQLAlchemy 2 async + PostgreSQL 16 + Celery + Redis.
-Frontend: Quasar 2.x (Vue 3 + Vite + TypeScript strict) — targets web, Electron desktop (Windows/Linux), and Capacitor mobile (Android/iOS) from one codebase.
+Frontend (active): Flutter 3.x (Dart 3.x) — mobile, desktop, web, TV from one codebase.
+Frontend (reference): Vue 3 + Vite + Tailwind (kept at `frontend/` for design patterns, NOT the active frontend).
 
 ## How to Build and Test
 ```bash
 # Backend
 cd backend
-pip install -r requirements.txt
+uv sync --extra dev
 alembic upgrade head
-uvicorn main:app --reload
+uvicorn src.app.main:app --reload
 
 # Backend tests
-pytest tests/ -v --asyncio-mode=auto
+uv run pytest tests/ -v --asyncio-mode=auto
 
-# Frontend dev server
+# Frontend (Flutter) — active
+cd frontend/flutter
+flutter pub get
+flutter run                           # auto device
+flutter run -d chrome                 # web
+flutter run -d windows                # desktop
+flutter test                          # all tests
+flutter analyze                       # static analysis
+flutter build apk                     # Android
+
+# Frontend (Vue — reference only)
 cd frontend
-npm install
-quasar dev
-
-# Frontend type check
-vue-tsc --noEmit
-
-# Frontend build — all targets
-quasar build              # web SPA
-quasar build -m pwa       # PWA
-quasar build -m electron  # desktop (Windows + Linux)
-quasar build -m capacitor -T android  # Android
+npm install        # not actively maintained
 ```
 
 ## Phase/Todo Enforcement
@@ -39,15 +40,15 @@ quasar build -m capacitor -T android  # Android
 
 ## Key Conventions
 
-### Frontend (Quasar / Vue 3)
-- `<script setup lang="ts">` on every component
-- Pinia stores in `src/stores/` — one per domain
-- Composables in `src/composables/use<Name>.ts`
-- HTTP via Axios boot file (`src/boot/axios.ts`) — never `fetch()` or raw `axios`
-- Typed routes — named routes only, no raw path strings
-- `QVirtualScroll` for lists > 100 items
-- `$q.screen` for responsive breakpoints
-- `$q.notify()` for toast notifications
+### Frontend (Flutter — active)
+- Feature-first: `lib/features/<name>/` with models, providers, screens, widgets
+- Riverpod 2.x for state — NotifierProvider for complex, FutureProvider for async
+- `freezed` + `json_serializable` for all data models
+- Dio with auth interceptor for all HTTP — no `http` package
+- GoRouter with ShellRoute for adaptive layouts — auth guard redirect
+- Responsive: `LayoutBuilder` + breakpoints (600/1024)
+- TV: `Focus` widget for D-pad navigation
+- All forms: `Form` + `TextFormField` validators before API submission
 
 ### Backend (FastAPI / Python)
 - Pydantic v2, SQLAlchemy 2 async, repository pattern, ruff + mypy strict
@@ -59,7 +60,7 @@ quasar build -m capacitor -T android  # Android
 
 ## Critical Rules for Code Generation
 - NEVER call AniList/MangaDex/Jikan API from the frontend — always via FastAPI backend
-- NEVER use `any` in TypeScript
-- NEVER use Options API — always `<script setup lang="ts">`
+- NEVER use `dynamic` in Dart — always explicit types
 - Every FastAPI route needs auth dependency unless explicitly public
 - All DB writes in async context managers with `async with session.begin()`
+- The Vue 3 code in `frontend/` is REFERENCE ONLY — do not modify it for Flutter work

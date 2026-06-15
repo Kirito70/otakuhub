@@ -14,7 +14,8 @@ All agents live under the **`.claude/`** directory (the original Claude‑style 
 |-------|--------------|----------------|----------------------|--------------------------|
 | **architect** | Claude Code | System design, ADRs, schema, API contracts | `.claude/agents/architect.py` | `agents/vscode/architect.py` |
 | **backend‑dev** | Cline / OpenCode | FastAPI routes, services, repos | `.claude/agents/backend-dev.py` | `agents/vscode/backend-dev.py` |
-| **vue‑dev** | Antigravity / Cline | Vue 3 + Tailwind + shadcn-vue pages, Pinia stores, composables | `.claude/agents/vue-dev.py` | `agents/vscode/vue-dev.py` |
+| **flutter‑dev** | Cline / OpenCode | Flutter/Dart screens, Riverpod providers, GoRouter (active frontend) | `.claude/agents/flutter-dev.py` | `agents/vscode/flutter-dev.py` |
+| **vue‑dev** | Antigravity / Cline | Vue 3 + Tailwind + shadcn-vue pages (REFERENCE — kept for design patterns) | `.claude/agents/vue-dev.py` | `agents/vscode/vue-dev.py` |
 | **db‑designer** | Claude Code | DB schema, Alembic migrations | `.claude/agents/db-designer.py` | `agents/vscode/db-designer.py` |
 | **code‑reviewer** | Copilot / Claude Code | PR review, quality gates | `.claude/agents/code-reviewer.py` | `agents/vscode/code-reviewer.py` |
 | **security‑auditor** | Claude Code | Auth, injection, secret handling | `.claude/agents/security-auditor.py` | `agents/vscode/security-auditor.py` |

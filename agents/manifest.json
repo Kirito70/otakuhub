@@ -19,8 +19,14 @@
       "tools": ["bash","read","edit","write","glob","grep","task","skill"]
     },
     {
+      "name": "flutter-dev",
+      "description": "Flutter/Dart screens, Riverpod providers, GoRouter, widgets for all platforms",
+      "entry_point": ".claude/agents/flutter-dev.py",
+      "tools": ["bash","read","edit","write","glob","grep","task","skill"]
+    },
+    {
       "name": "vue-dev",
-      "description": "Vue 3 + Tailwind + shadcn-vue pages, Pinia stores, composables",
+      "description": "Vue 3 + Tailwind + shadcn-vue pages (REFERENCE — Flutter is primary frontend)",
       "entry_point": ".claude/agents/vue-dev.py",
       "tools": ["bash","read","edit","write","glob","grep","task","skill"]
     },

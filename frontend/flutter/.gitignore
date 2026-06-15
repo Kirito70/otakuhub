@@ -1,0 +1,32 @@
+# Flutter/Dart
+.dart_tool/
+.packages
+build/
+*.iml
+*.lock
+.flutter-plugins
+.flutter-plugins-dependencies
+**/doc/api/
+.metadata
+
+# Generated files
+*.g.dart
+*.freezed.dart
+*.gr.dart
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# Environment
+.env
+*.env.local
+*.env.prod
