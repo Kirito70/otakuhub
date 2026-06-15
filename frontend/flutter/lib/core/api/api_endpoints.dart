@@ -42,10 +42,13 @@ class ApiEndpoints {
   static const String socialFeed = '/api/v1/social/feed';
   static const String socialRecommend = '/api/v1/social/recommend';
   static const String socialRecInbox = '/api/v1/social/recommendations/inbox';
+  static const String socialRecSent = '/api/v1/social/recommendations/sent';
   static const String socialDiscussions = '/api/v1/social/discussions';
+  static const String socialHistory = '/api/v1/lists/me/history';
 
   // Watch Party
   static const String watchParty = '/api/v1/watchparty';
+  static const String watchPartyPast = '/api/v1/watchparty/past';
   static const String watchPartyRsvp = '/api/v1/watchparty'; // + /{id}/rsvp
 
   // Notifications

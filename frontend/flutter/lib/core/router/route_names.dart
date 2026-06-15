@@ -11,7 +11,6 @@ class RouteNames {
   static const String discussions = 'discussions';
   static const String discussionDetail = 'discussion-detail';
   static const String watchParty = 'watch-party';
-  static const String createWatchParty = 'create-watch-party';
   static const String notifications = 'notifications';
   static const String notificationPreferences = 'notification-preferences';
   static const String profile = 'profile';

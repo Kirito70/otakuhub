@@ -64,15 +64,34 @@ def _map_status(entry_status: str) -> MediaStatus:
 def _find_id(entry: dict[str, Any], source_name: str) -> int | str | None:
     """Extract an external ID from the ``sources`` list.
 
-    The ``sources`` field is a list of ``{"label": "...", "url": "..."}``
-    dicts.  This helper looks for the label matching *source_name* and
-    extracts the last path segment of the URL as the ID.
+    The ``sources`` field in the current dataset format is a list of URL
+    strings (e.g. ``["https://anilist.co/anime/142051", ...]``).
+    This helper matches the *source_name* in the URL **domain** and
+    extracts the last path segment as the ID.
     """
+    from urllib.parse import urlparse
+
     for source in entry.get("sources", []):
-        if source.get("label", "").lower() == source_name.lower():
-            url = source.get("url", "")
-            if url:
-                return url.rstrip("/").split("/")[-1]
+        if isinstance(source, dict):
+            # Legacy format: {"label": "...", "url": "..."}
+            if source.get("label", "").lower() == source_name.lower():
+                url = source.get("url", "")
+            else:
+                continue
+        elif isinstance(source, str):
+            # Current format: plain URL string — check only the domain,
+            # not the path, to avoid false positives (e.g. "okitsura"
+            # containing "kitsu").
+            parsed = urlparse(source)
+            domain = parsed.netloc.lower()
+            if source_name.lower() not in domain:
+                continue
+            url = source
+        else:
+            continue
+
+        if url:
+            return url.rstrip("/").split("/")[-1]
     return None
 
 
@@ -123,13 +142,14 @@ class AnimeOfflineSeedAdapter:
             self._load_from_file(str(resolved_default))
             return
 
-        # Last resort: download
+        # Last resort: download from GitHub Releases
+        # The dataset moved from the repo root to Releases after 2025-25
         import asyncio
         import httpx
 
         url = (
-            "https://raw.githubusercontent.com/manami-project/"
-            "anime-offline-database/master/anime-offline-database.json"
+            "https://github.com/manami-project/anime-offline-database/"
+            "releases/latest/download/anime-offline-database-minified.json"
         )
         print(f"Downloading anime-offline-database from {url} ...")
         response = httpx.get(url, follow_redirects=True, timeout=120.0)
@@ -171,7 +191,17 @@ class AnimeOfflineSeedAdapter:
     # ------------------------------------------------------------------
 
     def _parse_item(self, item_index: int) -> dict[str, Any]:
-        """Parse a single anime-offline entry into our internal format."""
+        """Parse a single anime-offline entry into our internal format.
+
+        Current dataset format (2025-25+, GitHub Releases):
+        - ``sources`` is a list of URL strings (not dicts)
+        - ``title`` is the main title (no separate English/Native labels)
+        - ``synonyms`` is an array of alternate titles
+        - ``picture`` / ``thumbnail`` for images
+        - ``duration`` is a dict ``{"value": ..., "unit": "SECONDS"}``
+        - ``score`` is a dict with mean/median stats
+        - New fields: ``studios``, ``producers``, ``tags``, ``relatedAnime``
+        """
         entry = self._data[item_index]
 
         anilist_id_raw = _find_id(entry, "anilist")
@@ -179,24 +209,15 @@ class AnimeOfflineSeedAdapter:
         anidb_id_raw = _find_id(entry, "anidb")
         kitsu_id_raw = _find_id(entry, "kitsu")
 
+        # Use the first synonym as English title fallback (AniList backfill
+        # will overwrite with authoritative data later)
+        synonyms = entry.get("synonyms", [])
+        title_english = synonyms[0] if synonyms else None
+
         return {
             "title_romaji": entry.get("title", ""),
-            "title_english": next(
-                (
-                    s["title"]
-                    for s in entry.get("sources", [])
-                    if s.get("label") == "English"
-                ),
-                None,
-            ),
-            "title_native": next(
-                (
-                    s["title"]
-                    for s in entry.get("sources", [])
-                    if s.get("label") == "Native"
-                ),
-                None,
-            ),
+            "title_english": title_english,
+            "title_native": None,  # No native title in current dataset
             "media_type": MediaType.anime,
             "format": _map_format(entry.get("type", "")),
             "status": _map_status(entry.get("status", "")),
@@ -216,16 +237,30 @@ class AnimeOfflineSeedAdapter:
     async def _upsert_item(self, parsed: dict[str, Any]) -> None:
         """Insert or update a media entry and its external IDs."""
         async with AsyncSessionLocal() as session:
-            # Check if we already have this entry by anilist_id
-            if parsed["anilist_id"]:
-                result = await session.execute(
-                    select(MediaExternalIds).where(
-                        MediaExternalIds.anilist_id == parsed["anilist_id"]
+            # Check if we already have this entry by any known external ID
+            # (idempotency — re-running the seed should not hit duplicates).
+            existing = None
+            for id_field in ("anilist_id", "mal_id", "anidb_id"):
+                if parsed[id_field]:
+                    column = getattr(MediaExternalIds, id_field)
+                    result = await session.execute(
+                        select(MediaExternalIds).where(column == parsed[id_field])
                     )
+                    existing = result.scalar_one_or_none()
+                    if existing:
+                        return  # Already seeded — skip
+
+            # Fallback: check by title_romaji to avoid inserting the same
+            # title twice when no external IDs are available.
+            title = parsed["title_romaji"]
+            if title:
+                result = await session.execute(
+                    select(MediaEntry).where(MediaEntry.title_romaji == title)
                 )
-                existing = result.scalar_one_or_none()
-                if existing:
-                    return  # Already seeded — skip
+                existing_entry = result.scalar_one_or_none()
+                if existing_entry:
+                    # Title exists — skip but log a warning
+                    return
 
             # Create new MediaEntry
             entry = MediaEntry(

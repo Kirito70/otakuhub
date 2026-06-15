@@ -19,8 +19,7 @@ import 'package:otakuhub/features/social/screens/feed_screen.dart';
 import 'package:otakuhub/features/social/screens/recommendations_screen.dart';
 import 'package:otakuhub/features/social/screens/discussion_list_screen.dart';
 import 'package:otakuhub/features/social/screens/discussion_detail_screen.dart';
-import 'package:otakuhub/features/watchparty/screens/watch_party_list_screen.dart';
-import 'package:otakuhub/features/watchparty/screens/create_watch_party_screen.dart';
+import 'package:otakuhub/features/watchparty/screens/watch_party_screen.dart';
 import 'package:otakuhub/features/notifications/screens/notifications_screen.dart';
 import 'package:otakuhub/features/notifications/screens/notification_preferences_screen.dart';
 import 'package:otakuhub/features/profile/screens/profile_screen.dart';
@@ -131,12 +130,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/watchparty',
             name: RouteNames.watchParty,
-            builder: (context, state) => const WatchPartyListScreen(),
-          ),
-          GoRoute(
-            path: '/watchparty/create',
-            name: RouteNames.createWatchParty,
-            builder: (context, state) => const CreateWatchPartyScreen(),
+            builder: (context, state) => const WatchPartyScreen(),
           ),
           GoRoute(
             path: '/notifications',

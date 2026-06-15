@@ -12,7 +12,6 @@ from typing import Any, Dict, List, Optional
 
 from gql import Client, gql
 from gql.transport.aiohttp import AIOHTTPTransport
-from gql import gql
 
 from src.app.core.rate_limiter import RateLimiter
 
@@ -44,6 +43,7 @@ class AniListClient:
                     "Content-Type": "application/json",
                     "Accept": "application/json",
                 },
+                ssl=True,
             )
         return self._transport
 
@@ -53,7 +53,6 @@ class AniListClient:
             self._client = Client(
                 transport=self.transport,
                 fetch_schema_from_transport=True,
-                subscribe_transport=self.transport,
             )
         return self._client
 

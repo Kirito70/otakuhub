@@ -124,7 +124,78 @@ docker compose --env-file "infra/.env.prod.test" -f "infra/docker-compose.prod.y
 
 ---
 
-## 3) Quality Gates
+## 3) Seed / Sync Pipeline
+
+### Prerequisites
+
+Before running seed commands, make sure PostgreSQL is running and reachable:
+
+```bash
+# Check DB connection
+uv run otakuhub health
+```
+
+If you get a password error for local Docker Postgres:
+
+```bash
+# Enter the postgres container and set the password to match your .env
+docker exec -it <container-name> psql -U postgres -c "ALTER USER postgres WITH PASSWORD 'admin';"
+```
+
+### Step 1 — Seed anime-offline-database
+
+Downloads ~40k anime entries from the [anime-offline-database](https://github.com/manami-project/anime-offline-database) project (GitHub Releases) and upserts them into `media_entries` + `media_external_ids`.
+
+```bash
+cd backend
+uv run otakuhub seed anime-offline   # 40k entries, ~2 min
+```
+
+Expected output:
+```
+source=anime-offline job_id=... status=completed processed_items=40921 failed_items=0
+```
+
+### Step 2 — Backfill AniList metadata
+
+Enriches seeded entries with rich AniList metadata (synopsis, scores, cover images, episodes, genres, studios, tags, air dates, seasons). Paced by AniList rate limit (~90 req/min).
+
+```bash
+cd backend
+uv run otakuhub seed anilist         # enriches entries with anilist_id, ~7 min
+```
+
+### Step 3 — (Optional) Seed all sources in sequence
+
+Runs anime-offline → anilist → mangadex in order:
+
+```bash
+cd backend
+uv run otakuhub seed all
+```
+
+### Step 4 — Weekly refresh (background worker)
+
+Keeps airing-status and scores up-to-date:
+
+```bash
+cd backend
+uv run otakuhub celery beat --loglevel info
+```
+
+### Seed Notes
+
+- **Idempotent**: Re-running the same seed command skips already-inserted entries (checks by `anilist_id`, then `mal_id`, then `anidb_id`, then title).
+- **If re-seed is needed**, truncate the tables first:
+  ```bash
+  docker exec -it <container> psql -U postgres -d otakuhub \
+    -c "TRUNCATE mediaexternalids, media_entries, syncjob CASCADE;"
+  ```
+- The AniList backfill improves search quality, enables score-based sorting, and populates genre/tag/studio data used by the Flutter frontend.
+
+---
+
+## 4) Quality Gates
 
 ### Backend
 
@@ -148,7 +219,7 @@ flutter build windows   # Windows desktop
 
 ---
 
-## 4) Key Docs
+## 5) Key Docs
 
 - `PROJECT-STATUS.md` — single source of truth for current phase/sub-phase
 - `docs/backend-architecture.md`
@@ -160,7 +231,7 @@ flutter build windows   # Windows desktop
 
 ---
 
-## Notes
+## 6) Notes
 
 - AniList ID is the canonical external cross-reference key.
 - Frontend must not call AniList/MangaDex directly; all calls go through FastAPI.

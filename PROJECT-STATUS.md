@@ -10,12 +10,14 @@
 ## Current State
 
 ```
-CURRENT_PHASE:     F4
-CURRENT_SUB_PHASE: F4.5
-STATUS:            ✅ Complete
-LAST_UPDATED:      2026-06-15
+CURRENT_PHASE:     F7
+CURRENT_SUB_PHASE: F7.1
+STATUS:            🔜 Next
+LAST_UPDATED:      2026-06-16
 BLOCKED_BY:        none
-NEXT_ACTION:       Phase F5 — Social Features (Activity feed, Recommendations, Discussions)
+NEXT_ACTION:       F7.1 — Notification inbox with all + unread tabs, mark-read
+
+> **Seed pipeline overhaul (2026-06-16)**: Fixed anime-offline-database ingestion for the new GitHub Releases JSON format (URL string sources, no English/Native labels, title-based dedup). Added domain-only substring matching in `_find_id()` to prevent false matches (e.g. "okitsura" containing "kitsu"). Seed now processes 40,921 items with 0 failures. See ADR pending.
 ```
 
 > **Note**: After completing all 24 formal phases, an audit (AUDIT-PLAN.md) identified real gaps. Phases 0–4 are complete. Phase 5 (Frontend Feature Gaps) is in progress.
@@ -39,8 +41,8 @@ NEXT_ACTION:       Phase F5 — Social Features (Activity feed, Recommendations,
 | F2 | Auth & Setup — login, register, bootstrap screens | ✅ Complete |
 | F3 | Discover & Media Detail | ✅ Complete |
 | F4 | Tracking & Lists | ✅ Complete |
-| F5 | Social Features | ⏳ |
-| F6 | Watch Party | ⏳ |
+| F5 | Social Features | ✅ Complete |
+| F6 | Watch Party | ✅ Complete |
 | F7 | Notifications | ⏳ |
 | F8 | Profile | ⏳ |
 | F9 | TV Optimization — Focus widgets, D-pad, remote | ⏳ |
@@ -148,18 +150,22 @@ NEXT_ACTION:       Phase F5 — Social Features (Activity feed, Recommendations,
 
 | Sub-phase | Task | Status | Notes |
 |-----------|------|--------|-------|
-| F5.1 | Activity feed — group + personal tabs | ⏳ | |
-| F5.2 | Recommendations — inbox + sent tabs, acknowledge flow | ⏳ | |
-| F5.3 | Discussions — threads list, thread detail, create | ⏳ | |
+| F5.1 | Activity feed — group + personal tabs | ✅ | FeedScreen with Group Activity/My Activity tabs, paginated notifiers, ActivityFeedItem widget |
+| F5.2 | Recommendations — inbox + sent tabs, acknowledge flow | ✅ | RecommendationsScreen with Inbox/Sent tabs, acknowledge action, create recommendation |
+| F5.3 | Discussions — threads list, thread detail, create | ✅ | DiscussionListScreen with Threads/Create tabs, DiscussionDetailScreen with reply bar, spoiler reveal |
+| F5.4 | Social test coverage | ✅ | 13 widget tests for all 4 social screens. 94 total tests pass, 0 analyze errors |
 
 ### Phase F6 — Watch Party
 **Goal**: Party listing, creation, RSVP.
 
+**ADR**: `092-f6-watch-party-flutter.md`
+
 | Sub-phase | Task | Status | Notes |
 |-----------|------|--------|-------|
-| F6.1 | Watch party list — upcoming + past tabs | ⏳ | |
-| F6.2 | Create party screen — form with media search, date picker | ⏳ | |
-| F6.3 | Party detail + RSVP actions | ⏳ | |
+| F6.1 | Watch party list — upcoming + past tabs | ✅ | Single WatchPartyScreen with TabController |
+| F6.2 | Create party form — media search, date picker, validation | ✅ | Tab within WatchPartyScreen |
+| F6.3 | Party detail modal + RSVP actions | ✅ | Modal bottom sheet, not separate route |
+| F6.4 | Watch Party tests — screen, create, detail | ✅ | 14 widget tests (6 screen + 4 create + 4 detail). 108 total tests pass. 0 analyze errors/warnings |
 
 ### Phase F7 — Notifications
 **Goal**: Notification inbox and preferences screens.

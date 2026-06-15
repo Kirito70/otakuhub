@@ -26,11 +26,11 @@ class User with _$User {
   const factory User({
     required String id,
     required String username,
-    String? displayName,
+    @JsonKey(name: 'display_name') String? displayName,
     String? email,
-    String? avatarUrl,
+    @JsonKey(name: 'avatar_url') String? avatarUrl,
     String? bio,
-    @Default(false) bool isAdmin,
+    @JsonKey(name: 'is_admin') @Default(false) bool isAdmin,
   }) = _User;
 
   factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
@@ -62,9 +62,9 @@ class RegisterRequest with _$RegisterRequest {
 @freezed
 class TokenResponse with _$TokenResponse {
   const factory TokenResponse({
-    required String accessToken,
-    required String refreshToken,
-    @Default('bearer') String tokenType,
+    @JsonKey(name: 'access_token') required String accessToken,
+    @JsonKey(name: 'refresh_token') required String refreshToken,
+    @JsonKey(name: 'expires_in') @Default(900) int expiresIn,
   }) = _TokenResponse;
 
   factory TokenResponse.fromJson(Map<String, dynamic> json) =>
@@ -111,13 +111,14 @@ class AuthNotifier extends Notifier<AuthState> {
 
       final tokenResponse = TokenResponse.fromJson(response.data!);
 
-      // Fetch user profile
+      // Persist tokens FIRST so the auth interceptor can use them
+      await _storage.saveAccessToken(tokenResponse.accessToken);
+      await _storage.saveRefreshToken(tokenResponse.refreshToken);
+
+      // Then fetch user profile (interceptor now has the token)
       final userResponse = await _dio.get<Map<String, dynamic>>(ApiEndpoints.usersMe);
       final user = User.fromJson(userResponse.data!);
 
-      // Persist tokens
-      await _storage.saveAccessToken(tokenResponse.accessToken);
-      await _storage.saveRefreshToken(tokenResponse.refreshToken);
       await _storage.saveUserId(user.id);
       await _storage.saveUsername(user.username);
 
@@ -147,12 +148,14 @@ class AuthNotifier extends Notifier<AuthState> {
 
       final tokenResponse = TokenResponse.fromJson(response.data!);
 
-      // Fetch user profile
+      // Persist tokens FIRST so the auth interceptor can use them
+      await _storage.saveAccessToken(tokenResponse.accessToken);
+      await _storage.saveRefreshToken(tokenResponse.refreshToken);
+
+      // Then fetch user profile (interceptor now has the token)
       final userResponse = await _dio.get<Map<String, dynamic>>(ApiEndpoints.usersMe);
       final user = User.fromJson(userResponse.data!);
 
-      await _storage.saveAccessToken(tokenResponse.accessToken);
-      await _storage.saveRefreshToken(tokenResponse.refreshToken);
       await _storage.saveUserId(user.id);
       await _storage.saveUsername(user.username);
 
@@ -227,11 +230,14 @@ class AuthNotifier extends Notifier<AuthState> {
 
       final tokenResponse = TokenResponse.fromJson(response.data!);
 
+      // Persist tokens FIRST so the auth interceptor can use them
+      await _storage.saveAccessToken(tokenResponse.accessToken);
+      await _storage.saveRefreshToken(tokenResponse.refreshToken);
+
+      // Then fetch user profile (interceptor now has the token)
       final userResponse = await _dio.get<Map<String, dynamic>>(ApiEndpoints.usersMe);
       final user = User.fromJson(userResponse.data!);
 
-      await _storage.saveAccessToken(tokenResponse.accessToken);
-      await _storage.saveRefreshToken(tokenResponse.refreshToken);
       await _storage.saveUserId(user.id);
       await _storage.saveUsername(user.username);
 

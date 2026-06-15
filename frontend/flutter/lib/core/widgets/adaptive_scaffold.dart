@@ -54,7 +54,7 @@ class _MobileScaffold extends StatelessWidget {
     final location = GoRouterState.of(context).matchedLocation;
     if (location.startsWith('/list') || location.startsWith('/calendar')) return 1;
     if (location.startsWith('/feed') || location.startsWith('/recommendations') ||
-        location.startsWith('/discussions')) return 2;
+        location.startsWith('/discussions') || location.startsWith('/watchparty')) return 2;
     if (location.startsWith('/notifications')) return 3;
     if (location.startsWith('/profile')) return 4;
     return 0;
@@ -120,7 +120,7 @@ class _TabletScaffold extends StatelessWidget {
     final location = GoRouterState.of(context).matchedLocation;
     if (location.startsWith('/list') || location.startsWith('/calendar')) return 1;
     if (location.startsWith('/feed') || location.startsWith('/recommendations') ||
-        location.startsWith('/discussions')) return 2;
+        location.startsWith('/discussions') || location.startsWith('/watchparty')) return 2;
     if (location.startsWith('/notifications')) return 3;
     if (location.startsWith('/profile')) return 4;
     return 0;

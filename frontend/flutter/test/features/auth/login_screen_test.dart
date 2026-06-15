@@ -53,7 +53,7 @@ void main() {
       await tester.pumpWidget(createTestApp(notifier));
 
       expect(find.text('OtakuHub'), findsOneWidget);
-      expect(find.text('Sign in to continue'), findsOneWidget);
+      expect(find.text('Welcome back'), findsOneWidget);
       expect(find.text('Sign In'), findsOneWidget);
     });
 
@@ -64,7 +64,14 @@ void main() {
 
       await tester.pumpWidget(createTestApp(notifier));
 
-      expect(find.text("Don't have an account? Sign Up"), findsOneWidget);
+      // TextSpan inside Text.rich — use RichText widget predicate
+      expect(
+        find.byWidgetPredicate(
+          (w) => w is RichText &&
+              w.text.toPlainText().contains("Don't have an account? Sign Up"),
+        ),
+        findsOneWidget,
+      );
     });
 
     testWidgets('shows validation errors on empty submit', (tester) async {

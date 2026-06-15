@@ -54,7 +54,14 @@ void main() {
       await tester.pumpWidget(createTestApp(notifier));
 
       expect(find.text('Create Account'), findsNWidgets(2));
-      expect(find.text('Already have an account? Sign In'), findsOneWidget);
+      // TextSpan inside Text.rich — use RichText widget predicate
+      expect(
+        find.byWidgetPredicate(
+          (w) => w is RichText &&
+              w.text.toPlainText().contains('Already have an account? Sign In'),
+        ),
+        findsOneWidget,
+      );
     });
 
     testWidgets('shows validation errors on empty submit', (tester) async {

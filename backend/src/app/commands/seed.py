@@ -90,7 +90,7 @@ def seed_anime_offline(batch_size: int = typer.Option(50, "--batch-size"), dry_r
 
 @app.command("anilist")
 def seed_anilist(
-    limit: int = typer.Option(100, "--limit"),
+    limit: int = typer.Option(0, "--limit", help="Max entries to backfill (0 = no limit)"),
     only_unsynced: bool = typer.Option(False, "--only-unsynced"),
 ) -> None:
     _execute_and_print(source="anilist", limit=limit, only_unsynced=only_unsynced)
