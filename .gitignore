@@ -90,6 +90,33 @@ frontend/src-electron/
 # Debug scripts
 debug_*.py
 
+# Flutter / Dart
+frontend/flutter/.dart_tool/
+frontend/flutter/.packages
+frontend/flutter/build/
+frontend/flutter/.flutter-plugins
+frontend/flutter/.flutter-plugins-dependencies
+frontend/flutter/.metadata
+frontend/flutter/**/doc/api/
+frontend/flutter/pubspec.lock
+
+# Dart generated files
+*.freezed.dart
+*.g.dart
+*.gr.dart
+
+# Flutter platform builds
+frontend/flutter/android/.gradle/
+frontend/flutter/android/app/build/
+frontend/flutter/ios/Pods/
+frontend/flutter/ios/.symlinks/
+frontend/flutter/linux/flutter/
+frontend/flutter/linux/CMakeFiles/
+frontend/flutter/macos/Pods/
+frontend/flutter/macos/.symlinks/
+frontend/flutter/windows/CMakeFiles/
+frontend/flutter/windows/flutter/
+
 # Local environment files
 .env
 .env.*
