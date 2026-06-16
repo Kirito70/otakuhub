@@ -151,7 +151,7 @@ class _DesktopScaffold extends StatelessWidget {
           NavigationRail(
             selectedIndex: _currentIndex(context),
             onDestinationSelected: (index) => _navigate(context, index),
-            labelType: NavigationRailLabelType.all,
+            labelType: NavigationRailLabelType.none,
             extended: true,
             minExtendedWidth: 200,
             leading: Padding(

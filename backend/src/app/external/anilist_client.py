@@ -1,4 +1,7 @@
-"""AniList GraphQL client with rate limiting.
+"""AniList GraphQL client with rate limiting and 429 retry.
+
+AniList API rate limit: 90 requests per minute per IP.
+Returns 429 status with ``Retry-After`` header when exceeded.
 
 Uses lazy initialisation for the ``gql.Client`` — the schema is only fetched
 from AniList's server on the first ``execute_async()`` call, avoiding a
@@ -7,17 +10,23 @@ from AniList's server on the first ``execute_async()`` call, avoiding a
 
 from __future__ import annotations
 
-import asyncio
+import logging
 from typing import Any, Dict, List, Optional
 
 from gql import Client, gql
-from gql.transport.aiohttp import AIOHTTPTransport
 
 from src.app.core.rate_limiter import RateLimiter
+from src.app.core.retry_handler import retry_on_rate_limit
+
+logger = logging.getLogger(__name__)
 
 
 class AniListClient:
-    """AniList GraphQL client with rate limiting.
+    """AniList GraphQL client with rate limiting and 429 retry.
+
+    - Pre-request rate limiter: 80 req/min (safe margin below AniList's 90/min)
+    - Post-429 retry: exponential backoff with ``Retry-After`` header support
+    - Max 5 retries with jitter
 
     Usage::
 
@@ -37,6 +46,8 @@ class AniListClient:
     @property
     def transport(self) -> AIOHTTPTransport:
         if self._transport is None:
+            from gql.transport.aiohttp import AIOHTTPTransport
+
             self._transport = AIOHTTPTransport(
                 url="https://graphql.anilist.co/",
                 headers={
@@ -57,24 +68,46 @@ class AniListClient:
         return self._client
 
     # ------------------------------------------------------------------
-    # Internal request helper
+    # 429 detection for gql exceptions
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _is_anilist_429(exc: Exception) -> tuple[bool, float | None]:
+        """Check if *exc* is an AniList 429 (Too Many Requests) response.
+
+        AniList returns ``{"message": "Too Many Requests.", "status": 429}``
+        as the GraphQL error payload.
+        """
+        exc_str = str(exc)
+        if "429" in exc_str or "Too Many Requests" in exc_str:
+            # Try to extract Retry-After from the error text
+            import re
+
+            match = re.search(r"retry.after[:\s]+(\d+)", exc_str, re.IGNORECASE)
+            retry_after = float(match.group(1)) if match else None
+            return True, retry_after
+        return False, None
+
+    # ------------------------------------------------------------------
+    # Internal request helper with retry
     # ------------------------------------------------------------------
 
     async def _make_request(
         self, query_str: str, variables: Dict[str, Any] | None = None
     ) -> Dict[str, Any]:
-        """Make a rate-limited GraphQL request and return the raw dict."""
+        """Make a rate-limited GraphQL request with 429 retry."""
         await self.rate_limiter.acquire()
 
-        try:
-            result = await self.client.execute_async(
+        return await retry_on_rate_limit(
+            lambda: self.client.execute_async(
                 gql(query_str),
                 variable_values=variables,
-            )
-            return result
-        except Exception as e:
-            print(f"AniList API error: {e}")
-            raise
+            ),
+            is_rate_limited_fn=self._is_anilist_429,
+            max_retries=5,
+            base_delay=5.0,
+            max_delay=120.0,
+        )
 
     # ------------------------------------------------------------------
     # Public helpers
