@@ -22,6 +22,8 @@ from src.app.models.enums import (
     RelationType,
     Season,
 )
+from src.app.models.chapter import Chapter
+from src.app.models.episode import Episode
 from src.app.models.genre import Genre
 from src.app.models.media_entry import MediaEntry
 from src.app.models.media_external_ids import MediaExternalIds
@@ -62,7 +64,10 @@ query BatchMedia($ids: [Int], $page: Int) {
         node { id }
       }}
       nextAiringEpisode { episode airingAt }
-      airingSchedule(notYetAired: true, perPage: 25) {
+      # Fetch ALL episodes (past + future) for the episode table.
+      # AniList airingSchedule max perPage is ~500, long series
+      # like One Piece (>1000) need pagination in a future pass.
+      airingSchedule(notYetAired: false, perPage: 500) {
         nodes { episode airingAt }
       }
     }
@@ -283,6 +288,7 @@ class AniListSeedAdapter:
             "tags": raw.get("tags", []),
             "studios": raw.get("studios", {}).get("nodes", []),
             "relations": raw.get("relations", {}).get("edges", []),
+            "airing_schedule": raw.get("airingSchedule", {}).get("nodes", []),
         }
 
     # ------------------------------------------------------------------
@@ -526,5 +532,45 @@ class AniListSeedAdapter:
                             relation_type=rel_type,
                         )
                     )
+
+            # -- Upsert episodes (anime) --
+            media_type = parsed.get("media_type", "")
+            schedule_nodes = parsed.get("airing_schedule", [])
+
+            if media_type in ("anime",) and schedule_nodes:
+                for node in schedule_nodes:
+                    ep_num = node.get("episode")
+                    if ep_num is None:
+                        continue
+
+                    existing_ep = await session.execute(
+                        select(Episode).where(
+                            Episode.media_id == entry.id,
+                            Episode.episode_number == ep_num,
+                        )
+                    )
+                    if existing_ep.scalar_one_or_none():
+                        continue
+
+                    air_date = None
+                    airing_at = node.get("airingAt")
+                    if airing_at is not None:
+                        try:
+                            air_date = datetime.fromtimestamp(float(airing_at))
+                        except (ValueError, TypeError, OSError):
+                            pass
+
+                    session.add(
+                        Episode(
+                            id=uuid4(),
+                            media_id=entry.id,
+                            episode_number=ep_num,
+                            air_date=air_date,
+                        )
+                    )
+
+            # -- Upsert chapters (manga) — future: fetch from MangaDex --
+            # AniList does not expose chapter schedules.  The total
+            # chapter/volume count is already stored on media_entries.
 
             await session.commit()
