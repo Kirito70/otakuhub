@@ -14,16 +14,16 @@ if TYPE_CHECKING:
 class DiscussionReply(SQLModel, table=True):
     """Reply to a discussion thread."""
 
-    __tablename__ = "discussion_reply"
+    __tablename__ = "discussion_replies"
 
     id: UUID = Field(
         default_factory=generate_uuid7,
         primary_key=True,
         nullable=False
     )
-    discussion_id: UUID = Field(foreign_key="discussion.id", nullable=False)
-    user_id: UUID = Field(foreign_key="user.id", nullable=False)
-    parent_reply_id: Optional[UUID] = Field(default=None, foreign_key="discussion_reply.id")  # for threading
+    discussion_id: UUID = Field(foreign_key="discussions.id", nullable=False)
+    user_id: UUID = Field(foreign_key="users.id", nullable=False)
+    parent_reply_id: Optional[UUID] = Field(default=None, foreign_key="discussion_replies.id")  # for threading
     body: str = Field(nullable=False)
     has_spoilers: bool = Field(default=False)
 

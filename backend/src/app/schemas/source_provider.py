@@ -132,14 +132,14 @@ class ConsolidatedEpisodeSourceResponse(BaseModel):
 
 
 class AnikotoFullSyncRequest(BaseModel):
-    per_page: int = Field(default=20, ge=1, le=50)
+    per_page: int = Field(default=100, ge=1, le=100)
     max_pages: int | None = Field(default=None, ge=1, le=500)
     refresh_details: bool = True
     dry_run: bool = False
 
 
 class AnikotoRecentSyncRequest(BaseModel):
-    per_page: int = Field(default=20, ge=1, le=50)
+    per_page: int = Field(default=100, ge=1, le=100)
     max_pages: int = Field(default=5, ge=1, le=50)
     refresh_details: bool = True
     dry_run: bool = False

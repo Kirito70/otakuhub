@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:otakuhub/core/theme/app_colors.dart';
+import 'package:otakuhub/core/widgets/focusable_widget.dart';
 
 class ProgressWidget extends StatelessWidget {
   final int value;
@@ -60,22 +61,25 @@ class ProgressWidget extends StatelessWidget {
   }
 
   Widget _roundButton({required IconData icon, VoidCallback? onTap}) {
-    return Container(
-      width: 28,
-      height: 28,
-      decoration: BoxDecoration(
-        color: onTap != null
-            ? AppColors.accentPrimary.withValues(alpha: 0.2)
-            : AppColors.borderDefault.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(14),
-        child: Icon(
-          icon,
-          size: 16,
-          color: onTap != null ? AppColors.accentPrimary : AppColors.textMuted,
+    return FocusableWidget(
+      onPress: onTap,
+      child: Container(
+        width: 28,
+        height: 28,
+        decoration: BoxDecoration(
+          color: onTap != null
+              ? AppColors.accentPrimary.withValues(alpha: 0.2)
+              : AppColors.borderDefault.withValues(alpha: 0.3),
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(14),
+          child: Icon(
+            icon,
+            size: 16,
+            color: onTap != null ? AppColors.accentPrimary : AppColors.textMuted,
+          ),
         ),
       ),
     );

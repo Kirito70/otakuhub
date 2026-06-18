@@ -1,5 +1,11 @@
 """Database configuration and connection management using SQLModel."""
 
+import asyncio
+import functools
+from pathlib import Path
+
+from alembic import command
+from alembic.config import Config as AlembicConfig
 from sqlmodel import SQLModel
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncEngine
@@ -29,33 +35,49 @@ async def get_db_session() -> AsyncSession:
         yield session
 
 
+def _alembic_cfg() -> AlembicConfig:
+    """Build an Alembic Config pointing at backend/alembic/."""
+    backend_dir = Path(__file__).resolve().parent.parent.parent
+    ini = backend_dir / "alembic.ini"
+    cfg = AlembicConfig(str(ini))
+    cfg.set_main_option("script_location", str(backend_dir / "alembic"))
+    cfg.set_main_option("sqlalchemy.url", settings.database_url)
+    return cfg
+
+
 async def connect_db() -> None:
-    """Connect to the database, enable extensions, create tables, and stamp Alembic."""
-    async with engine.begin() as conn:
-        # Enable required PostgreSQL extensions before creating tables
-        # pg_trgm enables trigram-based partial-match search (gin_trgm_ops indexes)
-        # unaccent enables accent-insensitive text search
-        # btree_gin enables GIN indexes on btree-compatible types
-        await conn.execute(text("CREATE EXTENSION IF NOT EXISTS pg_trgm"))
-        await conn.execute(text("CREATE EXTENSION IF NOT EXISTS unaccent"))
-        await conn.execute(text("CREATE EXTENSION IF NOT EXISTS btree_gin"))
-        await conn.commit()
+    """Connect to the database, enable extensions, and run pending Alembic migrations.
 
-    # Create all tables from SQLModel model definitions (idempotent — checkfirst=True)
-    async with engine.begin() as conn:
-        await conn.run_sync(SQLModel.metadata.create_all)
+    Uses Alembic as the single source of truth for schema management (not
+    ``SQLModel.metadata.create_all``) to avoid conflicts between DDL generated
+    from model definitions and the incremental migration files.
+    """
+    # Only create PG extensions when connected to PostgreSQL
+    if "postgresql" in engine.url.drivername:
+        async with engine.begin() as conn:
+            # Enable required PostgreSQL extensions before creating tables
+            # pg_trgm enables trigram-based partial-match search (gin_trgm_ops indexes)
+            # unaccent enables accent-insensitive text search
+            # btree_gin enables GIN indexes on btree-compatible types
+            await conn.execute(text("CREATE EXTENSION IF NOT EXISTS pg_trgm"))
+            await conn.execute(text("CREATE EXTENSION IF NOT EXISTS unaccent"))
+            await conn.execute(text("CREATE EXTENSION IF NOT EXISTS btree_gin"))
+            await conn.commit()
 
-    # Stamp Alembic to 'head' so future `alembic upgrade head` is a no-op
-    # Uses raw SQL because Alembic's command.stamp() needs a sync driver URL.
-    async with engine.begin() as conn:
-        await conn.execute(text(
-            "CREATE TABLE IF NOT EXISTS alembic_version (version_num VARCHAR(32) PRIMARY KEY)"
-        ))
-        # Migration chain: 001 → 002 → 003. Head is currently '003'.
-        await conn.execute(text(
-            "INSERT INTO alembic_version (version_num) VALUES ('003') ON CONFLICT (version_num) DO NOTHING"
-        ))
-        await conn.commit()
+    # Drop old table name ``syncjob`` if it exists from a previous model
+    # definition that did not have an explicit ``__tablename__``.
+    if "postgresql" in engine.url.drivername:
+        async with engine.begin() as conn:
+            await conn.execute(text("DROP TABLE IF EXISTS syncjob CASCADE"))
+            await conn.commit()
+
+    # Run Alembic migrations from scratch or apply pending ones.
+    # This is the single source of truth for the schema.
+    # Alembic's command.upgrade() calls asyncio.run() internally (via env.py),
+    # so it must run in a separate thread to avoid nesting event loops.
+    cfg = _alembic_cfg()
+    loop = asyncio.get_running_loop()
+    await loop.run_in_executor(None, functools.partial(command.upgrade, cfg, "head"))
 
     print(f"Database connected: {settings.database_url.split('@')[-1]}")
 

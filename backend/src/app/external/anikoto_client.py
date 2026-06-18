@@ -5,9 +5,11 @@ scrape or fetch raw media segment URLs.
 
 Rate-limit & stability behaviour
 ---------------------------------
-* Maintains a conservative in-process token bucket (45 requests per 120 s).
-* Reads ``X-RateLimit-Remaining`` / ``X-RateLimit-Reset`` response headers to
-  dynamically tune the bucket when the server reports pressure.
+* Maintains an in-process token bucket (55 requests per 60 s) matching the
+  server's ``X-RateLimit-Limit: 60`` with a small safety margin.
+* Reads ``X-RateLimit-Remaining`` / ``X-RateLimit-Reset`` (Unix timestamp)
+  response headers to temporarily cap the bucket when the server reports
+  pressure.  The cap auto-expires when the server window resets.
 * On 429 (rate limit) the caller receives ``AnikotoRateLimitError`` with the
   ``Retry-After`` duration.
 * On 403 (transient ban from aggressive traffic) the request is retried with
@@ -20,6 +22,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import time
 from typing import Any
 
 import httpx
@@ -68,14 +71,19 @@ class AnikotoClient:
         base_url: str = "https://anikotoapi.site",
         timeout: float = 10.0,
         max_retries: int = 2,
-        rate_max: int = 45,
-        rate_window: float = 120.0,
+        rate_max: int = 55,
+        rate_window: float = 60.0,
         http_client: httpx.AsyncClient | None = None,
     ) -> None:
         self.base_url = base_url.rstrip("/")
         self.timeout = timeout
         self.max_retries = max_retries
-        self.rate_limiter = RateLimiter(max_requests=rate_max, time_window=rate_window)
+        # Server allows 60/60s; our conservative bucket matches that to start
+        self.rate_limiter = RateLimiter(
+            max_requests=rate_max,
+            time_window=rate_window,
+            min_requests=8,                     # never go below 8 req/window
+        )
         self._client = http_client
 
     async def get_recent_anime(self, *, page: int = 1, per_page: int = 20) -> dict[str, Any]:
@@ -145,19 +153,33 @@ class AnikotoClient:
         """Dynamically tune the token bucket using ``X-RateLimit-*`` headers.
 
         When the server reports fewer remaining tokens than our configured
-        bucket size, we reduce our bucket to match so we don't over-send in
-        the next window.
+        bucket size, we temporarily cap our rate to match, using
+        ``set_server_cap`` so that the cap auto-expires when the server's
+        window resets.
+
+        The server's ``X-RateLimit-Reset`` header is a **Unix timestamp**
+        (seconds since epoch). We convert it to seconds-from-now and pass
+        it as ``reset_in_seconds`` to the rate limiter.
         """
         remaining_str = response.headers.get("X-RateLimit-Remaining")
         reset_str = response.headers.get("X-RateLimit-Reset")
         if remaining_str is not None and reset_str is not None:
             try:
                 remaining = int(remaining_str)
-                reset_in = float(reset_str)
-                if remaining < self.rate_limiter.max_requests and reset_in > 0:
-                    # Server has fewer tokens left than our bucket — tighten.
-                    new_max = max(remaining - 2, 2)  # leave a small safety margin
-                    _logger.debug("Anikoto X-RateLimit-Remaining=%d; adjusting bucket %d → %d", remaining, self.rate_limiter.max_requests, new_max)
-                    self.rate_limiter.max_requests = new_max
+                reset_ts = float(reset_str)
+                # Convert Unix timestamp to seconds from now
+                now = time.time()
+                reset_in = max(reset_ts - now, 0)
+                # Only cap downward when remaining is meaningfully lower
+                # than our current max (avoid flapping from 1-2 fewer).
+                if remaining + 2 < self.rate_limiter.max_requests and reset_in > 0:
+                    _logger.debug(
+                        "Anikoto X-RateLimit-Remaining=%d; capping bucket %d"
+                        " for %.0fs",
+                        remaining,
+                        self.rate_limiter.max_requests,
+                        reset_in,
+                    )
+                    self.rate_limiter.set_server_cap(remaining, reset_in)
             except (ValueError, TypeError):
                 pass

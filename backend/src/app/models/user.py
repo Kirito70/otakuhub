@@ -10,6 +10,8 @@ from datetime import datetime
 class User(SQLModel, table=True):
     """User model for OtakuHub."""
 
+    __tablename__ = "users"
+
     id: UUID = Field(
         default_factory=generate_uuid7,
         primary_key=True,

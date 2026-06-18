@@ -100,7 +100,7 @@ class AnikotoSyncService:
         self.mapping_repo = SourceMappingRepository(db)
         self.episode_repo = SourceEpisodeRepository(db)
 
-    async def upsert_series(self, detail: dict[str, Any], *, dry_run: bool = False) -> tuple[UUID | None, int]:
+    async def upsert_series(self, detail: dict[str, Any], *, dry_run: bool = False, commit_mapping: bool = True) -> tuple[UUID | None, int]:
         source_media_id = str(_pick(detail, "id", "series_id", "anime_id", "slug") or "").strip()
         if not source_media_id:
             raise ValueError("Anikoto series detail missing id")
@@ -133,15 +133,15 @@ class AnikotoSyncService:
         if dry_run:
             return media_id, len(episodes)
 
-        mapping = await self.mapping_repo.upsert(payload)
-        processed_episodes = 0
+        mapping = await self.mapping_repo.upsert(payload, commit=commit_mapping)
+        episode_upserts: list[SourceEpisodeUpsert] = []
         for episode in episodes:
             source_episode_id = str(_pick(episode, "episode_embed_id", "embed_id", "id", "episode_id") or "").strip()
             if not source_episode_id:
                 continue
             language = _episode_language(episode)
             embed_url = _resolve_embed_url(episode, source_episode_id, language)
-            await self.episode_repo.upsert(
+            episode_upserts.append(
                 SourceEpisodeUpsert(
                     mapping_id=mapping.id,
                     media_id=media_id,
@@ -157,8 +157,17 @@ class AnikotoSyncService:
                     is_available=True,
                 )
             )
-            processed_episodes += 1
-        return mapping.media_id, processed_episodes
+
+        if episode_upserts:
+            await self.episode_repo.bulk_upsert_episodes(
+                mapping_id=mapping.id,
+                media_id=media_id,
+                episodes_data=episode_upserts,
+                source="anikoto",
+                now=now,
+            )
+
+        return mapping.media_id, len(episode_upserts)
 
     async def _match_media(self, detail: dict[str, Any], normalized_title: str | None) -> tuple[UUID | None, str, Decimal]:
         anilist_id = _int_or_none(_pick(detail, "anilist_id", "anilistId", "aniListId", "ani_id"))

@@ -13,6 +13,8 @@ if TYPE_CHECKING:
 class Chapter(SQLModel, table=True):
     """Chapter release data for manga."""
 
+    __tablename__ = "chapters"
+
     id: UUID = Field(
         default_factory=generate_uuid7,
         primary_key=True,

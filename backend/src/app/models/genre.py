@@ -10,6 +10,8 @@ from datetime import datetime
 class Genre(SQLModel, table=True):
     """Genre model."""
 
+    __tablename__ = "genres"
+
     id: UUID = Field(
         default_factory=generate_uuid7,
         primary_key=True,

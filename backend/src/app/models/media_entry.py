@@ -7,6 +7,7 @@ from uuid import UUID
 from src.app.core.uuid7 import generate_uuid7
 from src.app.core.tsvector import TSVector
 from datetime import datetime
+from sqlalchemy import String
 from src.app.models.enums import MediaType, MediaFormat, MediaStatus, Season
 from .media_genre import MediaGenre  # noqa: F401
 from .media_studio import MediaStudio  # noqa: F401
@@ -33,9 +34,9 @@ class MediaEntry(SQLModel, table=True):
     title_english: Optional[str] = Field(default=None, max_length=500)
     title_native: Optional[str] = Field(default=None, max_length=500)
     title_search: Optional[str] = Field(default=None, sa_column=Column(TSVector()))  # GIN indexed, auto-updated via trigger
-    media_type: MediaType = Field(nullable=False)
-    format: Optional[MediaFormat] = Field(default=None)
-    status: MediaStatus = Field(default=MediaStatus.not_yet_released)
+    media_type: MediaType = Field(nullable=False, sa_type=String)
+    format: Optional[MediaFormat] = Field(default=None, sa_type=String)
+    status: MediaStatus = Field(default=MediaStatus.not_yet_released, sa_type=String)
     synopsis: Optional[str] = Field(default=None, sa_column=Column(Text))
     cover_image_large: Optional[str] = Field(default=None, max_length=2048)
     cover_image_medium: Optional[str] = Field(default=None, max_length=2048)
@@ -47,7 +48,7 @@ class MediaEntry(SQLModel, table=True):
     average_score: Optional[float] = Field(default=None)  # 0.0–10.0, from AniList
     popularity: Optional[int] = Field(default=None)  # AniList popularity rank
     trending: Optional[int] = Field(default=None)  # AniList trending score
-    season: Optional[Season] = Field(default=None)
+    season: Optional[Season] = Field(default=None, sa_type=String)
     season_year: Optional[int] = Field(default=None)
     start_date: Optional[datetime] = Field(default=None)  # DATE type in database
     end_date: Optional[datetime] = Field(default=None)  # DATE type in database

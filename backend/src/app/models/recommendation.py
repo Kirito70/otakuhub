@@ -14,13 +14,15 @@ if TYPE_CHECKING:
 class Recommendation(SQLModel, table=True):
     """Friend recommending a title to specific people."""
 
+    __tablename__ = "recommendations"
+
     id: UUID = Field(
         default_factory=generate_uuid7,
         primary_key=True,
         nullable=False
     )
-    from_user_id: UUID = Field(foreign_key="user.id", nullable=False)
-    to_user_id: UUID = Field(foreign_key="user.id", nullable=False)
+    from_user_id: UUID = Field(foreign_key="users.id", nullable=False)
+    to_user_id: UUID = Field(foreign_key="users.id", nullable=False)
     media_id: UUID = Field(foreign_key="media_entries.id", nullable=False)
     message: Optional[str] = Field(default=None)
     is_acknowledged: bool = Field(default=False)

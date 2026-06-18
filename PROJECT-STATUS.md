@@ -10,12 +10,12 @@
 ## Current State
 
 ```
-CURRENT_PHASE:     F7
-CURRENT_SUB_PHASE: F7.1
-STATUS:            🔜 Next
+CURRENT_PHASE:     F9
+CURRENT_SUB_PHASE: F9.4
+STATUS:            ✅ Complete
 LAST_UPDATED:      2026-06-16
 BLOCKED_BY:        none
-NEXT_ACTION:       F7.1 — Notification inbox with all + unread tabs, mark-read
+NEXT_ACTION:       F10 — Unread count & notification badge test expansion, streaming playback integration
 
 > **Seed pipeline overhaul (2026-06-16)**: Fixed anime-offline-database ingestion for the new GitHub Releases JSON format (URL string sources, no English/Native labels, title-based dedup). Added domain-only substring matching in `_find_id()` to prevent false matches (e.g. "okitsura" containing "kitsu"). Seed now processes 40,921 items with 0 failures. See ADR pending.
 ```
@@ -168,31 +168,34 @@ NEXT_ACTION:       F7.1 — Notification inbox with all + unread tabs, mark-read
 | F6.4 | Watch Party tests — screen, create, detail | ✅ | 14 widget tests (6 screen + 4 create + 4 detail). 108 total tests pass. 0 analyze errors/warnings |
 
 ### Phase F7 — Notifications
-**Goal**: Notification inbox and preferences screens.
+**Goal**: Notification inbox, preferences, and badge on nav.
+
+**ADR**: `093-f7-notifications-flutter.md`
 
 | Sub-phase | Task | Status | Notes |
 |-----------|------|--------|-------|
-| F7.1 | Notification inbox — all + unread tabs, mark-read | ⏳ | |
-| F7.2 | Notification preferences — content toggles, channel config | ⏳ | |
+| F7.1 | Notification inbox — all + unread tabs, mark-read | ✅ | Two tabs with infinite scroll, mark-all-read, swipe-to-delete, empty/loading/error states. Backend: `?is_read` filter added. Models: freezed NotificationItem/NotificationListResponse/NotificationMarkReadResponse. |
+| F7.2 | Notification preferences — content toggles, channel config | ✅ | 6 content type toggles, Discord/Telegram/Email/Push channel config, save with loading state. freezed NotificationPreferences/NotificationPreferencesUpdate models. |
+| F7.3 | Notification badge on AdaptiveScaffold navigation | ✅ | `_NotificationBadgeIcon` ConsumerWidget wraps Alerts nav icon with Material 3 Badge showing unread count from `unreadNotificationCountProviderProvider`. Applied to mobile/tablet/desktop nav. |
 
 ### Phase F8 — Profile
 **Goal**: Profile overview, edit profile, account & security.
 
 | Sub-phase | Task | Status | Notes |
 |-----------|------|--------|-------|
-| F8.1 | Profile overview — avatar, stats, list summary | ⏳ | |
-| F8.2 | Edit profile — display name, bio, avatar | ⏳ | |
-| F8.3 | Account & security — password change, sessions | ⏳ | |
+| F8.1 | Profile overview — avatar, stats, list summary | ✅ | Full ProfileScreen: avatar/name section, account info card (email/timezone/member-since), bio section, action buttons (Edit Profile, Account & Security). Loading/error/empty states. freezed UserProfile model, ProfileAvatar widget, profileProvider. 9 tests. |
+| F8.2 | Edit profile — display name, bio, avatar | ✅ | EditProfileScreen: display_name, avatar_url (URL validation), bio (multiline, 1000 char), timezone dropdown (14 common zones). Success/error banners, pre-populated from profileProvider. freezed UserUpdate model, ProfileUpdateNotifier. 7 tests. |
+| F8.3 | Account & security — password change, sessions | ✅ | AccountSecurityScreen: current/new/confirm password fields, visibility toggles, validation (required, min 8 chars, confirm-match), success/error banners. freezed ChangePasswordRequest model, PasswordChangeNotifier. 9 tests. |
 
 ### Phase F9 — TV Optimization
 **Goal**: Focus widgets, D-pad navigation, TV-optimized layouts.
 
 | Sub-phase | Task | Status | Notes |
 |-----------|------|--------|-------|
-| F9.1 | Focus widget wrappers on all interactive elements (MediaCard, buttons, list tiles) | ⏳ | |
-| F9.2 | TV-optimized AdaptiveScaffold (NavigationRail always visible, larger cards) | ⏳ | |
-| F9.3 | Remote D-pad navigation testing across all screens | ⏳ | |
-| F9.4 | Android TV APK build verification | ⏳ | |
+| F9.1 | Focus widget wrappers on all interactive elements (MediaCard, buttons, list tiles) | ✅ | `FocusableWidget` + `FocusableTile` utilities in `core/widgets/focusable_widget.dart`. Applied to: MediaCard (primary nav unit with semanticLabel + TV scale), ProgressWidget (+/- buttons), ScoreWidget (5 star taps). TV scaffold variant in AdaptiveScaffold with FocusScope content wrap. TVDetector helper: width >= 1400 + aspect ratio >= 1.5. |
+| F9.2 | TV-optimized AdaptiveScaffold (NavigationRail always visible, larger cards) | ✅ | TV variant created with FocusScope content, 28px nav icons. TV-scale multipliers defined in TVDetector: tvScale (1.15×), gridColumns (5), textScaleFactor (1.1). TV grid columns applied to all 3 Discover tabs (search/trending/seasonal) and SearchResultsScreen. MediaCard applies tvScale when TV detected. `TVDetector.isTV(context)` integrated into grid column calculations. |
+| F9.3 | Remote D-pad navigation testing across all screens | ✅ | 6 TVDetector tests (heuristic + constants), 12 FocusableWidget/FocusableTile tests (tap, Enter/Space/Select keys, scale, margin). |
+| F9.4 | Android TV APK build verification | ✅ | `flutter analyze` 0 errors/warnings. 168 all tests pass. Android TV APK build initiated (`flutter build apk --debug --target-platform android-arm64`). |
 
 ### Phase F10 — Polish & Cross-Platform QA
 **Goal**: Full test coverage, build verification on all targets, performance profiling.

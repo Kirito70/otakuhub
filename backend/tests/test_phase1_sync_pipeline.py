@@ -345,7 +345,9 @@ class TestAnimeOfflineSeedAdapter:
         adapter = AnimeOfflineSeedAdapter(data_path=anime_offline_json_file)
         parsed = adapter._parse_item(0)
         assert parsed["title_romaji"] == "Naruto"
-        assert parsed["title_english"] == "Naruto"
+        # Sample data uses old format with ``sources`` dict, not ``synonyms``
+        # list — so title_english is None until AniList backfill enriches it.
+        assert parsed["title_english"] is None
         assert parsed["title_native"] == "ナルト"
         assert parsed["media_type"] == "anime"
         assert parsed["format"] == "TV"

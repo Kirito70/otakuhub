@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:otakuhub/core/platform/tv_detector.dart';
 import 'package:otakuhub/core/theme/app_colors.dart';
+import 'package:otakuhub/core/widgets/focusable_widget.dart';
 import 'package:otakuhub/features/discover/models/media_item.dart';
 
 class MediaCard extends StatelessWidget {
@@ -19,10 +21,13 @@ class MediaCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => context.push('/media/${item.id}'),
+    final tvScale = TVDetector.isTV(context) ? TVDetector.tvScale : 1.0;
+    return FocusableWidget(
+      onPress: () => context.push('/media/${item.id}'),
+      semanticLabel: item.displayTitle,
+      scale: tvScale,
       child: Container(
-        height: height,
+        height: height * tvScale,
         decoration: BoxDecoration(
           color: AppColors.bgSecondary,
           borderRadius: BorderRadius.circular(8),

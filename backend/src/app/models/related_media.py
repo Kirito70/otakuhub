@@ -5,6 +5,7 @@ from typing import Optional, TYPE_CHECKING
 from uuid import UUID
 from src.app.core.uuid7 import generate_uuid7
 from datetime import datetime
+from sqlalchemy import String
 from src.app.models.enums import RelationType
 
 if TYPE_CHECKING:
@@ -13,6 +14,8 @@ if TYPE_CHECKING:
 
 class RelatedMedia(SQLModel, table=True):
     """Relationships between media entries (sequel/prequel, etc)."""
+
+    __tablename__ = "related_media"
 
     id: UUID = Field(
         default_factory=generate_uuid7,
@@ -27,7 +30,7 @@ class RelatedMedia(SQLModel, table=True):
         foreign_key="media_entries.id",
         nullable=False
     )
-    relation_type: RelationType = Field(nullable=False)
+    relation_type: RelationType = Field(nullable=False, sa_type=String)
 
     # Timestamps
     created_at: datetime = Field(default_factory=datetime.utcnow)

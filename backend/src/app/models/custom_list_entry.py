@@ -13,10 +13,10 @@ if TYPE_CHECKING:
 class CustomListEntry(SQLModel, table=True):
     """Entry in a custom list."""
 
-    __tablename__ = "custom_list_entry"
+    __tablename__ = "custom_list_entries"
 
     list_id: UUID = Field(
-        foreign_key="custom_list.id",
+        foreign_key="custom_lists.id",
         primary_key=True,
         nullable=False
     )

@@ -30,13 +30,27 @@ class NotificationService(BaseService):
         user_id: UUID,
         limit: int = 50,
         offset: int = 0,
+        is_read: bool | None = None,
     ) -> List[Notification]:
         """Get paginated notifications for current user."""
-        return await self._notification_repo.get_for_user(user_id, limit=limit, offset=offset)
+        return await self._notification_repo.get_for_user(
+            user_id,
+            limit=limit,
+            offset=offset,
+            is_read=is_read,
+        )
 
-    async def count_user_notifications(self, *, user_id: UUID) -> int:
-        """Count all notifications for current user."""
-        return await self._notification_repo.count_for_user(user_id)
+    async def count_user_notifications(
+        self,
+        *,
+        user_id: UUID,
+        is_read: bool | None = None,
+    ) -> int:
+        """Count notifications for current user, optionally filtered by read status."""
+        return await self._notification_repo.count_for_user(
+            user_id,
+            is_read=is_read,
+        )
 
     async def mark_notifications_as_read(
         self,

@@ -19,7 +19,7 @@ class UserSettings(SQLModel, table=True):
         nullable=False,
     )
     user_id: UUID = Field(
-        foreign_key="user.id",
+        foreign_key="users.id",
         unique=True,
         nullable=False,
         index=True,

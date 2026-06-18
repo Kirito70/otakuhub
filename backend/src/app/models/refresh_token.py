@@ -10,12 +10,14 @@ from datetime import datetime
 class RefreshToken(SQLModel, table=True):
     """Refresh token model for OtakuHub."""
 
+    __tablename__ = "refresh_tokens"
+
     id: UUID = Field(
         default_factory=generate_uuid7,
         primary_key=True,
         nullable=False
     )
-    user_id: UUID = Field(foreign_key="user.id", nullable=False)
+    user_id: UUID = Field(foreign_key="users.id", nullable=False)
     token_hash: str = Field(nullable=False, unique=True, max_length=255)  # SHA-256 of the actual token
     device_name: Optional[str] = Field(default=None, max_length=255)
     ip_address: Optional[str] = Field(default=None, max_length=45)

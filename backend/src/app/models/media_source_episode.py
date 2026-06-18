@@ -28,7 +28,7 @@ class MediaSourceEpisode(SQLModel, table=True):
     id: UUID = Field(default_factory=generate_uuid7, primary_key=True, nullable=False)
     mapping_id: UUID = Field(foreign_key="media_source_mappings.id", nullable=False)
     media_id: UUID | None = Field(default=None, foreign_key="media_entries.id")
-    episode_id: UUID | None = Field(default=None, foreign_key="episode.id")
+    episode_id: UUID | None = Field(default=None, foreign_key="episodes.id")
     source: str = Field(nullable=False, max_length=50)
     source_episode_id: str = Field(nullable=False, max_length=128)
     episode_number: Decimal = Field(nullable=False, max_digits=8, decimal_places=2)

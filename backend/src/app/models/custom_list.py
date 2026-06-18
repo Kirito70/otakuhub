@@ -10,14 +10,14 @@ from datetime import datetime
 class CustomList(SQLModel, table=True):
     """User-created curated lists ("Best Isekai", "Watch with friends")."""
 
-    __tablename__ = "custom_list"
+    __tablename__ = "custom_lists"
 
     id: UUID = Field(
         default_factory=generate_uuid7,
         primary_key=True,
         nullable=False
     )
-    user_id: UUID = Field(foreign_key="user.id", nullable=False)
+    user_id: UUID = Field(foreign_key="users.id", nullable=False)
     name: str = Field(nullable=False, max_length=200)
     description: Optional[str] = Field(default=None)
     is_public: bool = Field(default=False)  # visible to group members

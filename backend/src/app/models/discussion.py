@@ -15,14 +15,16 @@ if TYPE_CHECKING:
 class Discussion(SQLModel, table=True):
     """Per-title discussion threads, scoped to a group."""
 
+    __tablename__ = "discussions"
+
     id: UUID = Field(
         default_factory=generate_uuid7,
         primary_key=True,
         nullable=False
     )
     media_id: UUID = Field(foreign_key="media_entries.id", nullable=False)
-    group_id: UUID = Field(foreign_key="group.id", nullable=False)
-    user_id: UUID = Field(foreign_key="user.id", nullable=False)
+    group_id: UUID = Field(foreign_key="groups.id", nullable=False)
+    user_id: UUID = Field(foreign_key="users.id", nullable=False)
     title: Optional[str] = Field(default=None, max_length=300)
     episode_number: Optional[int] = Field(default=None)  # NULL = general; set = episode-specific discussion
     chapter_number: Optional[float] = Field(default=None)

@@ -108,12 +108,18 @@ def seed_jikan(limit: int = typer.Option(100, "--limit")) -> None:
 
 @app.command("anikoto-full")
 def seed_anikoto_full(
-    per_page: int = typer.Option(20, "--per-page", min=1, max=50),
+    per_page: int = typer.Option(100, "--per-page", min=1, max=100),
     max_pages: int | None = typer.Option(None, "--max-pages"),
-    refresh_details: bool = typer.Option(True, "--refresh-details/--no-refresh-details"),
+    refresh_details: bool = typer.Option(False, "--refresh-details/--no-refresh-details"),
     dry_run: bool = typer.Option(False, "--dry-run"),
 ) -> None:
-    """Sync the full Anikoto/MegaPlay provider catalog IDs into source tables."""
+    """Sync the full Anikoto/MegaPlay provider catalog IDs into source tables.
+
+    By default detail refresh is OFF so the catalog sync completes quickly.
+    Use ``--refresh-details`` to fetch per-series details inline (slower but
+    synchronous).  For production, rely on the periodic Celery detail-refresh
+    task (see ADR 093).
+    """
     _execute_and_print(
         source="anikoto_full_catalog",
         per_page=per_page,
@@ -125,12 +131,16 @@ def seed_anikoto_full(
 
 @app.command("megaplay-full")
 def seed_megaplay_full(
-    per_page: int = typer.Option(20, "--per-page", min=1, max=50),
+    per_page: int = typer.Option(100, "--per-page", min=1, max=100),
     max_pages: int | None = typer.Option(None, "--max-pages"),
-    refresh_details: bool = typer.Option(True, "--refresh-details/--no-refresh-details"),
+    refresh_details: bool = typer.Option(False, "--refresh-details/--no-refresh-details"),
     dry_run: bool = typer.Option(False, "--dry-run"),
 ) -> None:
-    """Sync all anime IDs needed for MegaPlay playback using the Anikoto catalog API."""
+    """Sync all anime IDs needed for MegaPlay playback using the Anikoto catalog API.
+
+    By default detail refresh is OFF for speed. Use ``--refresh-details`` to
+    fetch per-series episode data inline.
+    """
     _execute_and_print(
         source="anikoto_full_catalog",
         per_page=per_page,
@@ -142,7 +152,7 @@ def seed_megaplay_full(
 
 @app.command("anikoto-recent")
 def seed_anikoto_recent(
-    per_page: int = typer.Option(20, "--per-page", min=1, max=50),
+    per_page: int = typer.Option(100, "--per-page", min=1, max=100),
     max_pages: int = typer.Option(5, "--max-pages", min=1),
     refresh_details: bool = typer.Option(True, "--refresh-details/--no-refresh-details"),
     dry_run: bool = typer.Option(False, "--dry-run"),
@@ -159,7 +169,7 @@ def seed_anikoto_recent(
 
 @app.command("megaplay-recent")
 def seed_megaplay_recent(
-    per_page: int = typer.Option(20, "--per-page", min=1, max=50),
+    per_page: int = typer.Option(100, "--per-page", min=1, max=100),
     max_pages: int = typer.Option(5, "--max-pages", min=1),
     refresh_details: bool = typer.Option(True, "--refresh-details/--no-refresh-details"),
     dry_run: bool = typer.Option(False, "--dry-run"),

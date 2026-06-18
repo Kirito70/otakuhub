@@ -8,13 +8,15 @@ from datetime import datetime
 class GroupMember(SQLModel, table=True):
     """Group membership model."""
 
+    __tablename__ = "group_members"
+
     group_id: UUID = Field(
-        foreign_key="group.id",
+        foreign_key="groups.id",
         primary_key=True,
         nullable=False
     )
     user_id: UUID = Field(
-        foreign_key="user.id",
+        foreign_key="users.id",
         primary_key=True,
         nullable=False
     )

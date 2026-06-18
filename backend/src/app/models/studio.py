@@ -10,6 +10,8 @@ from datetime import datetime
 class Studio(SQLModel, table=True):
     """Studio model."""
 
+    __tablename__ = "studios"
+
     id: UUID = Field(
         default_factory=generate_uuid7,
         primary_key=True,

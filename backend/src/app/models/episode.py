@@ -13,6 +13,8 @@ if TYPE_CHECKING:
 class Episode(SQLModel, table=True):
     """Airing schedule data for anime."""
 
+    __tablename__ = "episodes"
+
     id: UUID = Field(
         default_factory=generate_uuid7,
         primary_key=True,

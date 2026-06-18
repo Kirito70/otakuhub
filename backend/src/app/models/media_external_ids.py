@@ -13,6 +13,8 @@ if TYPE_CHECKING:
 class MediaExternalIds(SQLModel, table=True):
     """Cross-reference table mapping internal UUID to external platform IDs."""
 
+    __tablename__ = "media_external_ids"
+
     id: UUID = Field(
         default_factory=generate_uuid7,
         primary_key=True,

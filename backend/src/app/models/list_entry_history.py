@@ -5,6 +5,7 @@ from typing import Optional, TYPE_CHECKING
 from uuid import UUID
 from src.app.core.uuid7 import generate_uuid7
 from datetime import datetime
+from sqlalchemy import String
 from src.app.models.enums import WatchStatus
 
 if TYPE_CHECKING:
@@ -16,17 +17,19 @@ if TYPE_CHECKING:
 class ListEntryHistory(SQLModel, table=True):
     """Append-only log of every status/progress change. Powers the activity feed."""
 
+    __tablename__ = "list_entry_history"
+
     id: UUID = Field(
         default_factory=generate_uuid7,
         primary_key=True,
         nullable=False
     )
     entry_id: UUID = Field(foreign_key="user_list_entry.id", nullable=False)
-    user_id: UUID = Field(foreign_key="user.id", nullable=False)
+    user_id: UUID = Field(foreign_key="users.id", nullable=False)
     media_id: UUID = Field(foreign_key="media_entries.id", nullable=False)
     event_type: str = Field(nullable=False, max_length=50)  # 'status_changed', 'progress_updated', 'score_set', 'added', 'removed'
-    old_status: Optional[WatchStatus] = Field(default=None)
-    new_status: Optional[WatchStatus] = Field(default=None)
+    old_status: Optional[WatchStatus] = Field(default=None, sa_type=String)
+    new_status: Optional[WatchStatus] = Field(default=None, sa_type=String)
     old_progress: Optional[int] = Field(default=None)
     new_progress: Optional[int] = Field(default=None)
     old_score: Optional[float] = Field(default=None)

@@ -9,8 +9,10 @@ from datetime import datetime
 class NotificationPreference(SQLModel, table=True):
     """Notification preferences for users."""
 
+    __tablename__ = "notification_preferences"
+
     user_id: UUID = Field(
-        foreign_key="user.id",
+        foreign_key="users.id",
         primary_key=True,
         nullable=False
     )

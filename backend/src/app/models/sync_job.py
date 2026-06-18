@@ -1,7 +1,8 @@
 """Sync job model for OtakuHub."""
 
-from sqlmodel import SQLModel, Field, Index
-from typing import Optional
+from sqlmodel import SQLModel, Field, Index, Column
+from sqlalchemy import JSON
+from typing import Optional, Any
 from uuid import UUID
 from src.app.core.uuid7 import generate_uuid7
 from datetime import datetime
@@ -10,6 +11,8 @@ from datetime import datetime
 class SyncJob(SQLModel, table=True):
     """Tracks every run of the background sync pipeline."""
 
+    __tablename__ = "sync_jobs"
+
     id: UUID = Field(
         default_factory=generate_uuid7,
         primary_key=True,
@@ -17,13 +20,19 @@ class SyncJob(SQLModel, table=True):
     )
     job_type: str = Field(nullable=False, max_length=50)  # 'seed', 'backfill_anilist', 'weekly_refresh', 'user_import'
     status: str = Field(default="running", max_length=20)  # 'running', 'completed', 'failed', 'partial'
-    user_id: Optional[UUID] = Field(default=None, foreign_key="user.id")  # NULL for system jobs
+    user_id: Optional[UUID] = Field(default=None, foreign_key="users.id")  # NULL for system jobs
     total_items: Optional[int] = Field(default=None)
     processed_items: int = Field(default=0)
     failed_items: int = Field(default=0)
     error_log: Optional[str] = Field(default=None)
     started_at: datetime = Field(default_factory=datetime.utcnow)
     completed_at: Optional[datetime] = Field(default=None)
+
+    # Arbitrary JSON metadata for job checkpoints, resume data, etc.
+    metadata_: Optional[Any] = Field(
+        default=None,
+        sa_column=Column("metadata", JSON, nullable=True),
+    )
 
     # Timestamps
     created_at: datetime = Field(default_factory=datetime.utcnow)

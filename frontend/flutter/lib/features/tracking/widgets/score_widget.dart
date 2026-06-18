@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:otakuhub/core/theme/app_colors.dart';
+import 'package:otakuhub/core/widgets/focusable_widget.dart';
 
 class ScoreWidget extends StatelessWidget {
   final double? value;
@@ -31,10 +32,10 @@ class ScoreWidget extends StatelessWidget {
           final starValue = (i + 1) * 2;
           final filled = value != null && value! >= starValue;
           final half = value != null && value! >= starValue - 1 && value! < starValue;
-          return GestureDetector(
-            onTap: () {
+          return FocusableWidget(
+            onPress: () {
               if (value == starValue) {
-                onChange(null); // toggle off
+                onChange(null);
               } else {
                 onChange(starValue.toDouble());
               }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:otakuhub/core/platform/tv_detector.dart';
 import 'package:otakuhub/core/theme/app_colors.dart';
 import 'package:otakuhub/features/discover/providers/discover_providers.dart';
 import 'package:otakuhub/features/discover/widgets/media_card.dart';
@@ -172,7 +173,9 @@ class _SearchTab extends ConsumerWidget {
               }
               return LayoutBuilder(
                 builder: (context, constraints) {
-                  final crossAxisCount = constraints.maxWidth > 600 ? 3 : 2;
+                  final crossAxisCount = TVDetector.isTV(context)
+                      ? TVDetector.gridColumns
+                      : (constraints.maxWidth > 600 ? 3 : 2);
                   return GridView.builder(
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -227,7 +230,9 @@ class _TrendingTab extends ConsumerWidget {
         }
         return LayoutBuilder(
           builder: (context, constraints) {
-            final crossAxisCount = constraints.maxWidth > 600 ? 3 : 2;
+            final crossAxisCount = TVDetector.isTV(context)
+                ? TVDetector.gridColumns
+                : (constraints.maxWidth > 600 ? 3 : 2);
             return GridView.builder(
               padding: const EdgeInsets.all(12),
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -279,7 +284,9 @@ class _SeasonalTab extends ConsumerWidget {
         }
         return LayoutBuilder(
           builder: (context, constraints) {
-            final crossAxisCount = constraints.maxWidth > 600 ? 3 : 2;
+            final crossAxisCount = TVDetector.isTV(context)
+                ? TVDetector.gridColumns
+                : (constraints.maxWidth > 600 ? 3 : 2);
             return GridView.builder(
               padding: const EdgeInsets.all(12),
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(

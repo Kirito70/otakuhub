@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:otakuhub/core/theme/app_colors.dart';
 import 'package:otakuhub/core/router/route_names.dart';
+import 'package:otakuhub/core/platform/tv_detector.dart';
+import 'package:otakuhub/features/notifications/providers/notification_providers.dart';
 import 'package:go_router/go_router.dart';
 
 class AdaptiveScaffold extends StatelessWidget {
@@ -14,6 +17,9 @@ class AdaptiveScaffold extends StatelessWidget {
       builder: (context, constraints) {
         final width = constraints.maxWidth;
 
+        if (TVDetector.isTV(context)) {
+          return _TvScaffold(child: child);
+        }
         if (width < 600) {
           return _MobileScaffold(child: child);
         } else if (width < 1024) {
@@ -23,6 +29,26 @@ class AdaptiveScaffold extends StatelessWidget {
         }
       },
     );
+  }
+}
+
+// --- Notification badge widget ---
+class _NotificationBadgeIcon extends ConsumerWidget {
+  final IconData icon;
+
+  const _NotificationBadgeIcon({required this.icon});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final unreadCount = ref.watch(unreadNotificationCountProviderProvider);
+    final count = unreadCount.asData?.value ?? 0;
+    if (count > 0) {
+      return Badge(
+        label: Text(count > 99 ? '99+' : count.toString()),
+        child: Icon(icon),
+      );
+    }
+    return Icon(icon);
   }
 }
 
@@ -43,7 +69,7 @@ class _MobileScaffold extends StatelessWidget {
           NavigationDestination(icon: Icon(Icons.explore_outlined), label: 'Discover'),
           NavigationDestination(icon: Icon(Icons.list_alt_outlined), label: 'My List'),
           NavigationDestination(icon: Icon(Icons.feed_outlined), label: 'Feed'),
-          NavigationDestination(icon: Icon(Icons.notifications_outlined), label: 'Alerts'),
+          NavigationDestination(icon: _NotificationBadgeIcon(icon: Icons.notifications_outlined), label: 'Alerts'),
           NavigationDestination(icon: Icon(Icons.person_outline), label: 'Profile'),
         ],
       ),
@@ -100,7 +126,8 @@ class _TabletScaffold extends StatelessWidget {
                 label: Text('Feed'),
               ),
               NavigationRailDestination(
-                icon: Icon(Icons.notifications_outlined),
+                icon: _NotificationBadgeIcon(icon: Icons.notifications_outlined),
+                selectedIcon: _NotificationBadgeIcon(icon: Icons.notifications),
                 label: Text('Alerts'),
               ),
               NavigationRailDestination(
@@ -193,8 +220,8 @@ class _DesktopScaffold extends StatelessWidget {
                 label: Text('Watch Party'),
               ),
               NavigationRailDestination(
-                icon: Icon(Icons.notifications_outlined),
-                selectedIcon: Icon(Icons.notifications),
+                icon: _NotificationBadgeIcon(icon: Icons.notifications_outlined),
+                selectedIcon: _NotificationBadgeIcon(icon: Icons.notifications),
                 label: Text('Alerts'),
               ),
               NavigationRailDestination(
@@ -230,6 +257,84 @@ class _DesktopScaffold extends StatelessWidget {
       case 3: context.goNamed(RouteNames.watchParty);
       case 4: context.goNamed(RouteNames.notifications);
       case 5: context.goNamed(RouteNames.profile);
+    }
+  }
+}
+
+// --- TV (large landscape, D-pad focused) ---
+class _TvScaffold extends StatelessWidget {
+  final Widget child;
+
+  const _TvScaffold({required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Row(
+        children: [
+          NavigationRail(
+            selectedIndex: _currentIndex(context),
+            onDestinationSelected: (index) => _navigate(context, index),
+            labelType: NavigationRailLabelType.all,
+            minExtendedWidth: 180,
+            leading: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+              child: Icon(
+                Icons.movie_creation_rounded,
+                color: AppColors.accentPrimary,
+                size: 32,
+              ),
+            ),
+            destinations: const [
+              NavigationRailDestination(
+                icon: Icon(Icons.explore_outlined, size: 28),
+                label: Text('Discover'),
+              ),
+              NavigationRailDestination(
+                icon: Icon(Icons.list_alt_outlined, size: 28),
+                label: Text('My List'),
+              ),
+              NavigationRailDestination(
+                icon: Icon(Icons.feed_outlined, size: 28),
+                label: Text('Feed'),
+              ),
+              NavigationRailDestination(
+                icon: _NotificationBadgeIcon(icon: Icons.notifications_outlined),
+                label: Text('Alerts'),
+              ),
+              NavigationRailDestination(
+                icon: Icon(Icons.person_outline, size: 28),
+                label: Text('Profile'),
+              ),
+            ],
+          ),
+          Expanded(
+            child: FocusScope(
+              child: child,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  int _currentIndex(BuildContext context) {
+    final location = GoRouterState.of(context).matchedLocation;
+    if (location.startsWith('/list') || location.startsWith('/calendar')) return 1;
+    if (location.startsWith('/feed') || location.startsWith('/recommendations') ||
+        location.startsWith('/discussions') || location.startsWith('/watchparty')) return 2;
+    if (location.startsWith('/notifications')) return 3;
+    if (location.startsWith('/profile')) return 4;
+    return 0;
+  }
+
+  void _navigate(BuildContext context, int index) {
+    switch (index) {
+      case 0: context.goNamed(RouteNames.discover);
+      case 1: context.goNamed(RouteNames.myList);
+      case 2: context.goNamed(RouteNames.feed);
+      case 3: context.goNamed(RouteNames.notifications);
+      case 4: context.goNamed(RouteNames.profile);
     }
   }
 }

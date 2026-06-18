@@ -259,8 +259,8 @@ def test_daily_refresh_compose_includes_anikoto_only_when_enabled(monkeypatch):
 def test_anikoto_client_adapts_rate_limit_from_headers():
     """X-RateLimit-* headers dynamically tighten the token bucket."""
     client = AnikotoClient(max_retries=0)
-    # Default bucket is 45
-    assert client.rate_limiter.max_requests == 45
+    # Default bucket is 55
+    assert client.rate_limiter.max_requests == 55
 
     # Simulate a response saying only 3 tokens remain → bucket tightens
     resp = httpx.Response(200, headers={"X-RateLimit-Remaining": "3", "X-RateLimit-Reset": "30"})

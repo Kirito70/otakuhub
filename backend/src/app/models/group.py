@@ -10,6 +10,8 @@ from datetime import datetime
 class Group(SQLModel, table=True):
     """Group model for friend groups."""
 
+    __tablename__ = "groups"
+
     id: UUID = Field(
         default_factory=generate_uuid7,
         primary_key=True,
@@ -19,7 +21,7 @@ class Group(SQLModel, table=True):
     description: Optional[str] = Field(default=None)
     avatar_url: Optional[str] = Field(default=None, max_length=2048)
     invite_code: str = Field(nullable=False, unique=True, max_length=32)
-    owner_id: UUID = Field(foreign_key="user.id", nullable=False)
+    owner_id: UUID = Field(foreign_key="users.id", nullable=False)
     is_private: bool = Field(default=True)
 
     # Timestamps

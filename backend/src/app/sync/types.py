@@ -20,7 +20,7 @@ class SeedExecutionContext:
     max_pages: int | None = None
     refresh_details: bool = True
     # Rate-limit safety
-    max_detail_concurrency: int = 3
+    max_detail_concurrency: int = 15
     detail_retry_cutoff: int = 3
 
 

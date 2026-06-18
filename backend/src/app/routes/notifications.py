@@ -35,6 +35,7 @@ def get_notification_service(db: AsyncSession = Depends(get_db_session)) -> Noti
 async def get_notifications(
     limit: int = Query(default=50, ge=1, le=200),
     offset: int = Query(default=0, ge=0),
+    is_read: bool | None = Query(default=None, description="Filter by read status"),
     notification_service: NotificationService = Depends(get_notification_service),
     user: User = Depends(get_current_user),
 ) -> NotificationListResponse:
@@ -43,8 +44,12 @@ async def get_notifications(
         user_id=user.id,
         limit=limit,
         offset=offset,
+        is_read=is_read,
     )
-    total = await notification_service.count_user_notifications(user_id=user.id)
+    total = await notification_service.count_user_notifications(
+        user_id=user.id,
+        is_read=is_read,
+    )
 
     return NotificationListResponse(
         items=[NotificationResponse.model_validate(item) for item in items],

@@ -13,13 +13,15 @@ if TYPE_CHECKING:
 class MediaGenre(SQLModel, table=True):
     """Many-to-many relationship between media entries and genres."""
 
+    __tablename__ = "media_genre"
+
     media_id: UUID = Field(
         foreign_key="media_entries.id",
         primary_key=True,
         nullable=False
     )
     genre_id: UUID = Field(
-        foreign_key="genre.id",
+        foreign_key="genres.id",
         primary_key=True,
         nullable=False
     )

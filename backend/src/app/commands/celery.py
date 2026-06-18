@@ -68,7 +68,7 @@ def enqueue_weekly_refresh() -> None:
 
 @app.command("anikoto-full")
 def enqueue_anikoto_full(
-    per_page: int = typer.Option(20, "--per-page", min=1, max=50),
+    per_page: int = typer.Option(100, "--per-page", min=1, max=100),
     max_pages: int | None = typer.Option(None, "--max-pages"),
     refresh_details: bool = typer.Option(True, "--refresh-details/--no-refresh-details"),
     dry_run: bool = typer.Option(False, "--dry-run"),
@@ -85,7 +85,7 @@ def enqueue_anikoto_full(
 
 @app.command("megaplay-full")
 def enqueue_megaplay_full(
-    per_page: int = typer.Option(20, "--per-page", min=1, max=50),
+    per_page: int = typer.Option(100, "--per-page", min=1, max=100),
     max_pages: int | None = typer.Option(None, "--max-pages"),
     refresh_details: bool = typer.Option(True, "--refresh-details/--no-refresh-details"),
     dry_run: bool = typer.Option(False, "--dry-run"),
@@ -102,7 +102,7 @@ def enqueue_megaplay_full(
 
 @app.command("anikoto-recent")
 def enqueue_anikoto_recent(
-    per_page: int = typer.Option(20, "--per-page", min=1, max=50),
+    per_page: int = typer.Option(100, "--per-page", min=1, max=100),
     max_pages: int = typer.Option(5, "--max-pages", min=1),
     refresh_details: bool = typer.Option(True, "--refresh-details/--no-refresh-details"),
     dry_run: bool = typer.Option(False, "--dry-run"),
@@ -129,7 +129,7 @@ def enqueue_megaplay_verify(
 
 @app.command("megaplay-recent")
 def enqueue_megaplay_recent(
-    per_page: int = typer.Option(20, "--per-page", min=1, max=50),
+    per_page: int = typer.Option(100, "--per-page", min=1, max=100),
     max_pages: int = typer.Option(5, "--max-pages", min=1),
     refresh_details: bool = typer.Option(True, "--refresh-details/--no-refresh-details"),
     dry_run: bool = typer.Option(False, "--dry-run"),

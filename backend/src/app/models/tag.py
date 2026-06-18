@@ -10,6 +10,8 @@ from datetime import datetime
 class Tag(SQLModel, table=True):
     """Tag model."""
 
+    __tablename__ = "tags"
+
     id: UUID = Field(
         default_factory=generate_uuid7,
         primary_key=True,
