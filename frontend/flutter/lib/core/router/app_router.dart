@@ -27,13 +27,19 @@ import 'package:otakuhub/features/profile/screens/edit_profile_screen.dart';
 import 'package:otakuhub/features/profile/screens/account_security_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authProvider);
+  // Watch the auth refresh notifier so GoRouter re-evaluates on auth changes.
+  // We don't watch authProvider directly — that would recreate GoRouter on every
+  // auth state change (losing navigation history). Instead we use refreshListenable
+  // which tells GoRouter to re-run the redirect callback in-place.
+  final refreshListenable = ref.watch(authRefreshNotifierProvider);
 
   return GoRouter(
     initialLocation: '/discover',
     debugLogDiagnostics: true,
+    refreshListenable: refreshListenable,
 
     redirect: (context, state) {
+      final authState = ref.read(authProvider);
       final isLoggedIn = authState.isAuthenticated;
       final isAuthRoute = state.matchedLocation.startsWith('/auth');
       final isSetupRoute = state.matchedLocation == '/setup';

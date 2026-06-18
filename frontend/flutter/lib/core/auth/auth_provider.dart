@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:otakuhub/core/api/api_client.dart';
@@ -71,6 +72,17 @@ class TokenResponse with _$TokenResponse {
       _$TokenResponseFromJson(json);
 }
 
+// Simple ChangeNotifier that GoRouter listens to for redirect re-evaluation.
+// Fired whenever auth state changes so the redirect guard picks it up.
+final authRefreshNotifierProvider = Provider<AuthRefreshNotifier>((ref) {
+  return AuthRefreshNotifier();
+});
+
+class AuthRefreshNotifier extends ChangeNotifier {
+  /// Public method so external classes can trigger a GoRouter redirect re-evaluation.
+  void requestRefresh() => notifyListeners();
+}
+
 // --- Provider ---
 
 final authProvider = NotifierProvider<AuthNotifier, AuthState>(
@@ -123,6 +135,7 @@ class AuthNotifier extends Notifier<AuthState> {
       await _storage.saveUsername(user.username);
 
       state = AuthState(isAuthenticated: true, user: user);
+      _notifyAuthRefresh();
     } on DioException catch (e) {
       final message = _mapDioError(e);
       state = state.copyWith(isLoading: false, error: message);
@@ -160,6 +173,7 @@ class AuthNotifier extends Notifier<AuthState> {
       await _storage.saveUsername(user.username);
 
       state = AuthState(isAuthenticated: true, user: user);
+      _notifyAuthRefresh();
     } on DioException catch (e) {
       final message = _mapDioError(e);
       state = state.copyWith(isLoading: false, error: message);
@@ -172,21 +186,41 @@ class AuthNotifier extends Notifier<AuthState> {
   }
 
   Future<bool> refreshToken() async {
+    debugPrint('[AUTH] refreshToken() called — using clean Dio (no interceptors)');
     try {
-      final refreshToken = await _storage.getRefreshToken();
-      if (refreshToken == null) return false;
+      final storedRefreshToken = await _storage.getRefreshToken();
+      debugPrint('[AUTH] storedRefreshToken exists: ${storedRefreshToken != null}');
+      if (storedRefreshToken == null) return false;
 
-      final response = await _dio.post<Map<String, dynamic>>(
+      // Use a clean Dio instance WITHOUT any interceptors for refresh requests.
+      // This completely eliminates the risk of:
+      //   - The auth interceptor attaching an expired access token
+      //   - Recursive interceptor re-entry from onError
+      //   - Any fragile path-matching logic in the interceptor
+      final cleanDio = Dio(BaseOptions(
+        baseUrl: ApiEndpoints.baseUrl,
+        connectTimeout: const Duration(seconds: 10),
+        receiveTimeout: const Duration(seconds: 10),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      ));
+      debugPrint('[AUTH] Sending refresh POST via clean Dio to ${ApiEndpoints.refresh}');
+      final response = await cleanDio.post<Map<String, dynamic>>(
         ApiEndpoints.refresh,
-        data: {'refresh_token': refreshToken},
+        data: {'refresh_token': storedRefreshToken},
       );
 
+      debugPrint('[AUTH] Refresh response status: ${response.statusCode}');
       final tokenResponse = TokenResponse.fromJson(response.data!);
+      debugPrint('[AUTH] New tokens received — saving');
       await _storage.saveAccessToken(tokenResponse.accessToken);
       await _storage.saveRefreshToken(tokenResponse.refreshToken);
 
       return true;
-    } catch (_) {
+    } catch (e) {
+      debugPrint('[AUTH] Refresh failed: $e');
       return false;
     }
   }
@@ -199,6 +233,23 @@ class AuthNotifier extends Notifier<AuthState> {
     }
     await _storage.clearAll();
     state = const AuthState();
+    _notifyAuthRefresh();
+  }
+
+  /// Silent logout that skips the API call entirely.
+  /// Used by the AuthInterceptor to avoid recursive calls through Dio.
+  Future<void> logoutSilent() async {
+    await _storage.clearAll();
+    state = const AuthState();
+    _notifyAuthRefresh();
+  }
+
+  void _notifyAuthRefresh() {
+    try {
+      ref.read(authRefreshNotifierProvider).requestRefresh();
+    } catch (_) {
+      // Provider may not be available during initialisation
+    }
   }
 
   Future<bool> checkSetupStatus() async {
@@ -242,6 +293,7 @@ class AuthNotifier extends Notifier<AuthState> {
       await _storage.saveUsername(user.username);
 
       state = AuthState(isAuthenticated: true, user: user, isSetupRequired: false);
+      _notifyAuthRefresh();
     } on DioException catch (e) {
       final message = _mapDioError(e);
       state = state.copyWith(isLoading: false, error: message);

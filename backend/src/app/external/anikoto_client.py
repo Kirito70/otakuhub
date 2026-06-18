@@ -71,14 +71,16 @@ class AnikotoClient:
         base_url: str = "https://anikotoapi.site",
         timeout: float = 10.0,
         max_retries: int = 2,
-        rate_max: int = 55,
-        rate_window: float = 60.0,
+        rate_max: int = 50,
+        rate_window: float = 120.0,
         http_client: httpx.AsyncClient | None = None,
     ) -> None:
         self.base_url = base_url.rstrip("/")
         self.timeout = timeout
         self.max_retries = max_retries
-        # Server allows 60/60s; our conservative bucket matches that to start
+        # Server allows 60 requests per 120 seconds (0.5 req/s);
+        # our conservative 50/120 matches that with a safety margin.
+        # See ADR 095 for the corrected rate window (was 55/60s — double the limit).
         self.rate_limiter = RateLimiter(
             max_requests=rate_max,
             time_window=rate_window,
