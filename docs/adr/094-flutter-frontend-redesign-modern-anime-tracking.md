@@ -1,391 +1,391 @@
 # ADR 094 — Flutter Frontend Redesign: Modern Anime Tracking UI
 
 **Status**: Proposed
-**Date**: 2026-06-18
+**Date**: 2026-06-19
+**Supersedes**: Original ADR 094 (2026-06-18)
 
 ## Context
 
-The current Flutter frontend uses a default Material 3 visual style — functional but dated.
-The user describes it as "not modern, not well-looking." A comprehensive UX audit of the 3 core
-screens (Discover, Media Detail, My List) reveals the following issues:
+The current Flutter UI (Discover, Media Detail, My List screens) was built as a functional
+first pass. It lacks a cohesive design system, uses one-off styling, and doesn't feel like a
+premium anime tracking app. This ADR provides the complete visual and interaction specification
+for a redesigned Flutter app, covering design tokens, component library, screen-by-screen design,
+new API endpoints, and build order.
 
-### Discover Screen (`discover_screen.dart`)
-- Plain `Scaffold` + `AppBar` with no visual branding or personality
-- Search triggered via a **dialog popup** — dated UX pattern; should be inline in the AppBar
-- `TabBar` + `TabBarView` for Search/Trending/New Releases — functionally fine but visually boring
-- All 3 tabs use **identical grid layout** — no visual distinction between search results (dense),
-  trending (hero cards), and new releases (compact with release date badges)
-- Duplicate boilerplate — each tab has the same loading/error/data pattern repeated 3 times
-
-### Media Card (`media_card.dart`)
-- Boxy, flat design — no shadows, no depth, no hover/scale effects on desktop
-- Fixed aspect ratio (0.65) is boxy, not modern poster-like (~0.7 is standard)
-- Title font at 12px is too small for readability
-- Minimal metadata — only score + short type badge; no progress indicator, no airing status pill
-- No visual hierarchy — card feels flat, no clear focal point
-- No cover-image gradient overlay — modern cards overlay title text on the cover bottom
-
-### Media Detail Screen (`media_detail_screen.dart`)
-- Hero section is cramped at 280px height with a small 80×120 cover thumbnail
-- No backdrop blur or glassmorphism — content is flat against a dark background
-- Tab structure has only Episodes/Info/Related — no Streaming Sources or Recommendations tab
-- Info tab is a plain key-value list — looks like a database dump with zero visual engagement
-- Synopsis has no expand/collapse — long blocks of text overwhelm the layout
-- Episodes tab is a basic ListView — no "continue watching" CTA, no airing-countdown badges
-- Related carousel is functional but visually flat — no gradient overlays on relation cards
-
-### My List Screen (`my_list_screen.dart`)
-- Uses `ListView` instead of `GridView` — entries are dense rows, not visual cards
-- Stats bar is plain `Chip` widgets — no visual emphasis, no score distribution graph
-- 6 scrollable `TabBar` tabs — too many! Watching/Reading should be the primary filter
-- Bottom history section is awkwardly docked — feels like an afterthought, not integrated
-- Cover thumbnails are 52×72 — too small to be visually meaningful
-- No quick-action buttons — no "increment progress" or "mark next episode" FAB
-
-### Cross-Cutting Issues
-- **No micro-animations**: No hero page transitions, no staggered list animations, no card hover effects
-- **No glassmorphism**: Dark theme with flat `bgSecondary` cards looks dated; modern UIs use
-  `BackdropFilter` blur for depth
-- **No consistent card system**: Media card, relation card, and list tile all look different
-  despite displaying the same data type (media item)
-- **No empty/error state illustrations**: Using plain icons + text feels unpolished
-- **Colors are fine** but the application lacks depth — shadows, gradients, blur, and spacing
-
-## Design Principles
-
-1. **Content-first**: Cover art and titles dominate; chrome (AppBar, tabs) recedes into the background
-2. **Depth through glassmorphism**: Semi-transparent panels with backdrop blur create hierarchy
-3. **Micro-interactions**: Every tappable item has a visual response — scale, glow, or fade
-4. **Consistent card system**: One `MediaCard` widget reused across Discover, List, Detail, and Search
-5. **Responsive by default**: All layouts use `LayoutBuilder` breakpoints — same widgets scale
-6. **TV-safe**: Focus widgets, semantic labels, larger hit targets on every interactive element
+**Aesthetic north star**: cinematic, dark, poster-forward, and quietly alive — the energy of a
+premium streaming app, but structured around a small group of friends, not a faceless public
+catalogue. The artwork is the hero; the chrome recedes. This is an original design — do not
+replicate any existing site's exact layout, logo, or component shapes.
 
 ## Decision
 
-### 1. New Shared Widget Library (`lib/core/widgets/`)
+Adopt the complete design system below as the single source of truth for all Flutter UI work.
+Every screen must be built from shared components — never one-off styling.
 
-Create a reusable component layer that all features consume:
+---
 
-```
-lib/core/widgets/
-├── media_card.dart          ← Single MediaCard used everywhere (Discover, List, Search, Relations)
-├── media_card_grid.dart     ← Responsive grid wrapper with loading/empty/error states
-├── hero_banner.dart         ← Full-bleed hero with blur, gradient overlay, offset cover
-├── glass_panel.dart         ← Reusable BackdropFilter glass container
-├── score_ring.dart          ← Circular score indicator with color thresholds
-├── status_pill.dart         ← Airing/status badge (RELEASING green, FINISHED gray, etc.)
-├── progress_bar.dart        ← Thin progress overlay for cards and list items
-├── section_header.dart      ← "Trending" / "New Releases" header with optional "See All"
-├── app_loading.dart         ← Shimmer/skeleton loading state
-├── app_empty_state.dart     ← Illustrated empty state (upgrade from plain icon+text)
-└── app_error_state.dart     ← Error state with retry button
-```
+## 1. Design Principles
 
-#### MediaCard Contract
-```
-┌──────────────────────┐
-│      Cover Image     │  ← 0.7 aspect ratio, rounded 12px corners
-│                      │
-│  ┌────────────────┐  │
-│  │ Score ● Title   │  │  ← Gradient overlay at bottom (transparent→black 60%)
-│  └────────────────┘  │
-├──────────────────────┤
-│  Status Pill  Type   │  ← Optional bottom metadata row (compact variant)
-│  Progress Bar        │  ← Optional (shown when user has progress)
-└──────────────────────┘
-```
+- **Content is the interface.** Cover art and banners carry the visual weight. UI chrome is
+  dark, minimal, and gets out of the way. Never put a solid color block where artwork could be.
+- **Dark-first, always.** This is a binge-at-night app. The dark theme is the primary theme.
+  A light theme is optional and secondary.
+- **Calm, not flashy.** Motion is purposeful — things ease in, lift on hover, cross-fade. No
+  bouncing, no spinning, no gratuitous parallax. Restraint reads as premium.
+- **The group is present.** Friends' faces, activity, and recommendations are woven throughout.
+- **One tap to the thing.** The most common action on any screen is always reachable in a single
+  tap, never buried in a menu.
+- **Every state is designed.** Loading, empty, error, and offline states are first-class —
+  never a bare spinner or a blank screen.
+- **Touch and pointer both.** Hover states enhance; they're never required to reach functionality.
 
-**States**:
-- **Loading**: Shimmer placeholder matching card dimensions
-- **Error**: Broken-image icon overlay on cover
-- **Empty**: N/A (card is never shown without data)
-- **Data**: Full card with cover, score, title, type badge, status pill
+---
 
-**Responsive**:
-- Mobile (<600): 2 columns, card width fills grid
-- Tablet (600–1024): 3 columns, slightly larger cards
-- Desktop (>1024): 4–5 columns
-- TV: 5–6 columns at 1.15× scale, Focus border on highlighted card
+## 2. Design Tokens
 
-**Interactions**:
-- Tap → navigate to `/media/:id`
-- Desktop hover: scale(1.03) + subtle glow shadow
-- TV: Focus border (2px accentPrimary)
-- Long press (mobile): context menu (add to list, share, mark as watched)
+Implement as a central `AppTokens` / `ThemeExtension<AppTokens>`. Never hardcode a hex value
+in a widget — always reference a token.
 
-#### GlassPanel Contract
-```dart
-class GlassPanel extends StatelessWidget {
-  final Widget child;
-  final double borderRadius;
-  final double blurStrength; // default 10
-  final Color tint;          // default Colors.black.withValues(alpha: 0.4)
-  final EdgeInsets padding;
-}
-```
-A reusable `ClipRRect` + `BackdropFilter` (ImageFilter.blur) + `Container` with semi-transparent
-background. Used on hero banner overlays, stat cards, and floating action panels.
+### 2.1 Color — Dark Theme (primary)
 
-#### ScoreRing Contract
-```dart
-class ScoreRing extends StatelessWidget {
-  final double? score;        // 0.0–10.0, null → "—"
-  final double size;          // default 36
-  final double strokeWidth;   // default 3
-}
-```
-Circular progress indicator using `CustomPainter`. Color thresholds:
-- ≥ 7.5: green (#22C55E)
-- ≥ 6.0: gold (#EAB308)
-- ≥ 4.0: orange (#F97316)
-- < 4.0: red (#EF4444)
-- null: muted gray
+**Surfaces** (layered depth — darker = further back):
 
-#### StatusPill Contract
-```dart
-class StatusPill extends StatelessWidget {
-  final String status;        // 'releasing', 'finished', 'not_yet_released', etc.
-  final bool compact;         // default false (shorter for cards)
-}
-```
-Color map:
-- `releasing`: green border, "Airing" text
-- `finished`: gray, "Finished"
-- `not_yet_released`: amber, "Upcoming"
-- `cancelled`: red, "Cancelled"
-- `hiatus`: orange, "Hiatus"
+| Token | Hex | Use |
+|-------|-----|-----|
+| `bg.base` | `#0B0B12` | App background (near-black, faint violet-blue tint) |
+| `bg.surface` | `#14141F` | Cards, list rows |
+| `bg.surfaceAlt` | `#1A1A28` | Inputs, secondary cards |
+| `bg.elevated` | `#1F1F30` | Modals, bottom sheets, menus |
+| `bg.hover` | `#26263A` | Hover/pressed surface tint |
+| `border.subtle` | `#262636` | Hairline dividers, card borders (1px) |
+| `border.strong` | `#3A3A52` | Focused inputs, emphasized edges |
 
-### 2. Discover Screen Redesign
+**Text:**
 
-```
-┌──────────────────────────────────────┐
-│ AppBar: [OtakuHub logo] [🔍 search]  │  ← Inline search field (no dialog)
-│                                       │
-│ ┌── Trending Hero ──────────────────┐ │
-│ │  ┌──────┐  ┌──────┐  ┌──────┐   │ │  ← Horizontal scrollable hero cards
-│ │  │Ep 12 │  │Ep 24 │  │Ep 8  │   │ │
-│ │  │Solo  │  │Frier │  │Dand  │   │ │  ← Full-bleed covers with glass overlay
-│ │  │Lv.2  │  │en    │  │adan  │   │ │
-│ │  └──────┘  └──────┘  └──────┘   │ │
-│ └──────────────────────────────────┘ │
-│                                       │
-│ [Trending] [New Releases] [Search] → │  ← Tab bar or segmented control
-│                                       │
-│ ┌── Content Grid ───────────────────┐ │
-│ │  ┌───┐ ┌───┐ ┌───┐ ┌───┐       │ │
-│ │  │ C │ │ C │ │ C │ │ C │       │ │  ← MediaCard grid
-│ │  │ a │ │ a │ │ a │ │ a │       │ │
-│ │  │ r │ │ r │ │ r │ │ r │       │ │
-│ │  │ d │ │ d │ │ d │ │ d │       │ │
-│ │  └───┘ └───┘ └───┘ └───┘       │ │
-│ │  ┌───┐ ┌───┐ ┌───┐            │ │
-│ │  │ C │ │ C │ │ C │            │ │
-│ │  │ a │ │ a │ │ a │            │ │
-│ │  │ r │ │ r │ │ r │            │ │
-│ │  │ d │ │ d │ │ d │            │ │
-│ │  └───┘ └───┘ └───┘            │ │
-│ └──────────────────────────────────┘ │
-└──────────────────────────────────────┘
-```
+| Token | Hex | Use |
+|-------|-----|-----|
+| `text.primary` | `#F4F4F8` | Titles, primary content |
+| `text.secondary` | `#A6A6BD` | Subtitles, metadata |
+| `text.tertiary` | `#6E6E85` | Hints, timestamps, disabled-ish |
+| `text.onAccent` | `#0B0B12` | Text sitting on a bright accent fill |
 
-**Structure**:
-- **Top section**: AppBar with inline search field (auto-focus on navigate to search tab)
-- **Hero strip**: Horizontal scrollable hero cards (top 10 trending, full-bleed covers with glass overlay)
-- **Tab/segment row**: Trend / New / Search — visually distinct content per tab
-- **Content grid**: MediaCard grid with responsive column count
+**Brand & accents:**
 
-**Tab-specific behavior**:
-- **Trending tab**: Cards with trending-rank badge, sorted by popularity
-- **New Releases tab**: Cards with "NEW" badge on recently added, date labels
-- **Search tab**: Cards with search-highlighted titles, no badges, infinite scroll
+| Token | Hex | Use |
+|-------|-----|-----|
+| `accent.primary` | `#7C5CFC` | Brand violet — primary buttons, active nav, links |
+| `accent.primaryHover` | `#8E72FF` | Hover state |
+| `accent.primaryPressed` | `#6A48E0` | Pressed state |
+| `accent.primarySubtle` | `#7C5CFC` @ 14% alpha | Tinted backgrounds |
+| `accent.coral` | `#FF6E8A` | Highlights, "new", live dots, secondary CTA |
+| `accent.mint` | `#2FD9A8` | Progress, "watching", success |
+| `accent.sky` | `#5AB0FF` | Info, "plan to watch", links in body |
+| `accent.amber` | `#FFB454` | Warnings, "paused", airing-soon |
+| `accent.rose` | `#FF5C6C` | Errors, "dropped", destructive |
 
-**States**:
-- **Loading**: Shimmer grid (8 skeleton cards)
-- **Empty**: "No results found" illustration with search tips
-- **Error**: Retry-friendly error with error details
+**Brand gradient** (FAB, hero CTA, logo accent): `linear-gradient(135°, #7C5CFC → #FF6E8A)`.
 
-### 3. Media Detail Screen Redesign
+**Watch-status color map:**
 
-```
-┌──────────────────────────────────────┐
-│ ← Back           [Share] [⇅ List]    │  ← Transparent AppBar over hero
-│ ┌── Full-Bleed Hero ───────────────┐ │
-│ │  ┌────────┐ ┌──────────────────┐ │ │
-│ │  │        │ │ Title (Romaji)   │ │ │  ← Cover image offset to left
-│ │  │ Cover  │ │ Title (English)  │ │ │
-│ │  │ 160×   │ │                  │ │ │  ← GlassPanel overlay for text
-│ │  │ 228    │ │ ⭐ 8.5  ●  TV    │ │ │
-│ │  │        │ │ 🔵 Airing        │ │ │
-│ │  │        │ │ ┌─Add to List─┐  │ │ │  ← Floating CTA button
-│ │  └────────┘ └──────────────────┘ │ │
-│ └──────────────────────────────────┘ │
-│                                       │
-│ [Overview] [Episodes] [Related] [Src] │  ← Sticky tab bar
-│                                       │
-│ ┌── Tab Content ────────────────────┐ │
-│ │  Overview tab:                    │ │
-│ │  ┌─ Synopsis (expandable) ─────┐ │ │
-│ │  │  Long synopsis text...      │ │ │
-│ │  │  [Show More ▾]              │ │ │
-│ │  └──────────────────────────────┘ │ │
-│ │  ┌─ Info Grid ──────────────────┐ │ │
-│ │  │  Type: Anime  |  Ep: 24     │ │ │
-│ │  │  Season: Spr |  Duration:   │ │ │
-│ │  │  2024        |  24m/ep      │ │ │
-│ │  └──────────────────────────────┘ │ │
-│ │  Genres: [Action] [Fantasy] ...   │ │
-│ │  ┌─ Stats ──────────────────────┐ │ │
-│ │  │  📊 Score Dist  |  📈 Rank  │ │ │
-│ │  │  👥 Popularity  |  📅 Started│ │ │
-│ │  └──────────────────────────────┘ │ │
-│ └──────────────────────────────────┘ │
-└──────────────────────────────────────┘
-```
+| Status | Color |
+|--------|-------|
+| watching | mint `#2FD9A8` |
+| rewatching | cyan `#3FD0D9` |
+| completed | accent.primary `#7C5CFC` |
+| plan to watch / read | sky `#5AB0FF` |
+| paused / on hold | amber `#FFB454` |
+| dropped | rose `#FF5C6C` |
 
-**Hero section** (replaces current cramped banner):
-- Full-bleed backdrop image (banner_image) with `BackdropFilter` blur and gradient overlay
-- Cover image: 160w × 228h, offset to left, with subtle shadow/elevation
-- Info panel: GlassPanel overlay containing title, score ring, format badge, status pill
-- Floating CTA: "Add to List" / "Continue Watching" / "Mark Episode 5" — changes based on user tracking state
+**Score color scale:**
 
-**Tabs**:
-1. **Overview**: Synopsis (expandable), info grid, genres, stats section
-2. **Episodes**: Episode list (same as current but with airing countdown badges, watch-status indicators)
-3. **Related**: Horizontal scroll of MediaCards (not custom relation cards — reuse MediaCard)
-4. **Sources**: Streaming provider links (new — shows available source mappings)
+| Range | Color |
+|-------|-------|
+| 8.5–10 | mint |
+| 7.0–8.4 | green `#7FD957` |
+| 5.5–6.9 | amber |
+| < 5.5 | rose |
+| unrated | text.tertiary |
 
-**States**:
-- **Loading**: Hero shimmer + tab content skeleton
-- **Error**: Error state with retry
-- **Data**: Full hero + tabs
-- **No tracking data**: Show "Add to List" CTA prominently
+### 2.2 Color — Light Theme
 
-### 4. My List Screen Redesign
+Same token names, remapped: `bg.base #F7F7FB`, `bg.surface #FFFFFF`, `bg.elevated #FFFFFF`,
+`border.subtle #E6E6EF`, `text.primary #15151F`, `text.secondary #5A5A70`. Accents unchanged
+but use pressed variants for text-on-light contrast. Dark remains the recommended default.
 
-```
-┌──────────────────────────────────────┐
-│ My List              [🔍 filter/sort] │  ← AppBar with filter button
-│                                       │
-│ ┌─ Stats Bar ───────────────────────┐ │
-│ │  Watching: 12  |  Completed: 45  │ │  ← GlassPanel with stat chips
-│ │  Paused: 3     |  Dropped: 2     │ │
-│ │  Plan: 18      |  Total: 80      │ │
-│ └────────────────────────────────────┘ │
-│                                       │
-│ [Watching] [Completed] [All] [Pl→]    │  ← Compact tab bar (3 primary + dropdown for rest)
-│                                       │
-│ ┌── Content Grid ───────────────────┐ │
-│ │  ┌───┐ ┌───┐ ┌───┐ ┌───┐       │ │  ← MediaCard with progress overlay
-│ │  │ C │ │ C │ │ C │ │ C │       │ │
-│ │  │ a │ │ a │ │ a │ │ a │       │ │  ← Each card shows:
-│ │  │ r │ │ r │ │ r │ │ r │       │ │      - cover image
-│ │  │ d │ │ d │ │ d │ │ d │       │ │      - title
-│ │  │ 📊│ │ 📊│ │ 📊│ │ 📊│       │ │      - progress bar (ep 12/24)
-│ │  └───┘ └───┘ └───┘ └───┘       │ │      - score badge
-│ └──────────────────────────────────┘ │
-│                                       │
-│                    [➕ Add from search]│  ← FAB to add media to list
-└──────────────────────────────────────┘
-```
+### 2.3 Typography
 
-**Key changes from current**:
-- **Grid of MediaCards** replaces dense `ListView` — same `MediaCard` as Discover, with `progress` overlay
-- **Stats bar** is a single `GlassPanel` row, not scattered `Chip` widgets
-- **Tabs reduced** from 6 to 4 visible (Watching, Completed, All, dropdown for Paused/Dropped/Plan)
-- **FAB** opens a search-and-add flow rather than being hidden in a menu
-- **Quick actions**: Tap a card → bottom sheet with "Mark Next Episode", "Update Score", "Change Status"
+Three families via `google_fonts`:
+- **Space Grotesk** — hero titles, big numbers, section headers with personality.
+- **Plus Jakarta Sans** — everything else. Clean, geometric, excellent at small sizes.
+- **Noto Sans JP** — Japanese/Korean/Chinese original titles (auto-fallback).
 
-**States**:
-- **Loading**: 6 skeleton cards
-- **Empty per tab**: "Nothing in this list yet" with illustration + "Browse Discover" CTA
-- **Empty all**: "Your list is empty" onboarding illustration
-- **Error**: Retry-friendly error
+Two weights: 400 (regular) and 600 (semibold). Display may use 700.
 
-### 5. Animation & Transition Contracts
+| Style | Font | Size/Line | Weight | Use |
+|-------|------|-----------|--------|-----|
+| displayXL | Space Grotesk | 40/46 | 700 | Hero spotlight title (desktop) |
+| displayL | Space Grotesk | 30/36 | 700 | Hero title (mobile), big stat numbers |
+| headlineL | Space Grotesk | 24/30 | 600 | Screen titles |
+| titleL | Plus Jakarta | 20/26 | 600 | Section headers |
+| titleM | Plus Jakarta | 17/22 | 600 | Card titles, dialog titles |
+| bodyL | Plus Jakarta | 15/22 | 400 | Primary body, synopsis |
+| bodyM | Plus Jakarta | 14/20 | 400 | Secondary text, metadata |
+| label | Plus Jakarta | 13/16 | 600 | Buttons, tabs, chips |
+| caption | Plus Jakarta | 12/16 | 400 | Timestamps, footnotes |
+| micro | Plus Jakarta | 11/14 | 600 | Badges, status pills, counters |
 
-| Animation | When | Implementation |
-|-----------|------|----------------|
-| Hero transition | Tap MediaCard → Detail page | `Hero` widget on cover image |
-| Staggered list | Grid/List first appears | `StaggeredGridAnimation` wrapper |
-| Card hover scale | Desktop mouse enter | `MouseRegion` + `AnimationController` scale(1.03) |
-| Glass shimmer | Loading states | `ShimmerLoading` (gradient sweep) |
-| Tab slide | Tab change | `TabBarView` animation (keep current) |
-| Score ring fill | Score appears | `TweenAnimationBuilder` on ring |
-| FAB scale | Scroll down | Scaling/fab visibility based on scroll offset |
+Always sentence case. Never ALL CAPS except a single-letter rank/badge.
 
-### 6. Responsive Breakpoint Summary
+### 2.4 Spacing, Radius, Layout
 
-| Breakpoint | Nav | Discover cols | List cols | Card size | Hero height |
-|------------|-----|--------------|-----------|-----------|-------------|
-| < 600 (phone) | BottomNav | 2 | 2 | compact | 280px |
-| 600–1024 (tablet) | Rail | 3 | 3 | normal | 340px |
-| > 1024 (desktop) | Drawer | 4–5 | 4–5 | large | 400px |
-| TV (any width) | Rail | 5–6 | 5–6 | 1.15× scale | 450px |
+**Spacing scale** (4pt base): 4, 8, 12, 16, 20, 24, 32, 40, 56, 72. `space.md = 16` as default gutter.
+Screen edge padding: 16 (mobile), 24 (tablet), 40 (desktop).
+
+**Radius**: sm 10, md 14, lg 20, xl 28, pill 999. Cards use lg (20). Poster cards md (14).
+Buttons pill for primary CTAs, md for secondary. Bottom sheets xl top corners only.
+
+**Elevation** (dark UI = surface lightening + soft shadow):
+- e0: flat (base)
+- e1: cards — surface `bg.surface` + shadow `0 2 8 rgba(0,0,0,0.35)`
+- e2: raised/hover — surface `bg.elevated` + shadow `0 8 24 rgba(0,0,0,0.45)`
+- e3: modals/sheets — surface `bg.elevated` + shadow `0 16 48 rgba(0,0,0,0.55)`
+
+**Breakpoints**: compact < 600 (phone), medium 600–1024 (tablet), expanded > 1024 (desktop).
+
+### 2.5 Imagery & Posters
+
+- Poster aspect ratio: always 2:3 (standard anime cover).
+- Banner aspect ratio: 16:9 desktop, 3:2 mobile hero crop.
+- All remote images via `cached_network_image` with shimmer skeleton placeholder and error fallback.
+- Poster corner radius md (14), clipped, subtle 1px `border.subtle` inside edge.
+- Lazy-load offscreen images. Decode at display size.
+
+---
+
+## 3. Motion & Interaction
+
+- Durations: instant 90ms, fast 160ms, base 240ms, slow 360ms.
+- Curves: `Curves.easeOutCubic` (default), `easeOutQuart` (entrances), `easeInCubic` (exits).
+- Use `flutter_animate` package for declarative entrances.
+- Honor `MediaQuery.disableAnimations` / reduce-motion: cut durations to instant and drop slides.
+
+| Interaction | Spec |
+|-------------|------|
+| Poster card hover (pointer) | scale 1.0→1.04, shadow e1→e2, reveal title+score overlay, fast |
+| Poster card press (touch) | scale 1.0→0.97, instant, release springs back |
+| Page transition | shared-axis horizontal (push) / fade-through (tab switch), base |
+| Bottom sheet | slide up + scrim fade, base, `easeOutQuart` |
+| List item entrance | staggered fade + 12px slide-up, 40ms stagger, first paint only |
+| Progress +1 tap | number rolls up (AnimatedSwitcher), mint ring pulses once, fast |
+| Skeleton shimmer | 1.2s loop, diagonal sweep, `bg.surfaceAlt` → `bg.hover` |
+| Tab indicator | slides under active tab, fast, `accent.primary` |
+| Pull to refresh | custom indicator: small spinning ring in `accent.primary` |
+
+---
+
+## 4. Component Library
+
+Build each as a reusable widget in `lib/core/widgets/`. Screens compose these only.
+
+### 4.1 PosterCard
+2:3 cached image, radius md, 1px inner border. Resting: image + ScoreChip (top-right) + thin
+status rail (bottom, 3px). Hover: dark gradient scrim + title + format/year + quick-action button.
+Long-press: opens QuickActionSheet. Sizes: sm (w104), md (w140), lg (w168).
+
+### 4.2 ScoreChip
+Pill, bg = score color @ 16% alpha, text = score color, micro weight. Shows ★ 8.7.
+
+### 4.3 StatusPill
+Pill colored by watch-status map. Label = status name. Optional leading 6px dot.
+
+### 4.4 ProgressControl
+Inline stepper: – Ep 5 / 12 +. +/– are circular 32px tap targets. Center tappable → number-pad sheet.
+Thin progress bar under it (mint fill) when max is known. On +: optimistic update, number rolls.
+
+### 4.5 SectionHeader
+`titleL` left, optional "See all →" text button right (`accent.primary`). Optional leading accent bar.
+
+### 4.6 ContentRail
+Horizontal scrolling row of PosterCards with SectionHeader. Snap-to-card on touch; arrow buttons on
+hover. Edge fade-out gradient. First card left-aligned; trailing peek of next card.
+
+### 4.7 QuickActionSheet
+Bottom sheet triggered by long-press on PosterCard or + on detail. Header: mini poster + title.
+Then: status selector (segmented, colored), ProgressControl, ScoreWidget (10 half-stars),
+"Recommend to a friend" row, "Add to custom list" row. Saves on dismiss (debounced) with toast.
+
+### 4.8 FriendAvatar
+Circular avatar with 2px ring. Ring = `accent.mint` if active in last 5 min. Fallback: initials
+on deterministic color from brand ramp. Stackable (AvatarStack) with +N overflow.
+
+### 4.9 AppButton
+- primary: pill, gradient or solid `accent.primary`, `text.onAccent`, label weight, 44px tall.
+- secondary: pill, `bg.surfaceAlt`, `text.primary`, 1px `border.subtle`.
+- ghost: text only, `accent.primary`.
+- destructive: solid `accent.rose`.
+All: press scale 0.98, disabled at 38% opacity, loading shows inline ring.
+
+### 4.10 AppChip / FilterChip
+Pill, `bg.surfaceAlt`, selected = `accent.primarySubtle` bg + `accent.primary` text + 1px border.
+
+### 4.11 EmptyState
+Centered: large outline icon (`text.tertiary`), `titleM` line, `bodyM` subtitle, optional primary action.
+
+### 4.12 Skeletons
+PosterCardSkeleton, RailSkeleton, ListRowSkeleton, DetailSkeleton, FeedItemSkeleton.
+Each mirrors the real component's dimensions exactly. Shimmer per 3.x.
+
+### 4.13 Toast / Snackbar
+Bottom-floating, `bg.elevated`, radius lg, e3. Leading status icon. Optional "Undo" action (`accent.primary`).
+Auto-dismiss 4s.
+
+### 4.14 NavigationScaffold
+- Compact: bottom nav bar (5 items: Home, Search, My List, Feed, You). Floating, `bg.elevated`,
+  radius xl, 12px above bottom edge with blur backdrop. Active: icon + label + `accent.primary`;
+  inactive: icon only, `text.tertiary`.
+- Medium: NavigationRail, collapsed (icons), left edge.
+- Expanded: extended NavigationRail (icons + labels) + top bar with search and avatar.
+  Notification bell with coral count badge top-right (medium/expanded) or on "You" badge (compact).
+
+---
+
+## 5. Information Architecture & Navigation
+
+Primary destinations (bottom nav / rail):
+- **Home** — personalized landing (spotlight, continue, friend activity, recommendations, trending).
+- **Search / Discover** — search + browse by genre/season/format.
+- **My List** — tracking library (tabbed by status).
+- **Feed** — social hub: friend activity, recommendations inbox, discussions.
+- **You** — profile, stats, watch parties, notifications, settings, group management.
+
+Secondary (pushed routes): Media Detail, Friend Profile, Discussion Thread, Watch Party Detail,
+Airing Calendar, Import, Custom List Detail, Group Management, Settings sub-pages.
+
+Deep links: `otakuhub://media/{id}`, `otakuhub://party/{id}`, `otakuhub://group/join/{code}`.
+
+---
+
+## 6. Screen-by-Screen Design
+
+See full specification in the canonical design-system document (`DESIGN-SYS.md` in docs/).
+
+### 6.1 Home
+Spotlight hero (full-width banner), "Jump back in" rail (continue watching), "From your friends"
+rail (recommendations with FriendAvatar), "Your group is watching" rail, "Airing soon" rail,
+"Trending in your group" rail. Pull-to-refresh. Skeleton: hero block + 3 rail skeletons.
+
+### 6.2 Search / Discover
+Search bar pinned top. Browse mode: filter chips + genre/season/top-rated rails. Search mode:
+responsive poster grid. Sticky filter/sort bar. Empty: "No titles match — try fewer filters".
+
+### 6.3 Media Detail
+Full-width banner with floating poster. Title, meta row, primary action bar (sticky-ish).
+Synopsis, genre chips. "In your group" strip (social differentiator — AvatarStack + ratings).
+Details grid. Episodes/Chapters list, relations rail, recommendations rail, discussion preview.
+
+### 6.4 My List
+Tabs: Watching · Reading · Completed · Plan · Paused · Dropped. View toggle (grid/list).
+Inline ProgressControl. Sort/filter bar. Header summary stats. Swipe actions (mobile). Empty: CTA to Search.
+
+### 6.5 Feed
+Sub-tabs: Activity, Recommendations, Discussions. Reverse-chron activity list with FriendAvatar.
+Recommendations inbox. Discussion threads list with FAB to start a thread. Group selector.
+
+### 6.6 Discussion Thread
+Chat-style bubbles (yours right-aligned, others left with FriendAvatar). Spoiler blur overlay.
+Composer pinned bottom. Threaded replies indent one level.
+
+### 6.7 Friend Profile
+Header card, stat row (big-number cards: watching/completed/mean score/days watched),
+taste snapshot (genre chips, favorites rail), recent activity, optional compatibility flourish.
+
+### 6.8–6.12
+Watch Party, Airing Calendar, Notifications, You/Profile, Settings — see full spec.
+
+---
+
+## 7. States, Accessibility, Edge Cases
+
+- **Loading**: always skeletons matching layout; never a centered spinner.
+- **Empty**: every list/grid/tab has a tailored EmptyState with CTA.
+- **Error**: inline error card with Retry button; friendly copy, never raw exceptions.
+- **Offline**: cached data with "Offline — showing saved data" banner.
+- **Accessibility**: ≥44×44 tap targets, semantic labels, text scales to 130%, ≥4.5:1 contrast,
+  reduce-motion honored, full keyboard/focus support on web/desktop.
+- **Localization-ready**: all strings via l10n ARB; never concatenate sentences.
+
+---
+
+## 8. New / Adjusted API Endpoints
+
+| Endpoint | Purpose |
+|----------|---------|
+| `GET /api/v1/home` | Composite home payload (spotlight, continue watching, friend recs, group watching, airing soon, trending) |
+| `GET /api/v1/lists/me/continue` | Continue-watching feed (status=watching, ordered by recent progress) |
+| `GET /api/v1/media/{id}/group-context` | Social strip on detail (group stats, members' states) |
+| `GET /api/v1/media/browse` | Discover browse rails (by=genre, season, top, trending with cursor) |
+| `GET /api/v1/users/{username}/stats` | Profile stat cards (watching, completed, mean score, top genres) |
+| `GET /api/v1/users/{username}/compatibility` | Taste-match flourish (%, shared titles, score correlation) |
+| `GET /api/v1/social/feed` (extended) | Group consecutive events, cursor pagination |
+| `POST/GET /api/v1/media/{id}/source-preference` | User's pinned "where to watch" source |
+| Field additions | `banner_image`, `format`, `season_year`, `average_score`, `user_entry` on summaries; `avatar_url` + `display_name` on feed items; `airing_at` on airing endpoints |
+
+If any conflict with `docs/api-spec.md`, prefer extending existing endpoints and update both
+`docs/api-spec.md` and `docs/database-schema.md` accordingly.
+
+---
+
+## 9. Flutter Implementation Notes
+
+- **Theming**: `AppTheme.dark()` with `ThemeData(useMaterial3: true, ...)` + custom
+  `ColorScheme.fromSeed` overridden by tokens + `ThemeExtension<AppTokens>` + `TextTheme` from
+  `google_fonts`.
+- **Packages**: `google_fonts`, `cached_network_image`, `shimmer`, `flutter_animate`, `go_router`,
+  `flutter_riverpod`, `visibility_detector`, `flutter_staggered_grid_view`, `intl`.
+- **Responsiveness**: one `Responsive` helper → `isCompact/isMedium/isExpanded`; `LayoutBuilder`.
+- **Performance**: `const` everywhere; `ListView.builder/SliverList`; `cacheExtent` tuned;
+  decode images at target size; debounce search; paginate with cursors.
+- **Composition rule**: screens assembled from Section 4 components only. If a screen needs a
+  new visual, add it to the component library first.
+- **Definition of done per screen**: all 4 states (loading/empty/error/data), responsive at all
+  3 breakpoints, reduce-motion respected, semantic labels, `dart analyze` clean, widget test for
+  loading + error + data.
+
+---
+
+## 10. Build Order
+
+1. **Tokens** + `AppTheme.dark()` + `ThemeExtension<AppTokens>` + typography.
+2. **Core components** (order): PosterCard, ScoreChip, StatusPill, ProgressControl, SectionHeader,
+   ContentRail, FriendAvatar/AvatarStack, AppButton, AppChip, EmptyState, Skeletons, Toast,
+   QuickActionSheet, NavigationScaffold.
+3. **Redesign screens** (order): Home → Media Detail → My List → Search/Discover → Feed →
+   Discussion → Profile → Watch Party → Airing Calendar → Notifications → Settings/Group.
+4. **Add Section 8 endpoints** as each screen needs them (Home first → endpoint 8.1).
+5. **Light theme** last (optional).
+6. **Full accessibility + reduce-motion pass**.
+
+Update `PROJECT-STATUS.md` as each component and screen is completed.
+
+---
 
 ## Consequences
 
 **Good**:
-- Single `MediaCard` widget eliminates 3 separate card implementations (discover, relations, list)
-- Glassmorphism and micro-animations create a premium, modern feel without heavy assets
-- All screens share the same component library, reducing future feature development time
-- Responsive by design — no per-platform screen implementations needed
-- TV gets Focus-based navigation for free since all interactive elements are standardized
+- Cohesive, premium visual identity across all platforms.
+- Shared component library means consistent UX and faster feature development.
+- Design tokens prevent hardcoded values and enable future light theme.
+- New composite API endpoints reduce round-trips (Home = 1 call instead of 4+).
+- Social differentiator ("In your group" strip) leverages the core value prop.
+- All states designed — no blank screens or raw spinners.
 
 **Bad**:
-- Significant refactoring of existing screens — need to replace current widgets with new ones
-- `BackdropFilter` can be expensive on low-end Android devices — need to detect and fall back
-- Micro-animations add complexity to widget tests (need `tester.pump()` with durations)
+- Significant upfront investment (~10–14 screens, 14 components, 9 new endpoints).
+- Requires design token discipline from every developer.
+- New API endpoints need backend work alongside Flutter work.
+- Must maintain backwards compatibility with existing routes during migration.
 
 **Neutral**:
-- Existing color palette stays unchanged — only the composition and depth layers are new
-- Riverpod providers need only minor adjustments (same data, new presentation)
-- Route structure unchanged — only screen internals change
-
-## Migration Strategy
-
-The redesign should be implemented in order to avoid breaking existing functionality:
-
-1. **Phase 1 — Shared widgets**: Build `MediaCard`, `GlassPanel`, `ScoreRing`, `StatusPill`, `SectionHeader`,
-   shimmer loading, empty/error states. Write widget tests for each. No existing screens are touched.
-
-2. **Phase 2 — Discover refactor**: Replace `discover_screen.dart` internals with new widgets.
-   Add hero strip, inline search, section headers. Keep API providers unchanged.
-
-3. **Phase 3 — Media Detail refactor**: Replace `media_detail_screen.dart` internals with hero banner,
-   glass info panel, expandable synopsis, reusing MediaCard for related.
-
-4. **Phase 4 — My List refactor**: Replace `my_list_screen.dart` with grid layout, stats bar,
-   quick-action bottom sheet. Add FAB.
-
-5. **Phase 5 — Polish**: Add micro-animations, test all transitions, verify TV focus navigation,
-   performance test BackdropFilter on low-end Android.
-
-## Files Affected
-
-### New Files (shared widget library)
-- `lib/core/widgets/media_card.dart`
-- `lib/core/widgets/media_card_grid.dart`
-- `lib/core/widgets/hero_banner.dart`
-- `lib/core/widgets/glass_panel.dart`
-- `lib/core/widgets/score_ring.dart`
-- `lib/core/widgets/status_pill.dart`
-- `lib/core/widgets/progress_bar.dart`
-- `lib/core/widgets/section_header.dart`
-- `lib/core/widgets/app_loading.dart` (extends/replaces current)
-
-### Modified Files (screens)
-- `lib/features/discover/screens/discover_screen.dart` — full rewrite
-- `lib/features/discover/widgets/media_card.dart` — **remove** (replaced by core widget)
-- `lib/features/media_detail/screens/media_detail_screen.dart` — hero + tab refactor
-- `lib/features/media_detail/widgets/hero_banner.dart` — **remove** (replaced by core widget)
-- `lib/features/media_detail/widgets/info_tab.dart` — synopsis expand, info grid layout
-- `lib/features/media_detail/widgets/episodes_tab.dart` — airing badges, watch indicators
-- `lib/features/media_detail/widgets/related_carousel.dart` — reuse core MediaCard
-- `lib/features/tracking/screens/my_list_screen.dart` — full rewrite
-- `lib/features/tracking/widgets/progress_widget.dart` — **remove** (replaced by core progress_bar)
-
-### Unchanged
-- All providers, models, API layer, routing, auth — no changes needed
-- `app_colors.dart` — palette stays the same
-- `app_theme.dart` — Material theme stays the same
-- `adaptive_scaffold.dart` — nav structure unchanged
+- Dark theme is the primary design; light theme is deferred.
+- 5-phase migration strategy from original ADR 094 folded into the 10-part build order.
+- The Vue reference code is not affected — this is Flutter-only.

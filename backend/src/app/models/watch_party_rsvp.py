@@ -4,7 +4,7 @@ from sqlmodel import SQLModel, Field, Relationship, Index
 from typing import Optional, TYPE_CHECKING
 from uuid import UUID
 from datetime import datetime
-from sqlalchemy import String
+from sqlalchemy import String, Enum as SAEnum
 from src.app.models.enums import RsvpStatus
 
 if TYPE_CHECKING:
@@ -27,7 +27,7 @@ class WatchPartyRsvp(SQLModel, table=True):
         primary_key=True,
         nullable=False
     )
-    status: RsvpStatus = Field(default=RsvpStatus.pending, sa_type=String)
+    status: RsvpStatus = Field(default=RsvpStatus.pending, sa_type=SAEnum(RsvpStatus, create_constraint=False))
     responded_at: Optional[datetime] = Field(default=None)
 
     # Timestamps

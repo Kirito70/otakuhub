@@ -5,7 +5,7 @@ from typing import Optional, TYPE_CHECKING
 from uuid import UUID
 from src.app.core.uuid7 import generate_uuid7
 from datetime import datetime
-from sqlalchemy import String
+from sqlalchemy import String, Enum as SAEnum
 from src.app.models.enums import PartyStatus
 
 if TYPE_CHECKING:
@@ -30,7 +30,7 @@ class WatchParty(SQLModel, table=True):
     episode_number: Optional[int] = Field(default=None)
     title: Optional[str] = Field(default=None, max_length=300)
     scheduled_at: datetime = Field(nullable=False)
-    status: PartyStatus = Field(default=PartyStatus.scheduled, sa_type=String)
+    status: PartyStatus = Field(default=PartyStatus.scheduled, sa_type=SAEnum(PartyStatus, create_constraint=False))
     stream_url: Optional[str] = Field(default=None, max_length=2048)  # HiAnime, Crunchyroll, etc. deep link
     sync_url: Optional[str] = Field(default=None, max_length=2048)  # SyncParty / Rave link if using sync tool
     notes: Optional[str] = Field(default=None)

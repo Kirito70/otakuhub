@@ -5,7 +5,7 @@ from typing import Optional, TYPE_CHECKING
 from uuid import UUID
 from src.app.core.uuid7 import generate_uuid7
 from datetime import datetime
-from sqlalchemy import String
+from sqlalchemy import String, Enum as SAEnum
 from src.app.models.enums import NotificationType
 
 if TYPE_CHECKING:
@@ -25,7 +25,7 @@ class Notification(SQLModel, table=True):
         nullable=False
     )
     user_id: UUID = Field(foreign_key="users.id", nullable=False)
-    type: NotificationType = Field(nullable=False, sa_type=String)
+    type: NotificationType = Field(nullable=False, sa_type=SAEnum(NotificationType, create_constraint=False))
     title: str = Field(nullable=False, max_length=300)
     body: Optional[str] = Field(default=None)
     action_url: Optional[str] = Field(default=None, max_length=2048)
