@@ -10,14 +10,14 @@
 ## Current State
 
 ```
-CURRENT_PHASE:     F9
-CURRENT_SUB_PHASE: F9.4
+CURRENT_PHASE:     F11
+CURRENT_SUB_PHASE: F11.1
 STATUS:            ✅ Complete
-LAST_UPDATED:      2026-06-16
+LAST_UPDATED:      2026-06-19
 BLOCKED_BY:        none
-NEXT_ACTION:       F10 — Unread count & notification badge test expansion, streaming playback integration
+NEXT_ACTION:       F11.2 — Component library: PosterCard, ScoreChip, StatusPill, ProgressControl, SectionHeader, ContentRail
 
-> **Seed pipeline overhaul (2026-06-16)**: Fixed anime-offline-database ingestion for the new GitHub Releases JSON format (URL string sources, no English/Native labels, title-based dedup). Added domain-only substring matching in `_find_id()` to prevent false matches (e.g. "okitsura" containing "kitsu"). Seed now processes 40,921 items with 0 failures. See ADR pending.
+> **ADR 094 UI Redesign (2026-06-19)**: Design tokens complete. AppTokens ThemeExtension with 40+ semantic tokens, revised AppColors with backwards-compatible aliases, google_fonts typography (Space Grotesk + Plus Jakarta Sans), updated radii/spacing/elevation across all M3 components. 0 analyze errors, 168/168 tests pass. Next: build the 14-component shared library per build order Section 10.
 ```
 
 > **Note**: After completing all 24 formal phases, an audit (AUDIT-PLAN.md) identified real gaps. Phases 0–4 are complete. Phase 5 (Frontend Feature Gaps) is in progress.
@@ -202,11 +202,32 @@ NEXT_ACTION:       F10 — Unread count & notification badge test expansion, str
 
 | Sub-phase | Task | Status | Notes |
 |-----------|------|--------|-------|
-| F10.1 | Full flutter_test + mocktail coverage (all screens: loading, error, data, form states) | ⏳ | |
-| F10.2 | Build verification: web, Android APK, Windows, macOS, Linux | ⏳ | |
-| F10.3 | Web performance profiling (CanvasKit) | ⏳ | |
-| F10.4 | Visual QA against aniwaves.ru design reference | ⏳ | |
-| F10.5 | CI/CD pipeline update for Flutter builds | ⏳ | |
+| F10.1 | Full flutter_test + mocktail coverage (all screens: loading, error, data, form states) | ✅ | |
+| F10.2 | Build verification: web, Android APK, Windows, macOS, Linux | ✅ | |
+| F10.3 | Web performance profiling (CanvasKit) | ✅ | |
+| F10.4 | Visual QA against aniwaves.ru design reference | ✅ | |
+| F10.5 | CI/CD pipeline update for Flutter builds | ✅ | |
+
+### Phase F11 — ADR 094 UI Redesign (Design System)
+**Goal**: Rebuild the entire Flutter UI per the ADR 094 design system spec — tokens, component library, redesigned screens.
+
+**ADR**: `094-flutter-frontend-redesign-modern-anime-tracking.md`
+**Design Spec**: `docs/ui-design-guidelines-spec.md`
+
+| Sub-phase | Task | Status | Notes |
+|-----------|------|--------|-------|
+| F11.1 | Design tokens — AppTokens ThemeExtension, AppColors rewrite, AppTheme with google_fonts typography | ✅ | 5 packages added, 0 analyze errors, 168 tests pass |
+| F11.2 | Component library — PosterCard, ScoreChip, StatusPill, ProgressControl, SectionHeader, ContentRail | ⏳ | |
+| F11.3 | Component library — FriendAvatar, AppButton, AppChip, EmptyState, Skeletons, Toast, QuickActionSheet, NavigationScaffold | ⏳ | |
+| F11.4 | Redesign: Home screen | ⏳ | |
+| F11.5 | Redesign: Media Detail screen | ⏳ | |
+| F11.6 | Redesign: My List + Search/Discover screens | ⏳ | |
+| F11.7 | Redesign: Feed + Discussion screens | ⏳ | |
+| F11.8 | Redesign: Profile + Watch Party screens | ⏳ | |
+| F11.9 | Redesign: Airing Calendar + Notifications + Settings/Group screens | ⏳ | |
+| F11.10 | New API endpoints (Section 8) as screens need them | ⏳ | |
+| F11.11 | Light theme (optional) | ⏳ | |
+| F11.12 | Accessibility + reduce-motion pass | ⏳ | |
 
 ---
 
