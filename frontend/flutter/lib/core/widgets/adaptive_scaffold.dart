@@ -1,11 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:otakuhub/core/theme/app_colors.dart';
+import 'package:otakuhub/core/theme/app_tokens.dart';
 import 'package:otakuhub/core/router/route_names.dart';
 import 'package:otakuhub/core/platform/tv_detector.dart';
 import 'package:otakuhub/features/notifications/providers/notification_providers.dart';
 import 'package:go_router/go_router.dart';
 
+/// ADR 094 — AdaptiveScaffold / NavigationScaffold: responsive shell.
+///
+/// Breakpoints:
+/// - compact (<600): bottom NavigationBar (mobile)
+/// - medium (600-1024): NavigationRail (tablet, landscape)
+/// - expanded (>1024): extended NavigationRail (desktop)
+/// - TV: D-pad focused NavigationRail with 1.15× scale
 class AdaptiveScaffold extends StatelessWidget {
   final Widget child;
 
@@ -32,11 +39,29 @@ class AdaptiveScaffold extends StatelessWidget {
   }
 }
 
+// --- Navigation data ---
+const _navItems = (
+  destinations: [
+    (icon: Icons.explore_outlined, selectedIcon: Icons.explore, label: 'Discover', route: RouteNames.discover),
+    (icon: Icons.list_alt_outlined, selectedIcon: Icons.list_alt, label: 'My List', route: RouteNames.myList),
+    (icon: Icons.feed_outlined, selectedIcon: Icons.feed, label: 'Feed', route: RouteNames.feed),
+    (icon: Icons.party_mode_outlined, selectedIcon: Icons.party_mode, label: 'Watch Party', route: RouteNames.watchParty),
+    (icon: Icons.notifications_outlined, selectedIcon: Icons.notifications, label: 'Alerts', route: RouteNames.notifications),
+    (icon: Icons.person_outline, selectedIcon: Icons.person, label: 'Profile', route: RouteNames.profile),
+  ],
+  mobileRoutes: ['Discover', 'My List', 'Feed', 'Alerts', 'Profile'],
+  railRoutes: ['Discover', 'My List', 'Feed', 'Watch Party', 'Alerts', 'Profile'],
+);
+
 // --- Notification badge widget ---
 class _NotificationBadgeIcon extends ConsumerWidget {
   final IconData icon;
+  final IconData? selectedIcon;
 
-  const _NotificationBadgeIcon({required this.icon});
+  const _NotificationBadgeIcon({
+    required this.icon,
+    this.selectedIcon,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -60,17 +85,41 @@ class _MobileScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.tokens;
+
     return Scaffold(
       body: child,
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentIndex(context),
         onDestinationSelected: (index) => _navigate(context, index),
-        destinations: const [
-          NavigationDestination(icon: Icon(Icons.explore_outlined), label: 'Discover'),
-          NavigationDestination(icon: Icon(Icons.list_alt_outlined), label: 'My List'),
-          NavigationDestination(icon: Icon(Icons.feed_outlined), label: 'Feed'),
-          NavigationDestination(icon: _NotificationBadgeIcon(icon: Icons.notifications_outlined), label: 'Alerts'),
-          NavigationDestination(icon: Icon(Icons.person_outline), label: 'Profile'),
+        backgroundColor: tokens.bgSurface,
+        indicatorColor: tokens.accentPrimary.withValues(alpha: 0.12),
+        destinations: [
+          NavigationDestination(
+            icon: Icon(Icons.explore_outlined),
+            selectedIcon: Icon(Icons.explore, color: tokens.accentPrimary),
+            label: 'Discover',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.list_alt_outlined),
+            selectedIcon: Icon(Icons.list_alt, color: tokens.accentPrimary),
+            label: 'My List',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.feed_outlined),
+            selectedIcon: Icon(Icons.feed, color: tokens.accentPrimary),
+            label: 'Feed',
+          ),
+          NavigationDestination(
+            icon: _NotificationBadgeIcon(icon: Icons.notifications_outlined),
+            selectedIcon: _NotificationBadgeIcon(icon: Icons.notifications),
+            label: 'Alerts',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.person_outline),
+            selectedIcon: Icon(Icons.person, color: tokens.accentPrimary),
+            label: 'Profile',
+          ),
         ],
       ),
     );
@@ -105,6 +154,8 @@ class _TabletScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.tokens;
+
     return Scaffold(
       body: Row(
         children: [
@@ -112,27 +163,41 @@ class _TabletScaffold extends StatelessWidget {
             selectedIndex: _currentIndex(context),
             onDestinationSelected: (index) => _navigate(context, index),
             labelType: NavigationRailLabelType.all,
-            destinations: const [
+            backgroundColor: tokens.bgSurface,
+            indicatorColor: tokens.accentPrimary.withValues(alpha: 0.12),
+            leading: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+              child: Icon(
+                Icons.movie_creation_rounded,
+                color: tokens.accentPrimary,
+                size: 28,
+              ),
+            ),
+            destinations: [
               NavigationRailDestination(
                 icon: Icon(Icons.explore_outlined),
-                label: Text('Discover'),
+                selectedIcon: Icon(Icons.explore, color: tokens.accentPrimary),
+                label: const Text('Discover'),
               ),
               NavigationRailDestination(
                 icon: Icon(Icons.list_alt_outlined),
-                label: Text('My List'),
+                selectedIcon: Icon(Icons.list_alt, color: tokens.accentPrimary),
+                label: const Text('My List'),
               ),
               NavigationRailDestination(
                 icon: Icon(Icons.feed_outlined),
-                label: Text('Feed'),
+                selectedIcon: Icon(Icons.feed, color: tokens.accentPrimary),
+                label: const Text('Feed'),
               ),
               NavigationRailDestination(
                 icon: _NotificationBadgeIcon(icon: Icons.notifications_outlined),
                 selectedIcon: _NotificationBadgeIcon(icon: Icons.notifications),
-                label: Text('Alerts'),
+                label: const Text('Alerts'),
               ),
               NavigationRailDestination(
                 icon: Icon(Icons.person_outline),
-                label: Text('Profile'),
+                selectedIcon: Icon(Icons.person, color: tokens.accentPrimary),
+                label: const Text('Profile'),
               ),
             ],
           ),
@@ -172,6 +237,8 @@ class _DesktopScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.tokens;
+
     return Scaffold(
       body: Row(
         children: [
@@ -181,53 +248,60 @@ class _DesktopScaffold extends StatelessWidget {
             labelType: NavigationRailLabelType.none,
             extended: true,
             minExtendedWidth: 200,
+            backgroundColor: tokens.bgSurface,
+            indicatorColor: tokens.accentPrimary.withValues(alpha: 0.12),
             leading: Padding(
               padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
               child: Row(
                 children: [
-                  Icon(Icons.movie_creation_rounded,
-                      color: AppColors.accentPrimary, size: 28),
+                  Icon(
+                    Icons.movie_creation_rounded,
+                    color: tokens.accentPrimary,
+                    size: 28,
+                  ),
                   const SizedBox(width: 8),
                   Text(
                     'OtakuHub',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary,
-                        ),
+                    style: TextStyle(
+                      fontFamily: 'Plus Jakarta Sans',
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      color: tokens.textPrimary,
+                    ),
                   ),
                 ],
               ),
             ),
-            destinations: const [
+            destinations: [
               NavigationRailDestination(
                 icon: Icon(Icons.explore_outlined),
-                selectedIcon: Icon(Icons.explore),
-                label: Text('Discover'),
+                selectedIcon: Icon(Icons.explore, color: tokens.accentPrimary),
+                label: const Text('Discover'),
               ),
               NavigationRailDestination(
                 icon: Icon(Icons.list_alt_outlined),
-                selectedIcon: Icon(Icons.list_alt),
-                label: Text('My List'),
+                selectedIcon: Icon(Icons.list_alt, color: tokens.accentPrimary),
+                label: const Text('My List'),
               ),
               NavigationRailDestination(
                 icon: Icon(Icons.feed_outlined),
-                selectedIcon: Icon(Icons.feed),
-                label: Text('Feed'),
+                selectedIcon: Icon(Icons.feed, color: tokens.accentPrimary),
+                label: const Text('Feed'),
               ),
               NavigationRailDestination(
                 icon: Icon(Icons.party_mode_outlined),
-                selectedIcon: Icon(Icons.party_mode),
-                label: Text('Watch Party'),
+                selectedIcon: Icon(Icons.party_mode, color: tokens.accentPrimary),
+                label: const Text('Watch Party'),
               ),
               NavigationRailDestination(
                 icon: _NotificationBadgeIcon(icon: Icons.notifications_outlined),
                 selectedIcon: _NotificationBadgeIcon(icon: Icons.notifications),
-                label: Text('Alerts'),
+                label: const Text('Alerts'),
               ),
               NavigationRailDestination(
                 icon: Icon(Icons.person_outline),
-                selectedIcon: Icon(Icons.person),
-                label: Text('Profile'),
+                selectedIcon: Icon(Icons.person, color: tokens.accentPrimary),
+                label: const Text('Profile'),
               ),
             ],
           ),
@@ -269,6 +343,8 @@ class _TvScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.tokens;
+
     return Scaffold(
       body: Row(
         children: [
@@ -277,34 +353,41 @@ class _TvScaffold extends StatelessWidget {
             onDestinationSelected: (index) => _navigate(context, index),
             labelType: NavigationRailLabelType.all,
             minExtendedWidth: 180,
+            backgroundColor: tokens.bgSurface,
+            indicatorColor: tokens.accentPrimary.withValues(alpha: 0.12),
             leading: Padding(
               padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
               child: Icon(
                 Icons.movie_creation_rounded,
-                color: AppColors.accentPrimary,
+                color: tokens.accentPrimary,
                 size: 32,
               ),
             ),
-            destinations: const [
+            destinations: [
               NavigationRailDestination(
                 icon: Icon(Icons.explore_outlined, size: 28),
-                label: Text('Discover'),
+                selectedIcon: Icon(Icons.explore, size: 28, color: tokens.accentPrimary),
+                label: const Text('Discover'),
               ),
               NavigationRailDestination(
                 icon: Icon(Icons.list_alt_outlined, size: 28),
-                label: Text('My List'),
+                selectedIcon: Icon(Icons.list_alt, size: 28, color: tokens.accentPrimary),
+                label: const Text('My List'),
               ),
               NavigationRailDestination(
                 icon: Icon(Icons.feed_outlined, size: 28),
-                label: Text('Feed'),
+                selectedIcon: Icon(Icons.feed, size: 28, color: tokens.accentPrimary),
+                label: const Text('Feed'),
               ),
               NavigationRailDestination(
                 icon: _NotificationBadgeIcon(icon: Icons.notifications_outlined),
-                label: Text('Alerts'),
+                selectedIcon: _NotificationBadgeIcon(icon: Icons.notifications),
+                label: const Text('Alerts'),
               ),
               NavigationRailDestination(
                 icon: Icon(Icons.person_outline, size: 28),
-                label: Text('Profile'),
+                selectedIcon: Icon(Icons.person, size: 28, color: tokens.accentPrimary),
+                label: const Text('Profile'),
               ),
             ],
           ),

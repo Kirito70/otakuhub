@@ -385,6 +385,9 @@ class AppTokens extends ThemeExtension<AppTokens> {
 }
 
 /// Convenience extension to access AppTokens from BuildContext.
+/// Falls back to [AppTokens.dark] if the extension isn't registered
+/// (e.g., in tests or during hot reload edge cases).
 extension AppTokensExtension on BuildContext {
-  AppTokens get tokens => Theme.of(this).extension<AppTokens>()!;
+  AppTokens get tokens =>
+      Theme.of(this).extension<AppTokens>() ?? AppTokens.dark;
 }

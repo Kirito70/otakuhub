@@ -11,13 +11,13 @@
 
 ```
 CURRENT_PHASE:     F11
-CURRENT_SUB_PHASE: F11.1
+CURRENT_SUB_PHASE: F11.4
 STATUS:            ✅ Complete
 LAST_UPDATED:      2026-06-19
 BLOCKED_BY:        none
-NEXT_ACTION:       F11.2 — Component library: PosterCard, ScoreChip, StatusPill, ProgressControl, SectionHeader, ContentRail
+NEXT_ACTION:       F11.4 — Redesign: Home screen
 
-> **ADR 094 UI Redesign (2026-06-19)**: Design tokens complete. AppTokens ThemeExtension with 40+ semantic tokens, revised AppColors with backwards-compatible aliases, google_fonts typography (Space Grotesk + Plus Jakarta Sans), updated radii/spacing/elevation across all M3 components. 0 analyze errors, 168/168 tests pass. Next: build the 14-component shared library per build order Section 10.
+> **ADR 094 UI Redesign (2026-06-19)**: Full 14-component library complete — PosterCard, ScoreChip, StatusPill, ProgressControl, SectionHeader, ContentRail, FriendAvatar+AvatarStack, AppButton, AppChip, AppEmptyState, AppSkeleton (5 variants), AppToast (4 types), QuickActionSheet, AdaptiveScaffold (4 breakpoints). `context.tokens` fallback to `AppTokens.dark` for test safety. 0 analyze errors, 168/168 tests pass. Next: redesign screens F11.4–F11.12 per build order Section 10.
 ```
 
 > **Note**: After completing all 24 formal phases, an audit (AUDIT-PLAN.md) identified real gaps. Phases 0–4 are complete. Phase 5 (Frontend Feature Gaps) is in progress.
@@ -217,8 +217,8 @@ NEXT_ACTION:       F11.2 — Component library: PosterCard, ScoreChip, StatusPil
 | Sub-phase | Task | Status | Notes |
 |-----------|------|--------|-------|
 | F11.1 | Design tokens — AppTokens ThemeExtension, AppColors rewrite, AppTheme with google_fonts typography | ✅ | 5 packages added, 0 analyze errors, 168 tests pass |
-| F11.2 | Component library — PosterCard, ScoreChip, StatusPill, ProgressControl, SectionHeader, ContentRail | ⏳ | |
-| F11.3 | Component library — FriendAvatar, AppButton, AppChip, EmptyState, Skeletons, Toast, QuickActionSheet, NavigationScaffold | ⏳ | |
+| F11.2 | Component library — PosterCard, ScoreChip, StatusPill, ProgressControl, SectionHeader, ContentRail | ✅ | sm/md/lg sizes, 2:3 poster ratio, color-coded score, status dot, stepper with progress bar, edge fade gradients |
+| F11.3 | Component library — FriendAvatar, AppButton, AppChip, EmptyState, Skeletons, Toast, QuickActionSheet, AdaptiveScaffold, NavigationScaffold | ✅ | active-ring avatar, 3 button variants, selectable+removable chips, 5 skeleton layouts, 4 toast types, action sheet, 4-breakpoint shell. context.tokens fallback to dark |
 | F11.4 | Redesign: Home screen | ⏳ | |
 | F11.5 | Redesign: Media Detail screen | ⏳ | |
 | F11.6 | Redesign: My List + Search/Discover screens | ⏳ | |
@@ -1171,6 +1171,9 @@ NEXT_ACTION:       F11.2 — Component library: PosterCard, ScoreChip, StatusPil
 # 2026-06-09 | Phase M2.1 | Old Quasar layout files deleted: `src/layouts/MainLayout.vue`, `AuthLayout.vue`, `__tests__/MainLayout.test.ts` — all unreferenced (router uses AppShell/AuthShell directly). Suite-level test failure resolved: 39 test files (was 40), 6 failed (was 7), 369 passed unchanged.
 # 2026-06-09 | Phase M1 | Foundation — Vite + Tailwind + shadcn-vue project init complete: package.json rewritten (removed Quasar/Capacitor deps, added Vite v6.4.3/Tailwind v4/shadcn-vue/sass-embedded), vite.config.ts (Tailwind Vue plugin, path aliases, SCSS preprocessor), tsconfig.json (path aliases, vite/client types), index.html (dark class, bg #0a0a0a), src/main.ts (Pinia + Router + axios bootstrap), src/css/globals.css (Tailwind @theme tokens). AppShell layout (Sidebar/TopBar/BottomNav/AppShell/AuthShell), router rewritten (no Quasar wrapper), plugins/axios.ts → boot/axios.ts re-export, useTheme composable (no Quasar). Pages rewritten: LoginPage/RegisterPage (native forms + zod), SetupPage/ProfilePage/WatchPartyPage/NotificationPreferencesPage (native + zod + Tailwind). SCSS build errors fixed (lighten/darken → color.adjust, @use import resolution with api: 'modern-compiler'). vite build succeeds (1783 modules, 5s), dev server starts. Tokens.scss preserved for streaming components (Phase M4 SCSS→Tailwind deferred). 26 test failures are expected (Quasar selectors in test files — Phase M5 will fix).
 # 2026-06-09 | Phase 27.6 | Final test coverage pass — added DiscoverPage genre auto-search test (11 total), SearchBar (11), GenrePills (5), HomePage (10+). 377 frontend tests pass across 39 files. Phase 27 is fully complete
+# 2026-06-19 | Phase F11.1 | Design tokens — AppTokens ThemeExtension with 40+ semantic tokens, AppColors rewrite with backwards-compatible aliases, AppTheme with google_fonts (Space Grotesk + Plus Jakarta Sans), M3 radii/spacing/elevation refresh. 0 analyze errors, 168 tests pass. Committed 92a7189 to dev
+# 2026-06-19 | Phase F11.2 | Component library batch 1 — PosterCard, ScoreChip, StatusPill, ProgressControl, SectionHeader, ContentRail with responsive sizes, color-coded scoring, hover scrim, edge fade gradients
+# 2026-06-19 | Phase F11.3 | Component library batch 2 — FriendAvatar+AvatarStack, AppButton (3 variants), AppChip (selectable+removable), AppEmptyState (generic+error), AppSkeleton (5 variants), AppToast (4 types, overlay), QuickActionSheet (status/score/notes/remove), AdaptiveScaffold (4 breakpoints). context.tokens fallback to dark for test safety. All 168 tests pass, 0 analyze errors
 ```
 # Format: [OPEN/RESOLVED] Phase X.Y — description
 [RESOLVED] Phase 13.3 — Backend pytest runtime verified via backend .venv and tests passed
