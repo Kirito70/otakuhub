@@ -48,6 +48,11 @@ class Settings(BaseSettings):
     # Redis / Celery
     redis_url: str = "redis://localhost:6379/0"
 
+    # Sentry
+    sentry_dsn: str = ""
+    sentry_traces_sample_rate: float = 0.2  # 20% of transactions for perf tracing
+    sentry_profiles_sample_rate: float = 0.2  # 20% for profiling
+
     # Apprise notifications
     apprise_urls: str = ""
 
