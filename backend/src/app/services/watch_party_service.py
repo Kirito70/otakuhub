@@ -328,7 +328,7 @@ class WatchPartyService(BaseService):
         # Build RSVP summary
         rsvp_summary: dict[str, int] = {"attending": 0, "pending": 0, "declined": 0}
         for rsvp in rsvps:
-            status_key = rsvp.status.value if hasattr(rsvp.status, "value") else str(rsvp.status)
+            status_key = rsvp.status
             if status_key in rsvp_summary:
                 rsvp_summary[status_key] += 1
 
@@ -344,7 +344,7 @@ class WatchPartyService(BaseService):
             "episode_number": party.episode_number,
             "title": party.title,
             "scheduled_at": party.scheduled_at,
-            "status": party.status.value if hasattr(party.status, "value") else str(party.status),
+            "status": party.status,
             "stream_url": party.stream_url,
             "sync_url": party.sync_url,
             "notes": party.notes,

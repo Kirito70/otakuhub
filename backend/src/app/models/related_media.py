@@ -5,7 +5,7 @@ from typing import Optional, TYPE_CHECKING
 from uuid import UUID
 from src.app.core.uuid7 import generate_uuid7
 from datetime import datetime
-from sqlalchemy import String, Enum as SAEnum
+from sqlalchemy import String
 from src.app.models.enums import RelationType
 
 if TYPE_CHECKING:
@@ -30,7 +30,7 @@ class RelatedMedia(SQLModel, table=True):
         foreign_key="media_entries.id",
         nullable=False
     )
-    relation_type: RelationType = Field(nullable=False, sa_type=SAEnum(RelationType, create_constraint=False))
+    relation_type: RelationType = Field(nullable=False, sa_type=String(50))
 
     # Timestamps
     created_at: datetime = Field(default_factory=datetime.utcnow)

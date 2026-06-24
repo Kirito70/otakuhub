@@ -5,7 +5,7 @@ from typing import Optional, TYPE_CHECKING
 from uuid import UUID
 from src.app.core.uuid7 import generate_uuid7
 from datetime import datetime
-from sqlalchemy import String, Enum as SAEnum
+from sqlalchemy import String
 from src.app.models.enums import WatchStatus
 
 if TYPE_CHECKING:
@@ -28,8 +28,8 @@ class ListEntryHistory(SQLModel, table=True):
     user_id: UUID = Field(foreign_key="users.id", nullable=False)
     media_id: UUID = Field(foreign_key="media_entries.id", nullable=False)
     event_type: str = Field(nullable=False, max_length=50)  # 'status_changed', 'progress_updated', 'score_set', 'added', 'removed'
-    old_status: Optional[WatchStatus] = Field(default=None, sa_type=SAEnum(WatchStatus, create_constraint=False))
-    new_status: Optional[WatchStatus] = Field(default=None, sa_type=SAEnum(WatchStatus, create_constraint=False))
+    old_status: Optional[WatchStatus] = Field(default=None, sa_type=String(50))
+    new_status: Optional[WatchStatus] = Field(default=None, sa_type=String(50))
     old_progress: Optional[int] = Field(default=None)
     new_progress: Optional[int] = Field(default=None)
     old_score: Optional[float] = Field(default=None)

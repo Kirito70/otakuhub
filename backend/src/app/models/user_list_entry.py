@@ -5,7 +5,7 @@ from typing import Optional, TYPE_CHECKING
 from uuid import UUID
 from src.app.core.uuid7 import generate_uuid7
 from datetime import datetime
-from sqlalchemy import String, Enum as SAEnum
+from sqlalchemy import String
 from src.app.models.enums import WatchStatus
 
 if TYPE_CHECKING:
@@ -25,7 +25,7 @@ class UserListEntry(SQLModel, table=True):
     )
     user_id: UUID = Field(foreign_key="users.id", nullable=False)
     media_id: UUID = Field(foreign_key="media_entries.id", nullable=False)
-    status: WatchStatus = Field(nullable=False, sa_type=SAEnum(WatchStatus, create_constraint=False))
+    status: WatchStatus = Field(nullable=False, sa_type=String(50))
     progress: int = Field(default=0)  # episodes watched / chapters read
     score: Optional[float] = Field(default=None)  # user's personal score 0.0–10.0
     notes: Optional[str] = Field(default=None)

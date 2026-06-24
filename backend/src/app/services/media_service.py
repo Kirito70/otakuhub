@@ -63,13 +63,13 @@ class MediaService(BaseService):
                 id=m.id,
                 title_romaji=m.title_romaji,
                 title_english=m.title_english,
-                format=m.format.value if m.format else None,
+                        format=m.format,
                 season_year=m.season_year,
                 average_score=m.average_score,
                 synopsis=m.synopsis,
                 cover_image_large=m.cover_image_large,
                 banner_image=m.banner_image,
-                media_type=m.media_type.value if m.media_type else None,
+                media_type=m.media_type,
             )
             for m in trending
         ]
@@ -91,7 +91,7 @@ class MediaService(BaseService):
                         title_english=m.title_english,
                         cover_image_large=m.cover_image_large,
                         average_score=m.average_score,
-                        format=m.format.value if m.format else None,
+                format=m.format,
                     )
                     for m in items
                 ]
@@ -230,8 +230,8 @@ class MediaService(BaseService):
                 title_romaji=media.title_romaji,
                 title_english=media.title_english,
                 cover_image_medium=media.cover_image_medium,
-                media_type=media.media_type.value if hasattr(media.media_type, "value") else str(media.media_type),
-                relation_type=rt.value if hasattr(rt, "value") else str(rt),
+                media_type=str(media.media_type) if media.media_type else None,
+                relation_type=str(rt) if rt else None,
             )
             for media, rt in rows
         ]
