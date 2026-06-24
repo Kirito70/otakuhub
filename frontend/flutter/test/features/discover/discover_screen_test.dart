@@ -1,132 +1,139 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:otakuhub/features/discover/models/media_item.dart';
-import 'package:otakuhub/features/discover/providers/discover_providers.dart';
-import 'package:otakuhub/features/discover/screens/discover_screen.dart';
+import 'package:otakuhub/features/discover/models/home_data.dart';
+import 'package:otakuhub/features/discover/providers/home_provider.dart';
+import 'package:otakuhub/features/discover/screens/home_screen.dart';
 
 void main() {
-  group('DiscoverScreen', () {
-    final testItems = [
-      MediaItem(
-        id: '1',
-        titleRomaji: 'Anime 1',
-        mediaType: 'anime',
-        format: 'TV',
-        status: 'releasing',
-        averageScore: 8.5,
-        episodeCount: 12,
-      ),
-      MediaItem(
-        id: '2',
-        titleRomaji: 'Anime 2',
-        mediaType: 'anime',
-        format: 'TV',
-        status: 'finished',
-        averageScore: 7.0,
-        episodeCount: 24,
-      ),
-    ];
+  group('HomeScreen', () {
+    final testSpotlight = HomeSpotlightItem(
+      id: 's1',
+      titleRomaji: 'Spotlight Anime',
+      format: 'TV',
+      averageScore: 8.5,
+      seasonYear: 2026,
+      synopsis: 'A great anime',
+    );
 
-    Widget buildTestApp() {
+    final testGenreItem = GenreRailItem(
+      id: 'g1',
+      titleRomaji: 'Action Anime',
+    );
+
+    final testGenreRail = GenreRail(
+      genreId: 'action',
+      genreName: 'Action',
+      items: [testGenreItem],
+    );
+
+    final testSection = MediaTypeSection(
+      mediaType: 'anime',
+      mediaTypeLabel: 'Anime',
+      genreRails: [testGenreRail],
+    );
+
+    final testHomeData = HomeData(
+      spotlight: [testSpotlight],
+      mediaTypeSections: [testSection],
+    );
+
+    Widget buildTestApp(HomeData homeData) {
       return ProviderScope(
         overrides: [
-          // Override trending provider with test data
-          trendingProvider.overrideWith((ref) async => testItems),
-          // Override seasonal provider with test data
-          seasonalProvider.overrideWith((ref) async => testItems),
-          // Override search to return empty
-          searchResultsProvider.overrideWith((ref) async => []),
+          homeProvider.overrideWith((ref) async => homeData),
         ],
-        child: MaterialApp(
-          theme: ThemeData.dark(),
-          home: const DiscoverScreen(),
+        child: const MaterialApp(
+          home: HomeScreen(),
         ),
       );
     }
 
-    testWidgets('renders tab bar with three tabs', (tester) async {
-      await tester.pumpWidget(buildTestApp());
+    testWidgets('renders spotlight hero when data available', (tester) async {
+      tester.view.physicalSize = const Size(1200, 900);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() => tester.view.resetPhysicalSize());
+      await tester.pumpWidget(buildTestApp(testHomeData));
       await tester.pumpAndSettle();
 
-      expect(find.text('Search'), findsOneWidget);
-      expect(find.text('Trending'), findsOneWidget);
-      expect(find.text('New Releases'), findsOneWidget);
+      expect(find.text('Spotlight Anime'), findsOneWidget);
+      expect(find.text('A great anime'), findsOneWidget);
     });
 
-    testWidgets('renders trending tab with data', (tester) async {
-      await tester.pumpWidget(buildTestApp());
+    testWidgets('renders media type sections with genre rails', (tester) async {
+      tester.view.physicalSize = const Size(1200, 900);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() => tester.view.resetPhysicalSize());
+      await tester.pumpWidget(buildTestApp(testHomeData));
       await tester.pumpAndSettle();
 
-      // Switch to trending tab
-      await tester.tap(find.text('Trending'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('Anime 1'), findsOneWidget);
-      expect(find.text('Anime 2'), findsOneWidget);
+      expect(find.text('Anime'), findsOneWidget);
+      expect(find.text('Action'), findsOneWidget);
     });
 
-    testWidgets('renders seasonal tab with data', (tester) async {
-      await tester.pumpWidget(buildTestApp());
+    testWidgets('renders "Add to list" and "Details" buttons', (tester) async {
+      tester.view.physicalSize = const Size(1200, 900);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() => tester.view.resetPhysicalSize());
+      await tester.pumpWidget(buildTestApp(testHomeData));
       await tester.pumpAndSettle();
 
-      // Switch to seasonal tab
-      await tester.tap(find.text('New Releases'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('Anime 1'), findsOneWidget);
-      expect(find.text('Anime 2'), findsOneWidget);
+      expect(find.text('+ Add to list'), findsOneWidget);
+      expect(find.text('Details'), findsOneWidget);
     });
 
-    testWidgets('shows search field on search tab', (tester) async {
-      await tester.pumpWidget(buildTestApp());
+    testWidgets('shows score chip on spotlight', (tester) async {
+      tester.view.physicalSize = const Size(1200, 900);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() => tester.view.resetPhysicalSize());
+      await tester.pumpWidget(buildTestApp(testHomeData));
       await tester.pumpAndSettle();
 
-      // Search tab should have a text field
-      expect(find.byType(TextField), findsOneWidget);
-    });
-
-    testWidgets('search tab shows empty state', (tester) async {
-      await tester.pumpWidget(buildTestApp());
-      await tester.pumpAndSettle();
-
-      expect(find.textContaining('Enter a search term'), findsOneWidget);
+      expect(find.text('★ 8.5'), findsOneWidget);
     });
   });
 
-  group('DiscoverScreen empty/error states', () {
+  group('HomeScreen empty/error states', () {
     Widget buildEmptyApp() {
       return ProviderScope(
         overrides: [
-          trendingProvider.overrideWith((ref) async => []),
-          seasonalProvider.overrideWith((ref) async => []),
-          searchResultsProvider.overrideWith((ref) async => []),
+          homeProvider.overrideWith((ref) async => const HomeData()),
         ],
-        child: MaterialApp(
-          theme: ThemeData.dark(),
-          home: const DiscoverScreen(),
+        child: const MaterialApp(
+          home: HomeScreen(),
         ),
       );
     }
 
-    testWidgets('trending tab shows empty state', (tester) async {
+    testWidgets('shows empty state when no data', (tester) async {
       await tester.pumpWidget(buildEmptyApp());
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Trending'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('No trending data'), findsOneWidget);
+      expect(
+        find.textContaining('No media data yet'),
+        findsOneWidget,
+      );
     });
 
-    testWidgets('new releases tab shows empty state', (tester) async {
-      await tester.pumpWidget(buildEmptyApp());
+    testWidgets('shows error state on API failure', (tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            homeProvider.overrideWith((ref) async {
+              throw Exception('API error');
+            }),
+          ],
+          child: const MaterialApp(
+            home: HomeScreen(),
+          ),
+        ),
+      );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('New Releases'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('No seasonal releases'), findsOneWidget);
+      expect(
+        find.textContaining('Could not load your home feed'),
+        findsOneWidget,
+      );
     });
   });
 }

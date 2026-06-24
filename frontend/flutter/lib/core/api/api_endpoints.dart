@@ -31,6 +31,11 @@ class ApiEndpoints {
   static const String mediaSources = '/api/v1/media/sources'; // + /{id}
   static const String mediaEpisodeSources = '/api/v1/media/episodes/sources'; // + /{id}
   static const String mediaAiring = '/api/v1/media/airing';
+  static const String mediaBrowse = '/api/v1/media/browse';
+  static const String mediaCuratedRails = '/api/v1/media/curated-rails';
+  static const String calendar = '/api/v1/calendar';
+  static const String home = '/api/v1/home';
+  static const String search = '/api/v1/search';
 
   // Lists / Tracking
   static const String listsMe = '/api/v1/lists/me';

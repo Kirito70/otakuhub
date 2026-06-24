@@ -79,103 +79,109 @@ class NotificationCard extends StatelessWidget {
         child: const Icon(Icons.delete_outline, color: Colors.white, size: 24),
       ),
       onDismissed: (_) => onDelete?.call(),
-      child: InkWell(
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          color: notification.isRead ? Colors.transparent : AppColors.accentPrimary.withValues(alpha: 0.05),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Type icon
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(_iconForType(notification.type), color: color, size: 20),
-              ),
-              const SizedBox(width: 12),
-
-              // Content
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            notification.title,
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: notification.isRead ? FontWeight.w400 : FontWeight.w600,
-                              color: AppColors.textPrimary,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          _timeAgo(notification.createdAt),
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: AppColors.textMuted,
-                          ),
-                        ),
-                      ],
+      child: MergeSemantics(
+        child: Semantics(
+          label: '${notification.title}${notification.body != null ? ', ${notification.body}' : ''}'
+              '${!notification.isRead ? ', unread' : ''}',
+          child: InkWell(
+            onTap: onTap,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              color: notification.isRead ? Colors.transparent : AppColors.accentPrimary.withValues(alpha: 0.05),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Type icon
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: color.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                    if (notification.body != null && notification.body!.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 2),
-                        child: Text(
-                          notification.body!,
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: AppColors.textSecondary,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
+                    child: Icon(_iconForType(notification.type), color: color, size: 20),
+                  ),
+                  const SizedBox(width: 12),
 
-                    // Read/unread indicator + mark-read button
-                    const SizedBox(height: 4),
-                    Row(
+                  // Content
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        if (!notification.isRead)
-                          Container(
-                            width: 8,
-                            height: 8,
-                            decoration: const BoxDecoration(
-                              color: AppColors.accentPrimary,
-                              shape: BoxShape.circle,
-                            ),
-                          )
-                        else
-                          const SizedBox(width: 8),
-                        const Spacer(),
-                        if (!notification.isRead && onMarkRead != null)
-                          GestureDetector(
-                            onTap: onMarkRead,
-                            child: Text(
-                              'Mark read',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: AppColors.accentSecondary,
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                notification.title,
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: notification.isRead ? FontWeight.w400 : FontWeight.w600,
+                                  color: AppColors.textPrimary,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
+                            const SizedBox(width: 8),
+                            Text(
+                              _timeAgo(notification.createdAt),
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: AppColors.textMuted,
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (notification.body != null && notification.body!.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 2),
+                            child: Text(
+                              notification.body!,
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: AppColors.textSecondary,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
+
+                        // Read/unread indicator + mark-read button
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            if (!notification.isRead)
+                              Container(
+                                width: 8,
+                                height: 8,
+                                decoration: const BoxDecoration(
+                                  color: AppColors.accentPrimary,
+                                  shape: BoxShape.circle,
+                                ),
+                              )
+                            else
+                              const SizedBox(width: 8),
+                            const Spacer(),
+                            if (!notification.isRead && onMarkRead != null)
+                              GestureDetector(
+                                onTap: onMarkRead,
+                                child: Text(
+                                  'Mark read',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: AppColors.accentSecondary,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
                       ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),

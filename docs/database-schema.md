@@ -1,6 +1,7 @@
 # OtakuHub — Complete Database Schema
 
 ## Phase Notes
+- **2026-06-23 (Phase F12)**: No database schema changes required for navigation/search integration redesign (ADR 096). Pure frontend restructuring — search surfaces consolidated, nav items renamed, routes reorganized. No backend schema changes.
 - **2026-05-11 (Phase 15.1)**: No database schema changes required for frontend design tokens/theme semantics.
 - **2026-05-11 (Phase 15.2)**: No database schema changes required for typography/spacing scale standardization.
 - **2026-05-11 (Phase 15.3)**: No database schema changes required for shared UI primitive contracts.

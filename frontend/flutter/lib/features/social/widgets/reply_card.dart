@@ -17,7 +17,13 @@ class ReplyCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
+    final semanticLabel = 'Reply${reply.hasSpoilers ? ', contains spoilers' : ''}: '
+        '${reply.body.length > 100 ? '${reply.body.substring(0, 100)}…' : reply.body}';
+
+    return MergeSemantics(
+      child: Semantics(
+        label: semanticLabel,
+        child: Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -75,7 +81,9 @@ class ReplyCard extends StatelessWidget {
           const Divider(height: 24),
         ],
       ),
-    );
+      ),
+    ),
+  );
   }
 
   String _formattedDate(String dateStr) {

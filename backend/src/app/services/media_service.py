@@ -22,6 +22,18 @@ from src.app.schemas.media import (
     SeasonalMediaItem,
     SeasonalResponse,
 )
+from src.app.schemas.home import (
+    HomeData,
+    HomeSpotlightItem,
+    HomeContinueItem,
+    HomeFriendRecItem,
+    HomeGroupWatchingItem,
+    HomeAiringSoonItem,
+    HomeTrendingItem,
+    GenreRailItem,
+    GenreRail,
+    MediaTypeSection,
+)
 from src.app.repositories.media_repository import MediaRepository
 
 
@@ -36,6 +48,73 @@ class MediaService(BaseService):
     def media_repository(self) -> MediaRepository:
         """Get media repository instance."""
         return self._media_repository
+
+    async def get_home_data(self, user_id: UUID) -> HomeData:
+        """Get the composite home page payload.
+
+        Returns a ``HomeData`` with:
+        - ``spotlight`` — top trending media across all types
+        - ``media_type_sections`` — genre-based rails per media type
+        """
+        # --- Spotlight: top trending ---
+        trending = await self._media_repository.get_trending_media(limit=10)
+        spotlight: list[HomeSpotlightItem] = [
+            HomeSpotlightItem(
+                id=m.id,
+                title_romaji=m.title_romaji,
+                title_english=m.title_english,
+                format=m.format.value if m.format else None,
+                season_year=m.season_year,
+                average_score=m.average_score,
+                synopsis=m.synopsis,
+                cover_image_large=m.cover_image_large,
+                banner_image=m.banner_image,
+                media_type=m.media_type.value if m.media_type else None,
+            )
+            for m in trending
+        ]
+
+        # --- Genre-based browse sections ---
+        media_types = ["anime", "manga", "manhwa"]
+        sections: list[MediaTypeSection] = []
+
+        for mt in media_types:
+            genre_data = await self._media_repository.get_genre_rails_for_type(
+                media_type=mt, max_genres=8, items_per_genre=10
+            )
+            genre_rails: list[GenreRail] = []
+            for genre_id, genre_name, items in genre_data:
+                rail_items = [
+                    GenreRailItem(
+                        id=m.id,
+                        title_romaji=m.title_romaji,
+                        title_english=m.title_english,
+                        cover_image_large=m.cover_image_large,
+                        average_score=m.average_score,
+                        format=m.format.value if m.format else None,
+                    )
+                    for m in items
+                ]
+                genre_rails.append(
+                    GenreRail(
+                        genre_id=genre_id,
+                        genre_name=genre_name,
+                        items=rail_items,
+                    )
+                )
+
+            sections.append(
+                MediaTypeSection(
+                    media_type=mt,
+                    media_type_label=mt.capitalize(),
+                    genre_rails=genre_rails,
+                )
+            )
+
+        return HomeData(
+            spotlight=spotlight,
+            media_type_sections=sections,
+        )
 
     async def get_media_by_id(self, media_id: UUID) -> Optional[MediaEntry]:
         """Get a media entry by its ID."""

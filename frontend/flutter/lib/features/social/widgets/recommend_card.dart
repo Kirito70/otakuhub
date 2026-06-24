@@ -21,7 +21,15 @@ class RecommendCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    final semanticLabel = isIncoming
+        ? 'Recommendation: ${rec.message ?? "media item"}'
+        : 'Recommendation: ${rec.message ?? "media item"}'
+        '${rec.isAcknowledged ? ', acknowledged' : ''}';
+
+    return MergeSemantics(
+      child: Semantics(
+        label: semanticLabel,
+        child: Card(
       color: AppColors.bgSecondary,
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       shape: RoundedRectangleBorder(
@@ -104,8 +112,10 @@ class RecommendCard extends StatelessWidget {
                   ),
               ],
             ),
-          ],
+            ],
+          ),
         ),
+      ),
       ),
     );
   }

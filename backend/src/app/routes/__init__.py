@@ -1,7 +1,7 @@
 """API routes package."""
 
 from fastapi import APIRouter
-from . import auth, media, lists, users, groups, sync, social, watchparty, notifications, setup, admin
+from . import auth, media, lists, users, groups, sync, social, watchparty, notifications, setup, admin, discover
 
 api_router = APIRouter()
 
@@ -26,3 +26,5 @@ api_router.include_router(notifications.router)
 api_router.include_router(setup.router)
 # admin router uses prefix=/admin
 api_router.include_router(admin.router)
+# discover router (home, search, calendar) — no prefix, inherits api/v1
+api_router.include_router(discover.router)

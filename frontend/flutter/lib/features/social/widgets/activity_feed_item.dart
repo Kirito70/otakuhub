@@ -15,7 +15,12 @@ class ActivityFeedItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
+    final semanticLabel = _description;
+
+    return MergeSemantics(
+      child: Semantics(
+        label: semanticLabel,
+        child: InkWell(
       onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -45,7 +50,9 @@ class ActivityFeedItem extends StatelessWidget {
           ],
         ),
       ),
-    );
+      ),
+    ),
+  );
   }
 
   Widget _buildIcon() {

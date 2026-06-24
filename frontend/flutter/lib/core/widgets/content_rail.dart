@@ -11,7 +11,7 @@ class ContentRail extends StatelessWidget {
   final String? seeAllLabel;
   final VoidCallback? onSeeAll;
   final bool showAccentBar;
-  final List<_ContentRailItem> items;
+  final List<ContentRailItem> items;
   final double cardWidth;
   final double height;
 
@@ -100,63 +100,6 @@ class ContentRail extends StatelessWidget {
 }
 
 /// Data model for a single content rail item.
-class _ContentRailItem {
-  final String imageUrl;
-  final String? title;
-  final String? format;
-  final int? seasonYear;
-  final double? score;
-  final String? status;
-  final int? progress;
-  final int? maxProgress;
-  final VoidCallback? onTap;
-  final VoidCallback? onLongPress;
-  final VoidCallback? onQuickAction;
-
-  const _ContentRailItem({
-    required this.imageUrl,
-    this.title,
-    this.format,
-    this.seasonYear,
-    this.score,
-    this.status,
-    this.progress,
-    this.maxProgress,
-    this.onTap,
-    this.onLongPress,
-    this.onQuickAction,
-  });
-}
-
-/// Convenience constructor for ContentRail items.
-ContentRailItem contentRailItem({
-  required String imageUrl,
-  String? title,
-  String? format,
-  int? seasonYear,
-  double? score,
-  String? status,
-  int? progress,
-  int? maxProgress,
-  VoidCallback? onTap,
-  VoidCallback? onLongPress,
-  VoidCallback? onQuickAction,
-}) {
-  return ContentRailItem._(
-    imageUrl: imageUrl,
-    title: title,
-    format: format,
-    seasonYear: seasonYear,
-    score: score,
-    status: status,
-    progress: progress,
-    maxProgress: maxProgress,
-    onTap: onTap,
-    onLongPress: onLongPress,
-    onQuickAction: onQuickAction,
-  );
-}
-
 class ContentRailItem {
   final String imageUrl;
   final String? title;
@@ -171,20 +114,6 @@ class ContentRailItem {
   final VoidCallback? onQuickAction;
 
   const ContentRailItem({
-    required this.imageUrl,
-    this.title,
-    this.format,
-    this.seasonYear,
-    this.score,
-    this.status,
-    this.progress,
-    this.maxProgress,
-    this.onTap,
-    this.onLongPress,
-    this.onQuickAction,
-  });
-
-  ContentRailItem._({
     required this.imageUrl,
     this.title,
     this.format,

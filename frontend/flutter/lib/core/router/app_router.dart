@@ -9,11 +9,9 @@ import 'package:otakuhub/core/widgets/adaptive_scaffold.dart';
 import 'package:otakuhub/features/auth/screens/login_screen.dart';
 import 'package:otakuhub/features/auth/screens/register_screen.dart';
 import 'package:otakuhub/features/auth/screens/setup_screen.dart';
-import 'package:otakuhub/features/discover/screens/discover_screen.dart';
-import 'package:otakuhub/features/discover/screens/search_results_screen.dart';
+import 'package:otakuhub/features/discover/screens/home_screen.dart';
 import 'package:otakuhub/features/media_detail/screens/media_detail_screen.dart';
-import 'package:otakuhub/features/tracking/screens/my_list_screen.dart';
-import 'package:otakuhub/features/tracking/screens/airing_calendar_screen.dart';
+import 'package:otakuhub/features/tracking/screens/list_screen.dart';
 import 'package:otakuhub/features/tracking/screens/import_list_screen.dart';
 import 'package:otakuhub/features/social/screens/feed_screen.dart';
 import 'package:otakuhub/features/social/screens/recommendations_screen.dart';
@@ -34,7 +32,7 @@ final routerProvider = Provider<GoRouter>((ref) {
   final refreshListenable = ref.watch(authRefreshNotifierProvider);
 
   return GoRouter(
-    initialLocation: '/discover',
+    initialLocation: '/home',
     debugLogDiagnostics: true,
     refreshListenable: refreshListenable,
 
@@ -48,11 +46,17 @@ final routerProvider = Provider<GoRouter>((ref) {
       // If setup is required, force to /setup
       if (isSetupRequired && !isSetupRoute) return '/setup';
 
-      // If logged in and on auth route, go to discover
-      if (isLoggedIn && isAuthRoute) return '/discover';
+      // If logged in and on auth route, go to home
+      if (isLoggedIn && isAuthRoute) return '/home';
 
       // If not logged in and not on auth/setup route, go to login
       if (!isLoggedIn && !isAuthRoute && !isSetupRoute) return '/auth/login';
+
+      // Redirect old /discover and /search routes to /home for backward compat
+      if (state.matchedLocation == '/discover' ||
+          state.matchedLocation.startsWith('/search')) {
+        return '/home';
+      }
 
       return null;
     },
@@ -80,14 +84,9 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state, child) => AdaptiveScaffold(child: child),
         routes: [
           GoRoute(
-            path: '/discover',
-            name: RouteNames.discover,
-            builder: (context, state) => const DiscoverScreen(),
-          ),
-          GoRoute(
-            path: '/search',
-            name: RouteNames.searchResults,
-            builder: (context, state) => const SearchResultsScreen(),
+            path: '/home',
+            name: RouteNames.home,
+            builder: (context, state) => const HomeScreen(),
           ),
           GoRoute(
             path: '/media/:id',
@@ -99,12 +98,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/list',
             name: RouteNames.myList,
-            builder: (context, state) => const MyListScreen(),
-          ),
-          GoRoute(
-            path: '/calendar',
-            name: RouteNames.airingCalendar,
-            builder: (context, state) => const AiringCalendarScreen(),
+            builder: (context, state) => const ListScreen(),
           ),
           GoRoute(
             path: '/import',

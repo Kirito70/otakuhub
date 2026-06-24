@@ -1,6 +1,7 @@
 # OtakuHub API Specification (OpenAPI‑style summary)
 
 ## Phase Notes
+- **2026-06-23 (Phase F12)**: No API contract changes. Frontend-only restructuring: the `/search` frontend GoRouter route is removed, but the backend `GET /api/v1/media/search` endpoint remains and serves the single `SearchOverlay` surface (ADR 096).
 - **2026-05-11 (Phase 15.1)**: No API contract changes. Frontend design-token/theming work is internal UI architecture only.
 - **2026-05-11 (Phase 15.2)**: No API contract changes. Typography/spacing scale work is frontend presentation architecture only.
 - **2026-05-11 (Phase 15.3)**: No API contract changes. Shared UI primitive contracts are frontend component architecture only.

@@ -1,11 +1,9 @@
 class RouteNames {
   RouteNames._();
 
-  static const String discover = 'discover';
+  static const String home = 'home';
   static const String mediaDetail = 'media-detail';
-  static const String searchResults = 'search-results';
   static const String myList = 'my-list';
-  static const String airingCalendar = 'airing-calendar';
   static const String feed = 'feed';
   static const String recommendations = 'recommendations';
   static const String discussions = 'discussions';

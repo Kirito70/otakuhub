@@ -25,14 +25,22 @@ class ProfileAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final avatarLabel = displayName ?? username;
+
     if (imageUrl != null && imageUrl!.isNotEmpty) {
-      return CircleAvatar(
-        radius: size / 2,
-        backgroundImage: NetworkImage(imageUrl!),
-        onBackgroundImageError: (_, __) => _buildFallback(),
+      return Semantics(
+        label: avatarLabel,
+        child: CircleAvatar(
+          radius: size / 2,
+          backgroundImage: NetworkImage(imageUrl!),
+          onBackgroundImageError: (_, __) => _buildFallback(),
+        ),
       );
     }
-    return _buildFallback();
+    return Semantics(
+      label: avatarLabel,
+      child: _buildFallback(),
+    );
   }
 
   Widget _buildFallback() {

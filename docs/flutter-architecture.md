@@ -47,7 +47,7 @@ lib/features/<name>/
 | Feature | Directory | Key Models |
 |---------|-----------|------------|
 | Auth | `features/auth/` | LoginRequest, TokenResponse |
-| Discover | `features/discover/` | MediaItem, SearchResult |
+| Home | `features/home/` | HomeData, SpotlightItem, ContentRail |
 | Media Detail | `features/media_detail/` | MediaDetail, EpisodeItem, ChapterItem |
 | Tracking | `features/tracking/` | ListEntry, CustomList |
 | Social | `features/social/` | FeedItem, Recommendation, Discussion |
@@ -66,11 +66,13 @@ Shared infrastructure used by every feature.
 | `core/api/api_exceptions.dart` | Typed exceptions (401, 404, 422, 500) |
 | `core/auth/auth_provider.dart` | AuthNotifier — login, register, refresh, logout |
 | `core/auth/storage_service.dart` | `flutter_secure_storage` wrapper for tokens |
-| `core/theme/app_theme.dart` | Material 3 dark theme (aniwaves palette) |
-| `core/theme/app_colors.dart` | Semantic color constants |
+| `core/theme/app_theme.dart` | Material 3 dark theme (AppTokens design system) |
+| `core/theme/app_colors.dart` | Semantic color constants (legacy — use AppTokens) |
+| `core/theme/app_tokens.dart` | ADR 094 design tokens — ThemeExtension with 41 tokens |
 | `core/router/app_router.dart` | GoRouter config with routes + guards |
 | `core/router/route_names.dart` | String constants for all route names |
-| `core/widgets/adaptive_scaffold.dart` | Desktop/mobile/TV adaptive shell |
+| `core/widgets/adaptive_scaffold.dart` | Desktop/mobile/TV adaptive shell with search header |
+| `core/widgets/search_overlay.dart` | Universal search overlay — single search surface |
 | `core/widgets/app_empty_state.dart` | Loading / error / empty state widget |
 | `core/widgets/app_badge.dart` | Notification badge overlay |
 
@@ -85,7 +87,7 @@ LoginScreen
 GoRouter redirect:
   → Check auth_provider.isAuthenticated
   → If false and route requires auth → redirect to /auth/login
-  → If true and route is /auth/* → redirect to /discover
+  → If true and route is /auth/* → redirect to /home
 
 Token Refresh:
   → Dio interceptor catches 401
@@ -94,35 +96,37 @@ Token Refresh:
   → On failure: logout, redirect to login
 ```
 
-### Navigation Structure
+### Navigation Structure (ADR 096)
+**5 primary nav items**: Home · List · Feed · Alerts · Profile
+
+Search is a **shell-level capability**, not a page — always accessible from the header via `SearchOverlay`.
+
 ```
 GoRouter
-├── ShellRoute (AdaptiveScaffold)
-│   ├── /discover           → DiscoverScreen
-│   ├── /media/:id          → MediaDetailScreen
-│   ├── /search             → SearchResultsScreen
-│   ├── /list               → MyListScreen
-│   ├── /calendar           → AiringCalendarScreen
+├── ShellRoute (AdaptiveScaffold) — search always in header
+│   ├── /home               → HomeScreen (hero + content rails)
+│   ├── /list               → ListScreen (sub-tabs: Your List, Discover, Calendar)
 │   ├── /feed               → FeedScreen
-│   ├── /recommendations    → RecommendationsScreen
-│   ├── /discussions        → DiscussionScreen
-│   ├── /discussions/:id    → DiscussionDetailScreen
-│   ├── /watchparty         → WatchPartyListScreen
 │   ├── /notifications      → NotificationsScreen
 │   ├── /notifications/preferences → PreferencesScreen
-│   └── /profile            → ProfileScreen
+│   ├── /profile            → ProfileScreen
+│   └── /media/:id          → MediaDetailScreen
 ├── /auth/login             → LoginScreen (no shell)
 ├── /auth/register          → RegisterScreen (no shell)
 └── /setup                  → SetupScreen (no shell)
 ```
 
-### AdaptiveScaffold Behavior
-| Width | Type | Nav Style | Grid Cols |
-|-------|------|-----------|-----------|
-| < 600 | Phone | Bottom NavigationBar | 2 columns |
-| 600–1024 | Tablet | NavigationRail | 3 columns |
-| > 1024 | Desktop | Persistent NavigationDrawer | 4–5 columns |
-| TV | TV | Focus-based NavigationRail | 5–6 large cards |
+**Removed routes** (ADR 096): `/search` (SearchResultsScreen eliminated, `/discover` → `/home` redirect), `/discover` (DiscoverScreen replaced by HomeScreen), `/calendar` (moved to List sub-tab), `/watchparty` (moved from primary nav to Profile sub-page, route kept for direct access), `/recommendations` (merged into Feed), `/discussions/:id` (merged into Feed).
+
+**Deep links**: `otakuhub://media/{id}`, `otakuhub://party/{id}`, `otakuhub://group/join/{code}`.
+
+### AdaptiveScaffold Behavior (ADR 096)
+| Width | Type | Nav Style | Search | Grid Cols |
+|-------|------|-----------|--------|-----------|
+| < 600 | Phone | Bottom NavigationBar (5 items) | Search icon in AppBar → opens SearchOverlay (slide-up) | 2 columns |
+| 600–1024 | Tablet | NavigationRail (collapsed) | Persistent search bar in header | 3 columns |
+| > 1024 | Desktop | NavigationRail (extended) | Persistent search bar in header. Ctrl+K/Cmd+K keyboard shortcut opens search from anywhere. | 4–5 columns |
+| TV | TV | Focus-based NavigationRail | Search icon in rail → opens SearchOverlay | 5–6 large cards |
 
 ## State Management (Riverpod)
 
@@ -197,37 +201,106 @@ class ApiEndpoints {
 }
 ```
 
+## Search Architecture (ADR 096)
+
+Search is a **shell-level capability**, not a page. There is exactly one search surface: `SearchOverlay`. No separate search route, no search tab inside any screen.
+
+### Search Flow
+```
+User taps search (icon or bar)
+  ↓
+SearchOverlay opens (slide-up on mobile, slide-down on desktop/tablet)
+  ↓
+┌─ Empty state (no query) ──────────────────────┐
+│  • Recent searches (from shared_preferences)  │
+│  • Trending searches (from GET /search/suggest)│
+│  • Quick genre chips                           │
+└────────────────────────────────────────────────┘
+  ↓ User types
+┌─ Typing state (300ms debounce) ───────────────┐
+│  • Loading: skeleton cards (3 per group)       │
+│  • Results: grouped by media type              │
+│    Anime (12)   Manga (5)   Manhwa (3)         │
+│  • "View all N results" per type               │
+└────────────────────────────────────────────────┘
+  ↓
+┌─ Result tap ───────────────────────────────────┐
+│  → Dismiss overlay                             │
+│  → GoRouter.push /media/{id}                   │
+└────────────────────────────────────────────────┘
+```
+
+### SearchOverlay States
+| State | UX |
+|-------|----|
+| **Initial (no query)** | Recent searches + trending suggestions + genre chips |
+| **Loading** | 3 skeleton cards per group (Shimmer) |
+| **Results** | Grouped by media type with count badges, 2-col grid per group on mobile |
+| **Empty (no results)** | "No titles match '{query}'" + clear button + genre chip suggestions |
+| **Error** | Inline retry with friendly message |
+
+### Keyboard Integration
+| Shortcut | Action |
+|----------|--------|
+| `Ctrl+K` / `Cmd+K` | Open search overlay from anywhere |
+| `Escape` | Close overlay |
+| `↑` / `↓` | Navigate result groups |
+| `Enter` | Select focused result |
+| `Tab` | Move between result groups |
+
+### Search Provider Architecture
+```dart
+// Core search provider — single source of truth
+final searchOverlayProvider = NotifierProvider<SearchOverlayNotifier, SearchOverlayState>(
+  SearchOverlayNotifier.new,
+);
+
+// Debounced query provider
+final searchDebounceProvider = StateProvider<String>((ref) => '');
+
+// API call (debounced, cancellable)
+final searchResultsProvider = FutureProvider.family<SearchResults, String>(
+  (ref, query) async {
+    final api = ref.read(apiClientProvider);
+    final response = await api.get('/api/v1/media/search', queryParams: {'q': query});
+    return SearchResults.fromJson(response.data);
+  },
+);
+
+// Recent searches (persisted)
+final recentSearchesProvider = StateNotifierProvider<RecentSearchesNotifier, List<String>>(
+  (ref) => RecentSearchesNotifier(ref.read(storageServiceProvider)),
+);
+```
+
 ## Design System
 
-### Dark Theme (aniwaves.ru-inspired)
-| Token | Hex | Usage |
-|-------|-----|-------|
-| `bgPrimary` | `#0A0A0A` | Scaffold background |
-| `bgSecondary` | `#111111` | Card/section background |
-| `bgElevated` | `#1A1A1A` | Sheet/dialog background |
-| `accentPrimary` | `#A855F7` | Purple accent (buttons, links, selection) |
-| `accentSecondary` | `#06B6D4` | Cyan accent (badges, tags, SUB label) |
-| `textPrimary` | `#FFFFFF` | Primary text |
-| `textSecondary` | `#A1A1AA` | Secondary text |
-| `textMuted` | `#6B7280` | Disabled/placeholder text |
-| `borderDefault` | `#1F2937` | Default borders |
-| `borderStrong` | `#374151` | Strong borders |
-| `success` | `#22C55E` | Success state |
-| `warning` | `#EAB308` | Warning state |
-| `destructive` | `#EF4444` | Error/destructive state |
+> **Full spec**: `docs/adr/094-flutter-frontend-redesign-modern-anime-tracking.md` (Sections 2–4)
+> **Tokens implementation**: `lib/core/theme/app_tokens.dart` (41-token `ThemeExtension`)
 
-### Typography
-| Style | Size/Weight | Usage |
-|-------|-------------|-------|
-| Display | 36px Bold | Page titles |
-| Heading XL | 30px Bold | Section headers |
-| Heading LG | 24px Semibold | Card titles |
-| Heading MD | 20px Semibold | List item titles |
-| Heading SM | 16px Semibold | Subsection headers |
-| Body | 14px Normal | Content text |
-| Body SM | 13px Normal | Descriptions |
-| Label | 12px Medium | Labels, timestamps |
-| Caption | 11px Normal | Small metadata |
+### Token Categories
+| Category | Description | Source |
+|----------|-------------|--------|
+| **Surfaces** (6) | App background, cards, inputs, modals, hover, borders | `AppTokens.bgBase` through `borderStrong` |
+| **Text** (4) | Primary, secondary, tertiary, on-accent | `AppTokens.textPrimary` through `textOnAccent` |
+| **Accents** (11) | Violet brand, coral, mint, sky, amber, rose, green | `AppTokens.accentPrimary` through `accentGreen` |
+| **Spacing** (8) | 4pt scale: 4→72 | `AppTokens.spaceXs` through `space4xl` |
+| **Radius** (5) | sm(10) md(14) lg(20) xl(28) pill(999) | `AppTokens.radiusSm` through `radiusPill` |
+| **Elevation** (3) | Card, raised, modal shadow levels | `AppTokens.elevation1` through `elevation3` |
+
+### Typography (ADR 094)
+| Style | Font | Size/Line | Weight | Usage |
+|-------|------|-----------|--------|-------|
+| displayXL | Space Grotesk | 40/46 | 700 | Hero spotlight title (desktop) |
+| displayL | Space Grotesk | 30/36 | 700 | Hero title (mobile), stat numbers |
+| headlineL | Space Grotesk | 24/30 | 600 | Screen titles |
+| titleL | Plus Jakarta | 20/26 | 600 | Section headers |
+| titleM | Plus Jakarta | 17/22 | 600 | Card titles, dialog titles |
+| bodyL | Plus Jakarta | 15/22 | 400 | Primary body, synopsis |
+| bodyM | Plus Jakarta | 14/20 | 400 | Secondary text, metadata |
+| label | Plus Jakarta | 13/16 | 600 | Buttons, tabs, chips |
+| caption | Plus Jakarta | 12/16 | 400 | Timestamps, footnotes |
+| micro | Plus Jakarta | 11/14 | 600 | Badges, status pills |
 
 ### TV-Specific Design
 - Cards render at 1.15× scale for readability at distance
@@ -249,7 +322,7 @@ class ApiEndpoints {
 - Navigation: correct route on action
 
 ### Integration Tests (`integration_test/`)
-- Auth flow: login → navigate to discover
+- Auth flow: login → navigate to home
 - Tracking flow: add to list → update progress → verify change
 
 ### Test File Naming

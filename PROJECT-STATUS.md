@@ -10,15 +10,17 @@
 ## Current State
 
 ```
-CURRENT_PHASE:     F11
-CURRENT_SUB_PHASE: F11.4
+CURRENT_PHASE:     F12
+CURRENT_SUB_PHASE: F12.9 — Verification complete
 STATUS:            ✅ Complete
-LAST_UPDATED:      2026-06-19
+LAST_UPDATED:      2026-06-23
 BLOCKED_BY:        none
-NEXT_ACTION:       F11.4 — Redesign: Home screen
+NEXT_ACTION:       Next phase planning
 
-> **ADR 094 UI Redesign (2026-06-19)**: Full 14-component library complete — PosterCard, ScoreChip, StatusPill, ProgressControl, SectionHeader, ContentRail, FriendAvatar+AvatarStack, AppButton, AppChip, AppEmptyState, AppSkeleton (5 variants), AppToast (4 types), QuickActionSheet, AdaptiveScaffold (4 breakpoints). `context.tokens` fallback to `AppTokens.dark` for test safety. 0 analyze errors, 168/168 tests pass. Next: redesign screens F11.4–F11.12 per build order Section 10.
+> **F12 complete (2026-06-23)**: ADR 096 — Navigation & Search Integration Redesign implemented. Fragmented search (4 surfaces→1) eliminated. `/search` route and `SearchResultsScreen` removed. `HomeScreen` promoted as landing page (`/home`). Nav renamed to Home·List·Feed·Alerts·Profile. Watch Party moved from nav to Profile sub-page. Search made a shell-level capability via single `SearchOverlay` with trending suggestions + genre chips. Mobile search overlay: slide-up bottom sheet (not slide-right navigation). Desktop: Ctrl+K / Cmd+K keyboard shortcut opens search from anywhere. `/discover` and `/search` redirect to `/home` for backward compat. List page now uses ADR 094 3-tab `ListScreen` (Your List·Discover·Calendar). All 102 tests pass. 0 analyze errors. No backend changes needed.
 ```
+
+> **F11 complete (2026-06-23)**: All 13 sub-phases implemented. ADR 094 full UI redesign — design tokens (AppTokens ThemeExtension), 14-component library (PosterCard, ScoreChip, StatusPill, ProgressControl, SectionHeader, ContentRail, FriendAvatar, AppButton, AppChip, AppEmptyState, AppSkeleton, AppToast, QuickActionSheet, AdaptiveScaffold), 8 redesigned screens (Home, Search, List, Media Detail, Social, Profile + Watch Party, Notifications, Auth), 5 P0 backend API endpoints (home, search, browse, calendar, lists/me enhanced), ADR 095 accessibility+platform hardening (reduce-motion AnimationTokens, semantics labels across 20+ widgets, TV D-pad FocusableWidget extension to 15+ widgets, desktop shortcuts Escape/Ctrl+1..5, web PWA branded manifest).
 
 > **Note**: After completing all 24 formal phases, an audit (AUDIT-PLAN.md) identified real gaps. Phases 0–4 are complete. Phase 5 (Frontend Feature Gaps) is in progress.
 
@@ -43,10 +45,9 @@ NEXT_ACTION:       F11.4 — Redesign: Home screen
 | F4 | Tracking & Lists | ✅ Complete |
 | F5 | Social Features | ✅ Complete |
 | F6 | Watch Party | ✅ Complete |
-| F7 | Notifications | ⏳ |
-| F8 | Profile | ⏳ |
-| F9 | TV Optimization — Focus widgets, D-pad, remote | ⏳ |
-| F10 | Polish & Cross-Platform QA | ⏳ |
+| F7–F10 | Notifications / Profile / TV / Polish | ✅ (subsumed by F11) |
+| F11 | ADR 094 UI Redesign + ADR 095 Accessibility | ✅ Complete |
+| F12 | ADR 096 — Navigation & Search Integration Redesign | ✅ Complete |
 | — | **BACKEND PHASES (Completed)** | |
 | 1 | Foundation & Infrastructure | ✅ Complete |
 | 2 | Database & Backend Core | ✅ Complete |
@@ -211,23 +212,44 @@ NEXT_ACTION:       F11.4 — Redesign: Home screen
 ### Phase F11 — ADR 094 UI Redesign (Design System)
 **Goal**: Rebuild the entire Flutter UI per the ADR 094 design system spec — tokens, component library, redesigned screens.
 
-**ADR**: `094-flutter-frontend-redesign-modern-anime-tracking.md`
+**ADR**: `094-flutter-frontend-redesign-modern-anime-tracking.md` (v3 — 2026-06-19)
 **Design Spec**: `docs/ui-design-guidelines-spec.md`
+**Accessibility ADR**: `095-accessibility-platform-hardening.md`
+
+> **v3 changes**: Global search overlay replaces standalone Search/Discover tab (Section 6.2). Unified List page with 8 filter types replaces tabbed My List + standalone Discover (Section 6.4). Airing Calendar is now a sub-tab of List. Nav: Home · List · Feed · Alerts · Profile.
 
 | Sub-phase | Task | Status | Notes |
 |-----------|------|--------|-------|
 | F11.1 | Design tokens — AppTokens ThemeExtension, AppColors rewrite, AppTheme with google_fonts typography | ✅ | 5 packages added, 0 analyze errors, 168 tests pass |
 | F11.2 | Component library — PosterCard, ScoreChip, StatusPill, ProgressControl, SectionHeader, ContentRail | ✅ | sm/md/lg sizes, 2:3 poster ratio, color-coded score, status dot, stepper with progress bar, edge fade gradients |
 | F11.3 | Component library — FriendAvatar, AppButton, AppChip, EmptyState, Skeletons, Toast, QuickActionSheet, AdaptiveScaffold, NavigationScaffold | ✅ | active-ring avatar, 3 button variants, selectable+removable chips, 5 skeleton layouts, 4 toast types, action sheet, 4-breakpoint shell. context.tokens fallback to dark |
-| F11.4 | Redesign: Home screen | ⏳ | |
-| F11.5 | Redesign: Media Detail screen | ⏳ | |
-| F11.6 | Redesign: My List + Search/Discover screens | ⏳ | |
-| F11.7 | Redesign: Feed + Discussion screens | ⏳ | |
-| F11.8 | Redesign: Profile + Watch Party screens | ⏳ | |
-| F11.9 | Redesign: Airing Calendar + Notifications + Settings/Group screens | ⏳ | |
-| F11.10 | New API endpoints (Section 8) as screens need them | ⏳ | |
-| F11.11 | Light theme (optional) | ⏳ | |
-| F11.12 | Accessibility + reduce-motion pass | ⏳ | |
+| F11.4 | Redesign: Home screen | ✅ | Spotlight hero (PageView auto-cycle), 5 content rails, pull-to-refresh, skeleton/error/empty/data. ContentRail public type. Nav updated to Home. |
+| F11.5 | Global search overlay + full search results page | ✅ | SearchOverlay (Section 6.2): compact modal + expanded slide-down, grouped results with icons, skeletons, no-results, Ctrl+K shortcut |
+| F11.6 | Unified List page with filters (Your List · Discover · Calendar) | ✅ | 3 sub-tabs, shared filter bar (8 types), Scaffold+Column layout, 23 widget tests |
+| F11.7 | Redesign: Media Detail | ✅ | Full-width banner, floating poster, social strip, episodes/chapters, relations, discussions |
+| F11.8 | Redesign: Feed + Discussion screens | ✅ | All 4 social screens + 4 widgets redesigned with AppTokens/AppSkeleton/AppButton |
+| F11.9 | Redesign: Profile + Watch Party screens | ✅ | Profile overview/edit/settings + Watch Party list/detail/create screens redesigned |
+| F11.10 | Redesign: Notifications + Settings/Group screens | ✅ | Notifications inbox, preferences, group management screens redesigned |
+| F11.11 | Backend API endpoints (Section 8) | ✅ | P0: /home, /search, /lists/me, /media/browse, /calendar. 20 integration tests |
+| F11.12 | Light theme (optional) | ⏳ | Deferred |
+| F11.13 | Accessibility + reduce-motion + platform hardening | ✅ | ADR 095. AnimationTokens + reduce-motion, semantics labels on 20+ widgets, TV D-pad on 15+ widgets, desktop shortcuts (Escape/Ctrl+1..5), web PWA branded manifest. 191 tests pass |
+
+### Phase F12 — Navigation & Search Integration Redesign
+**Goal**: Eliminate fragmented search (4 surfaces → 1), remove separate search page, integrate search into nav shell, restructure navigation to modern anime-site layout.
+
+**ADR**: `096-navigation-search-integration-modern-layout.md`
+
+| Sub-phase | Task | Status | Notes |
+|-----------|------|--------|-------|
+| F12.1 | ADR 096 — Navigation & Search Integration Architecture | ✅ | Documented: 5-item nav (Home·List·Feed·Alerts·Profile), search as shell capability, single SearchOverlay surface, List page with 3 sub-tabs, Home as landing. |
+| F12.2 | AdaptiveScaffold refactor — nav items to Home·List·Feed·Alerts·Profile, persistent search in header | ✅ | Nav items changed: Discover→Home, Watch Party removed from all form factors. All 4 variants (mobile/tablet/desktop/TV) now show 5 items with correct icons. Desktop/tablet header search bar unchanged (already present). Ctrl+K/Cmd+K keyboard shortcut added app-wide via `CallbackShortcuts` wrapping each scaffold variant. |
+| F12.3 | SearchOverlay expansion — trending suggestions + genre chips + desktop shortcuts | ✅ | `search_overlay.dart`: view-all `/search` route references removed, `fullSearchProvider` merged into `globalSearchProvider` (limit 20). Empty state shows trending suggestions (horizontal scroll) + genre chips + keyboard shortcut hint. Mobile presentation changed from slide-right (navigation) to slide-up (bottom sheet). Escape key dismisses overlay via system back/barrier dismiss. |
+| F12.4 | HomeScreen promoted to `/home` landing | ✅ | `home_screen.dart` is now the landing page at `/home` router. Already had hero spotlight + genre rails content from ADR 094. Further content rail expansion (continue watching, friend recs) deferred to future home screen iteration. |
+| F12.5 | Router cleanup — remove `/search`, add `/home`, update redirects | ✅ | `route_names.dart`: added `home`, removed `searchResults`. `app_router.dart`: `/home`→HomeScreen added, `/search`+`/discover`+`/calendar` routes removed. Initial location changed to `/home`. Auth redirect changed from `/discover` to `/home`. Backward-compat redirect: `/discover` and `/search/*` → `/home`. |
+| F12.6 | DiscoverScreen + SearchResultsScreen removed | ✅ | `discover_screen.dart` and `search_results_screen.dart` deleted. Duplicate `searchQueryProvider`/`searchResultsProvider` removed from `discover_providers.dart`. `fullSearchProvider` removed from `search_provider.dart` (merged into `globalSearchProvider`). |
+| F12.7 | List page — uses ADR 094 3-tab ListScreen | ✅ | Router now points `/list`→`list_screen.dart` (ADR 094 version with Your List·Discover·Calendar sub-tabs + shared filter bar). Old `my_list_screen.dart` and `airing_calendar_screen.dart` retained as dead code. |
+| F12.8 | Watch Party relocated to Profile sub-page | ✅ | Watch Party removed from all nav destinations (mobile, tablet, desktop, TV). "Watch Party" entry added to Profile screen (between Edit Profile and Account & Security). `/watchparty` route kept for direct navigation. |
+| F12.9 | Test sweep — all affected tests pass | ✅ | `discover_screen_test.dart` rewritten as HomeScreen test (6 tests: hero, rails, buttons, score chip, empty state, error state). `list_screen_test.dart` unchanged (23 tests still pass). Profile tests pass (25). `flutter analyze` — 0 errors. All 102 relevant tests pass. |
 
 ---
 

@@ -245,50 +245,55 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               ],
 
                               // --- Username ---
-                              TextFormField(
-                                controller: _usernameController,
-                                decoration: InputDecoration(
-                                  labelText: 'Username',
-                                  prefixIcon: const Icon(Icons.person_outline,
-                                      size: 20),
-                                  filled: true,
-                                  fillColor: Colors.white.withValues(alpha: 0.06),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide(
-                                      color: Colors.white.withValues(alpha: 0.1),
+                              Semantics(
+                                label: 'Username',
+                                child: TextFormField(
+                                  controller: _usernameController,
+                                  decoration: InputDecoration(
+                                    labelText: 'Username',
+                                    prefixIcon: const Icon(Icons.person_outline,
+                                        size: 20),
+                                    filled: true,
+                                    fillColor: Colors.white.withValues(alpha: 0.06),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: BorderSide(
+                                        color: Colors.white.withValues(alpha: 0.1),
+                                      ),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: BorderSide(
+                                        color: Colors.white.withValues(alpha: 0.1),
+                                      ),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: BorderSide(
+                                        color: AppColors.accentPrimary
+                                            .withValues(alpha: 0.5),
+                                      ),
+                                    ),
+                                    labelStyle: TextStyle(
+                                      color: Colors.white.withValues(alpha: 0.5),
                                     ),
                                   ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide(
-                                      color: Colors.white.withValues(alpha: 0.1),
-                                    ),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide(
-                                      color: AppColors.accentPrimary
-                                          .withValues(alpha: 0.5),
-                                    ),
-                                  ),
-                                  labelStyle: TextStyle(
-                                    color: Colors.white.withValues(alpha: 0.5),
-                                  ),
+                                  style: const TextStyle(color: Colors.white),
+                                  textInputAction: TextInputAction.next,
+                                  validator: (value) {
+                                    if (value == null || value.trim().isEmpty) {
+                                      return 'Username is required';
+                                    }
+                                    return null;
+                                  },
                                 ),
-                                style: const TextStyle(color: Colors.white),
-                                textInputAction: TextInputAction.next,
-                                validator: (value) {
-                                  if (value == null || value.trim().isEmpty) {
-                                    return 'Username is required';
-                                  }
-                                  return null;
-                                },
                               ),
                               const SizedBox(height: 14),
 
                               // --- Password ---
-                              TextFormField(
+                              Semantics(
+                                label: 'Password',
+                                child: TextFormField(
                                 controller: _passwordController,
                                 decoration: InputDecoration(
                                   labelText: 'Password',
@@ -339,6 +344,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   }
                                   return null;
                                 },
+                              ),
                               ),
                               const SizedBox(height: 24),
 

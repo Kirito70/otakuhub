@@ -15,7 +15,15 @@ class DiscussionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
+    final semanticLabel = '${discussion.title ?? 'Discussion'}'
+        '${discussion.hasSpoilers ? ', contains spoilers' : ''}'
+        '${discussion.episodeNumber != null ? ', Episode ${discussion.episodeNumber}' : ''}'
+        '${discussion.chapterNumber != null ? ', Chapter ${discussion.chapterNumber}' : ''}';
+
+    return MergeSemantics(
+      child: Semantics(
+        label: semanticLabel,
+        child: InkWell(
       onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -93,6 +101,8 @@ class DiscussionCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+      ),
       ),
     );
   }

@@ -200,6 +200,53 @@ class MediaRepository(BaseRepository[MediaEntry]):
         items = await items_query.all()
         return items, total
 
+    async def get_genre_rails_for_type(
+        self,
+        media_type: str,
+        max_genres: int = 8,
+        items_per_genre: int = 10,
+    ) -> List[tuple]:
+        """Get top genres and their media entries for a given media type.
+
+        Returns a list of (genre_id, genre_name, list[MediaEntry]) for the
+        ``max_genres`` most-populated genres ordered by popularity descending.
+        """
+        from sqlalchemy import func as sa_func, desc as sa_desc
+
+        # Step 1 — top genres by media count for this media type
+        genre_count_stmt = (
+            select(
+                Genre.id,
+                Genre.name,
+                sa_func.count(MediaGenre.media_id).label("cnt"),
+            )
+            .join(MediaGenre, Genre.id == MediaGenre.genre_id)
+            .join(MediaEntry, MediaGenre.media_id == MediaEntry.id)
+            .where(MediaEntry.media_type == media_type)
+            .where(MediaEntry.deleted_at.is_(None))
+            .group_by(Genre.id, Genre.name)
+            .order_by(sa_desc("cnt"))
+            .limit(max_genres)
+        )
+
+        genre_rows = (await self.db_session.exec(genre_count_stmt)).all()
+
+        result: list[tuple] = []
+        for genre_id, genre_name, _ in genre_rows:
+            media_stmt = (
+                select(MediaEntry)
+                .join(MediaGenre, MediaEntry.id == MediaGenre.media_id)
+                .where(MediaGenre.genre_id == genre_id)
+                .where(MediaEntry.media_type == media_type)
+                .where(MediaEntry.deleted_at.is_(None))
+                .order_by(sa_desc(MediaEntry.popularity))
+                .limit(items_per_genre)
+            )
+            media_items = (await self.db_session.exec(media_stmt)).all()
+            result.append((genre_id, genre_name, list(media_items)))
+
+        return result
+
     async def get_genres(self) -> List[Genre]:
         """Get all genres ordered by name."""
         statement = select(Genre).order_by(Genre.name.asc())

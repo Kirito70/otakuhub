@@ -71,8 +71,12 @@ class PartyCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = _statusColor(party.status);
+    final semanticLabel = '${party.title ?? "Watch Party"}, status: ${party.status}';
 
-    return Card(
+    return MergeSemantics(
+      child: Semantics(
+        label: semanticLabel,
+        child: Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       child: InkWell(
         onTap: onTap,
@@ -202,6 +206,8 @@ class PartyCard extends StatelessWidget {
           ),
         ),
       ),
+      ),
+    ),
     );
   }
 }
